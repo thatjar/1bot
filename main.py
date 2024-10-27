@@ -1,0 +1,35 @@
+import discord
+from discord.ext import commands
+
+import os
+from config import config
+
+
+class Client(commands.AutoShardedBot):
+    def __init__(self):
+        super().__init__(
+            command_prefix=commands.when_mentioned,
+            help_command=None,
+            intents=discord.Intents.default(),
+            allowed_mentions=discord.AllowedMentions(everyone=False),
+        )
+
+    async def setup_hook(self):
+        print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+        await self.load_extension("jishaku")
+        for cog in os.listdir("./cogs"):
+            if cog.endswith(".py"):
+                await self.load_extension(f"cogs.{cog[:-3]}")
+
+        self.error_channel = await self.fetch_channel(config["error_channel"])
+
+    colour = 0xFF7000
+    server_invite = config["server_invite"]
+    website_url = config["website"]
+
+
+bot = Client()
+
+
+if __name__ == "__main__":
+    bot.run(config["token"])

@@ -1,0 +1,4 @@
+discord.py
+requests
+python-dotenv
+jishaku @ git+https://github.com/Gorialis/jishaku@master

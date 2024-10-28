@@ -121,10 +121,6 @@ class Errors(commands.Cog):
                 embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
             )
 
-    @commands.Cog.listener()
-    async def on_slash_command_error(self, ctx, error):
-        await self.on_command_error(ctx, error)
-
 
 async def setup(bot):
     await bot.add_cog(Errors(bot))

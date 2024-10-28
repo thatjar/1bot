@@ -15,12 +15,14 @@ class Utilities(commands.Cog):
     @app_commands.describe(
         location="The location to get weather information for",
     )
+    @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
     async def weather(self, i: discord.Interaction, location: str):
+        await i.response.defer()
         req = requests.get(f"https://api.popcat.xyz/weather?q={location}")
         try:
             json = req.json()
         except ValueError:
-            await i.response.send_message("❌ Invalid location", ephemeral=True)
+            await i.followup.send("❌ Invalid location")
             return
 
         data = json[0]
@@ -56,7 +58,7 @@ class Utilities(commands.Cog):
             inline=False,
         )
 
-        await i.response.send_message(embed=embed)
+        await i.followup.send(embed=embed)
 
     @app_commands.command(name="avatar", description="Get a user's avatar")
     @app_commands.describe(
@@ -69,6 +71,7 @@ class Utilities(commands.Cog):
             app_commands.Choice(name="User", value=1),
         ]
     )
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def avatar(
         self,
         i: discord.Interaction,
@@ -79,9 +82,9 @@ class Utilities(commands.Cog):
         embed = discord.Embed(
             colour=self.bot.colour,
             title=(
-                f"{user.display_name}'s server avatar"
+                f"{user.global_name}'s user avatar"
                 if type
-                else f"{user.name}'s avatar"
+                else f"{user.display_name}'s avatar"
             ),
         )
         embed.set_image(url=user.avatar.url if type else user.display_avatar.url)

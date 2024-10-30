@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+from datetime import datetime, timedelta
+
 
 class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
     def __init__(self):
@@ -53,7 +55,7 @@ class Moderator(commands.Cog):
 
     purge_group = app_commands.Group(name="purge", description="Bulk delete messages")
 
-    @app_commands.command(name="purge", description="Bulk delete messages")
+    @purge_group.command(name="any", description="Bulk delete messages of any type")
     @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
@@ -64,8 +66,10 @@ class Moderator(commands.Cog):
     @app_commands.describe(count="The number of messages to delete")
     async def purge(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(limit=count)
-        await i.followup.send(f"Deleted {len(deleted)} messages.")
+        deleted = await i.channel.purge(
+            limit=count + 1, after=datetime.utcnow() - timedelta(14)
+        )
+        await i.followup.send(f"Found and deleted {len(deleted)} messages.")
 
     @purge_group.command(name="bots", description="Bulk delete messages sent by bots")
     @app_commands.guild_only()
@@ -78,8 +82,12 @@ class Moderator(commands.Cog):
     @app_commands.describe(count="The number of messages to search through")
     async def purgebots(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(limit=count, check=lambda m: m.author.bot)
-        await i.followup.send(f"Deleted {len(deleted)} messages from bots.")
+        deleted = await i.channel.purge(
+            limit=count + 1,
+            after=datetime.utcnow() - timedelta(14),
+            check=lambda m: m.author.bot,
+        )
+        await i.followup.send(f"Found and deleted {len(deleted)} messages from bots.")
 
     @purge_group.command(
         name="humans", description="Bulk delete messages sent by humans"
@@ -94,8 +102,12 @@ class Moderator(commands.Cog):
     @app_commands.describe(count="The number of messages to search through")
     async def purgehumans(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(limit=count, check=lambda m: not m.author.bot)
-        await i.followup.send(f"Deleted {len(deleted)} messages from humans.")
+        deleted = await i.channel.purge(
+            limit=count + 1,
+            after=datetime.utcnow() - timedelta(14),
+            check=lambda m: not m.author.bot,
+        )
+        await i.followup.send(f"Found and deleted {len(deleted)} messages from humans.")
 
     @purge_group.command(name="user", description="Bulk delete messages sent by a user")
     @app_commands.guild_only()
@@ -110,8 +122,12 @@ class Moderator(commands.Cog):
     )
     async def purgeuser(self, i: discord.Interaction, user: discord.User, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(limit=count, check=lambda m: m.author == user)
-        await i.followup.send(f"Deleted {len(deleted)} messages from {user}.")
+        deleted = await i.channel.purge(
+            limit=count + 1,
+            after=datetime.utcnow() - timedelta(14),
+            check=lambda m: m.author == user,
+        )
+        await i.followup.send(f"Found and deleted {len(deleted)} messages from {user}.")
 
     @purge_group.command(
         name="channel", description="Bulk delete ALL messages in a channel"
@@ -131,7 +147,9 @@ class Moderator(commands.Cog):
             channel = i.channel
         await i.response.defer(ephemeral=True)
         deleted = await channel.purge(limit=None)
-        await i.followup.send(f"Deleted {len(deleted)} messages in {channel.mention}.")
+        await i.followup.send(
+            f"Found and deleted {len(deleted)} messages in {channel.mention}."
+        )
 
     @app_commands.command(
         name="disablethreads", description="Remove permissions to create threads"

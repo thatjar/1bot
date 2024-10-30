@@ -113,7 +113,7 @@ class Errors(commands.Cog):
 
             if i.namespace:
                 for option, value in i.namespace:
-                    embed.add_field(name=option, value=value)
+                    embed.add_field(name=option, value=value, inline=False)
 
             await self.bot.error_channel.send(embed=embed)
             await i.response.send_message(

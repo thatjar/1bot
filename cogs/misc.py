@@ -38,7 +38,7 @@ class InfoButtons(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.send_message(
-            """1Bot - a free Discord bot.
+            """1Bot - a free Discord bot to let you get things done without leaving Discord.
 Copyright (C) 2024-present thatjar
 
 This program is free software: you can redistribute it and/or modify
@@ -52,7 +52,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program's source code. If not, see <https://www.gnu.org/licenses/>.
+along with this program. If not, see <https://www.gnu.org/licenses/>.
 """,
             ephemeral=True,
         )

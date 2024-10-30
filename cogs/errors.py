@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from contextlib import suppress
 import sys
 
 sys.path.insert(0, "/")  # to get access to config module
@@ -31,52 +32,53 @@ class Errors(commands.Cog):
         # attaching the handler when the cog is loaded and storing the old handler
         tree = self.bot.tree
         self._old_tree_error = tree.on_error
-        tree.on_error = self.on_app_command_error
+        tree.on_error = self.tree_on_error
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             return
-        elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(
-                f"❌ This command is on cooldown, try again in {round(error.retry_after, 2)} seconds."
-            )
 
-    @commands.Cog.listener()
-    async def on_app_command_error(self, i: discord.Interaction, error):
+    async def tree_on_error(self, i: discord.Interaction, error):
+        with suppress(AttributeError):
+            if error.handled:
+                return
+
         if isinstance(error, app_commands.CommandNotFound):
             return
         elif isinstance(error, app_commands.BotMissingPermissions):
-            await i.response.send_message(
-                "❌ I don't have enough permissions to complete this command!\n"
-                + "Missing permissions: "
-                + f"`{', '.join([e.capitalize().replace('_', ' ') for e in error.missing_permissions])}`\n\n"
-                + f"Please add these permissions to my role ('{self.bot.user.display_name}') in your server settings.",
-                ephemeral=True,
-            )
+            msg = f"❌ I don't have enough permissions to complete this command!\nMissing permissions: `{', '.join([e.capitalize().replace('_', ' ') for e in error.missing_permissions])}`\n\nPlease add these permissions to my role ('{self.bot.user.display_name}') in your server settings."
+            try:
+                await i.response.send_message(msg, ephemeral=True)
+            except discord.InteractionResponded:
+                await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, app_commands.MissingPermissions):
-            await i.response.send_message(
-                "❌ You don't have enough permissions to use this command.\n"
-                + "Missing permissions: "
-                + f"`{', '.join([err.capitalize().replace('_', ' ') for err in error.missing_permissions])}`",
-                ephemeral=True,
-            )
+            msg = f"❌ You don't have enough permissions to use this command.\nMissing permissions: `{', '.join([err.capitalize().replace('_', ' ') for err in error.missing_permissions])}`"
+            try:
+                await i.response.send_message(msg, ephemeral=True)
+            except discord.InteractionResponded:
+                await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, app_commands.CommandOnCooldown):
-            await i.response.send_message(
-                f"❌ This command is on cooldown, try again in {round(error.retry_after, 2)} seconds.",
-                ephemeral=True,
-            )
-        elif "Forbidden" in str(error):
-            await i.response.send_message(
-                "❌ Error: Missing Access. Possible reasons:\n\n"
-                + "1. If I was supposed to perform an action on a *server member*, my roles are too low in the hierarchy. I cannot run this command until you move any of my roles higher than the member's top-most role.\n"
-                + "2. If I was supposed to perform an action on a *channel*, I don't have access to that channel because it is private.",
-                ephemeral=True,
-            )
+            msg = f"❌ This command is on cooldown, try again in {round(error.retry_after, 1)} seconds."
+            try:
+                await i.response.send_message(msg, ephemeral=True)
+            except discord.InteractionResponded:
+                await i.followup.send(msg, ephemeral=True)
+        elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
+            msg = "❌ No Access"
+            try:
+                await i.response.send_message(msg, ephemeral=True)
+            except discord.InteractionResponded:
+                await i.followup.send(msg, ephemeral=True)
         elif "cannot identify image file" in str(
             error
         ) or "Unsupported image type" in str(error):
-            await i.response.send_message("❌ Image may be malformed.", ephemeral=True)
+            try:
+                await i.response.send_message(
+                    "❌ Image may be malformed.", ephemeral=True
+                )
+            except discord.InteractionResponded:
+                await i.followup.send("❌ Image may be malformed.", ephemeral=True)
         elif isinstance(error, discord.HTTPException):
             if error.status == 429:
                 if error.response.content["global"]:
@@ -110,11 +112,8 @@ class Errors(commands.Cog):
             )
 
             if i.namespace:
-                options = ""
                 for option, value in i.namespace:
-                    options += f"{option} = {value}\n"
-
-            embed.add_field(name="Options:", value=options, inline=False)
+                    embed.add_field(name=option, value=value)
 
             await self.bot.error_channel.send(embed=embed)
             await i.response.send_message(

@@ -51,17 +51,87 @@ class Moderator(commands.Cog):
     async def embed(self, i: discord.Interaction):
         await i.response.send_modal(EmbedSetup())
 
+    purge_group = app_commands.Group(name="purge", description="Bulk delete messages")
+
     @app_commands.command(name="purge", description="Bulk delete messages")
     @app_commands.guild_only()
-    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.checks.has_permissions(
+        manage_messages=True, read_message_history=True
+    )
     @app_commands.checks.bot_has_permissions(
         manage_messages=True, read_message_history=True
     )
-    @app_commands.describe(amount="The amount of messages to delete")
-    async def purge(self, i: discord.Interaction, amount: int):
+    @app_commands.describe(count="The number of messages to delete")
+    async def purge(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(limit=amount)
-        await i.followup.send(f"Deleted {len(deleted)} messages.", ephemeral=True)
+        deleted = await i.channel.purge(limit=count)
+        await i.followup.send(f"Deleted {len(deleted)} messages.")
+
+    @purge_group.command(name="bots", description="Bulk delete messages sent by bots")
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.checks.bot_has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.describe(count="The number of messages to search through")
+    async def purgebots(self, i: discord.Interaction, count: int):
+        await i.response.defer(ephemeral=True)
+        deleted = await i.channel.purge(limit=count, check=lambda m: m.author.bot)
+        await i.followup.send(f"Deleted {len(deleted)} messages from bots.")
+
+    @purge_group.command(
+        name="humans", description="Bulk delete messages sent by humans"
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.checks.bot_has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.describe(count="The number of messages to search through")
+    async def purgehumans(self, i: discord.Interaction, count: int):
+        await i.response.defer(ephemeral=True)
+        deleted = await i.channel.purge(limit=count, check=lambda m: not m.author.bot)
+        await i.followup.send(f"Deleted {len(deleted)} messages from humans.")
+
+    @purge_group.command(name="user", description="Bulk delete messages sent by a user")
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.checks.bot_has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.describe(
+        user="The user to search for", count="The number of messages to search through"
+    )
+    async def purgeuser(self, i: discord.Interaction, user: discord.User, count: int):
+        await i.response.defer(ephemeral=True)
+        deleted = await i.channel.purge(limit=count, check=lambda m: m.author == user)
+        await i.followup.send(f"Deleted {len(deleted)} messages from {user}.")
+
+    @purge_group.command(
+        name="channel", description="Bulk delete ALL messages in a channel"
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.checks.bot_has_permissions(
+        manage_messages=True, read_message_history=True
+    )
+    @app_commands.describe(channel="The channel to clear")
+    async def purgechannel(
+        self, i: discord.Interaction, channel: discord.TextChannel = None
+    ):
+        if channel is None:
+            channel = i.channel
+        await i.response.defer(ephemeral=True)
+        deleted = await channel.purge(limit=None)
+        await i.followup.send(f"Deleted {len(deleted)} messages in {channel.mention}.")
 
     @app_commands.command(
         name="disablethreads", description="Remove permissions to create threads"

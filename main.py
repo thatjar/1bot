@@ -2,15 +2,17 @@ import discord
 from discord.ext import commands
 
 import os
+from datetime import datetime
 from config import config
 
 
-class Client(commands.AutoShardedBot):
+class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(
             command_prefix=commands.when_mentioned,
             help_command=None,
             intents=discord.Intents.default(),
+            case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False),
         )
 
@@ -26,9 +28,10 @@ class Client(commands.AutoShardedBot):
     colour = 0xFF7000
     server_invite = config["server_invite"]
     website_url = config["website"]
+    launch_time = int(datetime.now().timestamp())
 
 
-bot = Client()
+bot = Bot()
 
 
 if __name__ == "__main__":

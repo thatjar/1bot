@@ -5,6 +5,48 @@ import requests
 
 import random
 from urllib.parse import quote_plus
+import sys
+
+sys.path.insert(0, "/")  # to get access to views module
+from views import Confirm
+
+
+class RPSButton(discord.ui.Button):
+    def __init__(self, label: str, emoji: str):
+        super().__init__(label=label, emoji=emoji)
+        self.callback = self.rps
+
+    async def rps(self, i: discord.Interaction):
+        view = self.view
+        if i.user.id not in (view.p1.id, view.p2.id):
+            await i.response.send_message(
+                "❌ You are not part of this game.", ephemeral=True
+            )
+            return
+
+        if view.choices.get(i.user.id):
+            await i.response.send_message(
+                f"❌ You have already chosen {view.choices[i.user.id]}.", ephemeral=True
+            )
+            return
+
+        await i.response.defer()
+        view.choices[i.user.id] = self.label
+        if len(view.choices) == 2:
+            if view.choices[view.p1.id] == view.choices[view.p2.id]:
+                view.winner = None
+            elif (
+                view.choices[view.p1.id] == "Rock"
+                and view.choices[view.p2.id] == "Scissors"
+                or view.choices[view.p1.id] == "Paper"
+                and view.choices[view.p2.id] == "Rock"
+                or view.choices[view.p1.id] == "Scissors"
+                and view.choices[view.p2.id] == "Paper"
+            ):
+                view.winner = view.p1
+            else:
+                view.winner = view.p2
+            view.stop()
 
 
 class RockPaperScissors(discord.ui.View):
@@ -12,136 +54,11 @@ class RockPaperScissors(discord.ui.View):
         super().__init__(timeout=60)
         self.p1 = p1
         self.p2 = p2
-        self.p1_choice = None
-        self.p2_choice = None
-
-    @discord.ui.button(label="Rock", style=discord.ButtonStyle.primary, emoji="🪨")
-    async def rock(self, i: discord.Interaction, button: discord.ui.Button):
-        if i.user.id == self.p1.id:
-            if self.p1_choice is not None:
-                await i.response.send_message(
-                    f"❌ You have already chosen {self.p1_choice}.", ephemeral=True
-                )
-                return
-
-            self.p1_choice = "rock"
-
-        elif i.user.id == self.p2.id:
-            if self.p2_choice is not None:
-                await i.response.send_message(
-                    f"You have already chosen {self.p2_choice}.", ephemeral=True
-                )
-                return
-
-            self.p2_choice = "rock"
-
-        else:
-            await i.response.send_message(
-                "❌ You are not part of this game.", ephemeral=True
-            )
-            return
-
-        await self.check_winner(i)
-
-    @discord.ui.button(label="Paper", style=discord.ButtonStyle.primary, emoji="📄")
-    async def paper(self, i: discord.Interaction, button: discord.ui.Button):
-        if i.user.id == self.p1.id:
-            if self.p1_choice is not None:
-                await i.response.send_message(
-                    f"❌ You have already chosen {self.p1_choice}.", ephemeral=True
-                )
-                return
-
-            self.p1_choice = "paper"
-
-        elif i.user.id == self.p2.id:
-            if self.p2_choice is not None:
-                await i.response.send_message(
-                    f"You have already chosen {self.p2_choice}.", ephemeral=True
-                )
-                return
-
-            self.p2_choice = "paper"
-
-        else:
-            await i.response.send_message(
-                "❌ You are not part of this game.", ephemeral=True
-            )
-            return
-
-        await self.check_winner(i)
-
-    @discord.ui.button(label="Scissors", style=discord.ButtonStyle.primary, emoji="✂")
-    async def scissors(self, i: discord.Interaction, button: discord.ui.Button):
-        if i.user.id == self.p1.id:
-            if self.p1_choice is not None:
-                await i.response.send_message(
-                    f"❌ You have already chosen {self.p1_choice}.", ephemeral=True
-                )
-                return
-
-            self.p1_choice = "scissors"
-
-        elif i.user.id == self.p2.id:
-            if self.p2_choice is not None:
-                await i.response.send_message(
-                    f"You have already chosen {self.p2_choice}.", ephemeral=True
-                )
-                return
-
-            self.p2_choice = "scissors"
-
-        else:
-            await i.response.send_message(
-                "❌ You are not part of this game.", ephemeral=True
-            )
-            return
-
-        await self.check_winner(i)
-
-    async def check_winner(self, i: discord.Interaction):
-        if self.p1_choice is not None and self.p2_choice is not None:
-            if self.p1_choice == self.p2_choice:
-                self.winner = None
-                self.stop()
-            elif (
-                self.p1_choice == "rock"
-                and self.p2_choice == "scissors"
-                or self.p1_choice == "paper"
-                and self.p2_choice == "rock"
-                or self.p1_choice == "scissors"
-                and self.p2_choice == "paper"
-            ):
-                self.winner = self.p1
-                self.stop()
-            else:
-                self.winner = self.p2
-                self.stop()
-
-
-class Challenge(discord.ui.View):
-    def __init__(self, target: discord.User):
-        super().__init__(timeout=60)
-        self.target = target
-        self.accepted = None
-
-    @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
-    async def accept(self, i: discord.Interaction, button: discord.ui.Button):
-        if i.user.id != self.target.id:
-            await i.response.send_message(
-                "❌ This invitation is not for you!", ephemeral=True
-            )
-            return
-        self.accepted = True
-        self.stop()
-
-    @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
-    async def reject(self, i: discord.Interaction, button: discord.ui.Button):
-        if i.user.id != self.target.id:
-            await i.response.send_message("❌ This is not for you.", ephemeral=True)
-            return
-        self.accepted = False
-        self.stop()
+        self.choices = {}
+        self.winner = None
+        self.add_item(RPSButton(label="Rock", emoji="🪨"))
+        self.add_item(RPSButton(label="Paper", emoji="📄"))
+        self.add_item(RPSButton(label="Scissors", emoji="✂️"))
 
 
 class Fun(commands.Cog):
@@ -170,7 +87,7 @@ class Fun(commands.Cog):
             )
             return
 
-        view = Challenge(user)
+        view = Confirm(user)
         await i.response.defer()
         first_msg = await i.followup.send(
             f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Respond within 60 seconds.",
@@ -188,10 +105,14 @@ class Fun(commands.Cog):
             await view.wait()
             if view.winner is not None:
                 winning_choice = (
-                    view.p1_choice if view.winner == view.p1 else view.p2_choice
+                    view.choices[i.user.id]
+                    if view.winner == view.p1
+                    else view.choices[user.id]
                 )
                 losing_choice = (
-                    view.p2_choice if view.winner == view.p1 else view.p1_choice
+                    view.choices[user.id]
+                    if view.winner == view.p1
+                    else view.choices[i.user.id]
                 )
                 embed.description = f"### {view.winner.mention} is the **winner!**"
                 embed.add_field(name="Winning pick:", value=winning_choice)
@@ -199,7 +120,9 @@ class Fun(commands.Cog):
                 await first_msg.edit(embed=embed, view=None)
             else:
                 embed.description = "### It's a tie!"
-                embed.add_field(name="Both players chose:", value=view.p1_choice)
+                embed.add_field(
+                    name="Both players chose:", value=view.choices[i.user.id]
+                )
                 await first_msg.edit(embed=embed, view=None)
         elif view.accepted is False:
             await first_msg.edit(
@@ -208,7 +131,7 @@ class Fun(commands.Cog):
             )
         elif view.accepted is None:
             await first_msg.edit(
-                content=f"{i.user.mention} did not respond in time.",
+                content=f"{user.mention} did not respond in time.",
                 view=None,
             )
 

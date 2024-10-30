@@ -5,57 +5,7 @@ from discord import app_commands
 import sys
 
 sys.path.insert(0, "/")  # to get access to config module
-from config import config
-
-
-class InfoButtons(discord.ui.View):
-    def __init__(self, bot: commands.Bot):
-        super().__init__()
-        self.add_item(
-            discord.ui.Button(
-                label="Add to server",
-                url=config["bot_invite"],
-                emoji=bot.get_emoji(config["emojis"]["add_to_server"]),
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                label="Website",
-                url=bot.website_url,
-                emoji=bot.get_emoji(config["emojis"]["website"]),
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                label="Support Server",
-                url=bot.server_invite,
-                emoji=bot.get_emoji(config["emojis"]["support"]),
-            )
-        )
-
-    @discord.ui.button(label="License", emoji=f"<:emoji:{config['emojis']['license']}>")
-    async def license(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await interaction.response.send_message(
-            """1Bot - a free Discord bot to let you get things done without leaving Discord.
-Copyright (C) 2024-present thatjar
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-""",
-            ephemeral=True,
-        )
+from views import InfoButtons
 
 
 class Miscellaneous(commands.Cog):
@@ -71,9 +21,7 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title="1Bot Stats and Information", colour=self.bot.colour
         )
-        embed.add_field(
-            name="Bot version", value=f"v{config['bot_version']}", inline=False
-        )
+        embed.add_field(name="Bot version", value=f"{self.bot.version}", inline=False)
         embed.add_field(
             name="Source code",
             value="The bot's original source code is hosted on [GitHub](https://github.com/thatjar/1bot) under the [GNU Affero General Public License](https://github.com/thatjar/1bot/blob/main/LICENSE).\n",

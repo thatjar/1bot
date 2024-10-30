@@ -25,6 +25,8 @@ class Bot(commands.AutoShardedBot):
 
         self.error_channel = await self.fetch_channel(config["error_channel"])
 
+    version = "v1.0.0beta"
+
     colour = 0xFF7000
     server_invite = config["server_invite"]
     website_url = config["website"]

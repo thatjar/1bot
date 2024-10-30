@@ -283,40 +283,37 @@ class Utilities(commands.Cog):
     async def npm(self, i: discord.Interaction, package: str):
         json = requests.get(f"https://registry.npmjs.org/{package}").json()
 
-        try:
-            if json["error"]:
-                await i.response.send_message("❌ " + json["error"], ephemeral=True)
+        if json.get("error") is not None:
+            await i.response.send_message("❌ " + json["error"], ephemeral=True)
+            return
 
-        except KeyError:
-            embed = discord.Embed(
-                title=json["name"],
-                colour=0xCA3836,
-                url="https://www.npmjs.com/package/" + package,
-            )
+        embed = discord.Embed(
+            title=json["name"],
+            colour=0xCA3836,
+            url="https://www.npmjs.com/package/" + package,
+        )
 
-            with suppress(KeyError):
-                embed.description = json["description"]
-            with suppress(KeyError):
-                embed.add_field(name="Homepage", value=json["homepage"], inline=False)
-            with suppress(KeyError):
-                embed.add_field(name="Author", value=json["author"]["name"])
-            with suppress(KeyError):
-                embed.add_field(
-                    name="Repository",
-                    value=json["repository"]["url"],
-                    inline=False,
-                )
+        with suppress(KeyError):
+            embed.description = json["description"]
+        with suppress(KeyError):
+            embed.add_field(name="Homepage", value=json["homepage"], inline=False)
+        with suppress(KeyError):
+            embed.add_field(name="Author", value=json["author"]["name"])
+        with suppress(KeyError):
             embed.add_field(
-                name="Repository maintainers",
-                value=", ".join(
-                    maintainer["name"] for maintainer in json["maintainers"]
-                ),
+                name="Repository",
+                value=json["repository"]["url"],
                 inline=False,
             )
-            with suppress(KeyError):
-                embed.add_field(name="License", value=json["license"], inline=False)
+        embed.add_field(
+            name="Repository maintainers",
+            value=", ".join(maintainer["name"] for maintainer in json["maintainers"]),
+            inline=False,
+        )
+        with suppress(KeyError):
+            embed.add_field(name="License", value=json["license"], inline=False)
 
-            await i.response.send_message(embed=embed)
+        await i.response.send_message(embed=embed)
 
     @app_commands.command(name="lyrics", description="Get lyrics for a song")
     @app_commands.describe(query="The query to search for")

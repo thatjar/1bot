@@ -33,25 +33,25 @@ class InfoButtons(discord.ui.View):
             discord.ui.Button(
                 label="Add to server",
                 url=config["bot_invite"],
-                emoji=bot.get_emoji(config["emojis"]["add_to_server"]),
+                emoji=f"<:_:{config['emojis']['add_to_server']}>",
             )
         )
         self.add_item(
             discord.ui.Button(
                 label="Website",
                 url=bot.website_url,
-                emoji=bot.get_emoji(config["emojis"]["website"]),
+                emoji=f"<:_:{config['emojis']['website']}>",
             )
         )
         self.add_item(
             discord.ui.Button(
                 label="Server",
                 url=bot.server_invite,
-                emoji=bot.get_emoji(config["emojis"]["support"]),
+                emoji=f"<:_:{config['emojis']['support']}>",
             )
         )
 
-    @discord.ui.button(label="License", emoji=f"<:emoji:{config['emojis']['license']}>")
+    @discord.ui.button(label="License", emoji=f"<:_:{config['emojis']['license']}>")
     async def license(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):

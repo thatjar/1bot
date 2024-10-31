@@ -286,14 +286,15 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def dadjoke(self, i: discord.Interaction):
         r = requests.get(
-            "https://icanhazdadjoke.com/", headers={"Accept": "text/plain"}
+            "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
         )
+        await i.response.defer()
         if not r.ok:
             await i.followup.send(
                 "❌ Couldn't retrieve data. Try again later.", ephemeral=True
             )
             return
-        joke = r.text
+        joke = r.json()["joke"]
         await i.followup.send(joke)
 
 

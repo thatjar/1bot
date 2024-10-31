@@ -67,7 +67,7 @@ class Moderator(commands.Cog):
     async def purge(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
-            limit=count + 1, after=datetime.utcnow() - timedelta(14)
+            limit=count, after=datetime.utcnow() - timedelta(14), oldest_first=False
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages.")
 
@@ -83,8 +83,9 @@ class Moderator(commands.Cog):
     async def purgebots(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
-            limit=count + 1,
+            limit=count,
             after=datetime.utcnow() - timedelta(14),
+            oldest_first=False,
             check=lambda m: m.author.bot,
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from bots.")
@@ -103,8 +104,9 @@ class Moderator(commands.Cog):
     async def purgehumans(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
-            limit=count + 1,
+            limit=count,
             after=datetime.utcnow() - timedelta(14),
+            oldest_first=False,
             check=lambda m: not m.author.bot,
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from humans.")
@@ -123,33 +125,12 @@ class Moderator(commands.Cog):
     async def purgeuser(self, i: discord.Interaction, user: discord.User, count: int):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
-            limit=count + 1,
+            limit=count,
             after=datetime.utcnow() - timedelta(14),
+            oldest_first=False,
             check=lambda m: m.author == user,
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from {user}.")
-
-    @purge_group.command(
-        name="channel", description="Bulk delete ALL messages in a channel"
-    )
-    @app_commands.guild_only()
-    @app_commands.checks.has_permissions(
-        manage_messages=True, read_message_history=True
-    )
-    @app_commands.checks.bot_has_permissions(
-        manage_messages=True, read_message_history=True
-    )
-    @app_commands.describe(channel="The channel to clear")
-    async def purgechannel(
-        self, i: discord.Interaction, channel: discord.TextChannel = None
-    ):
-        if channel is None:
-            channel = i.channel
-        await i.response.defer(ephemeral=True)
-        deleted = await channel.purge(limit=None)
-        await i.followup.send(
-            f"Found and deleted {len(deleted)} messages in {channel.mention}."
-        )
 
     @app_commands.command(
         name="disablethreads", description="Remove permissions to create threads"

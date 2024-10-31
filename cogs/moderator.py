@@ -218,6 +218,60 @@ class Moderator(commands.Cog):
             ephemeral=True,
         )
 
+    @app_commands.command(name="lock", description="Make a channel read-only")
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_channels=True)
+    @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.describe(
+        channel="The channel to lock (default: current channel)",
+        reason="The reason for locking the channel",
+    )
+    async def lock(
+        self,
+        i: discord.Interaction,
+        channel: discord.TextChannel = None,
+        reason: str = None,
+    ):
+        if channel is None:
+            channel = i.channel
+        await i.response.send_message("Locking channel...", ephemeral=True)
+        await channel.set_permissions(
+            i.guild.default_role,
+            send_messages=False,
+            create_public_threads=False,
+            create_private_threads=False,
+            reason=reason,
+        )
+        await i.followup.send("Done.")
+
+    @app_commands.command(
+        name="unlock", description="Undo the lock command (allow users to message)"
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_channels=True)
+    @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.describe(
+        channel="The channel to unlock (default: current channel)",
+        reason="The reason for unlocking the channel",
+    )
+    async def unlock(
+        self,
+        i: discord.Interaction,
+        channel: discord.TextChannel = None,
+        reason: str = None,
+    ):
+        if channel is None:
+            channel = i.channel
+        await i.response.send_message("Unlocking channel...", ephemeral=True)
+        await channel.set_permissions(
+            i.guild.default_role,
+            send_messages=None,
+            create_public_threads=None,
+            create_private_threads=None,
+            reason=reason,
+        )
+        await i.followup.send("Done.")
+
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))

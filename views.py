@@ -12,9 +12,7 @@ class Confirm(discord.ui.View):
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
     async def accept(self, i: discord.Interaction, button: discord.ui.Button):
         if i.user.id != self.target.id:
-            await i.response.send_message(
-                "❌ This invitation is not for you!", ephemeral=True
-            )
+            await i.response.send_message("❌ This is not for you.", ephemeral=True)
             return
         self.accepted = True
         self.stop()

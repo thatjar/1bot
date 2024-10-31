@@ -67,6 +67,9 @@ class Fun(commands.Cog):
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Quote", callback=self.quote_ctx)
         )
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(name="Mock", callback=self.mock_ctx),
+        )
 
     @app_commands.command(
         name="rockpaperscissors",
@@ -137,10 +140,15 @@ class Fun(commands.Cog):
 
     @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
-        await i.response.defer()
         if len(message.content) > 100:
-            await i.followup.send("❌ The quote is too long.")
+            await i.response.send_message("❌ The text is too long.", ephemeral=True)
             return
+        elif len(message.content) == 0:
+            await i.response.send_message(
+                "❌ The message does not have any text content.", ephemeral=True
+            )
+            return
+        await i.response.defer()
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"a beautiful quote from {message.author.display_name}",
@@ -159,12 +167,12 @@ class Fun(commands.Cog):
     async def quote(
         self, i: discord.Interaction, quote: str, user: discord.Member = None
     ):
-        await i.response.defer()
         if user is None:
             user = i.user
         if len(quote) > 100:
-            await i.followup.send("❌ The quote is too long.")
+            await i.response.send_message("❌ The text is too long.", ephemeral=True)
             return
+        await i.response.defer()
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"a beautiful quote from {user.display_name}",
@@ -180,8 +188,11 @@ class Fun(commands.Cog):
     async def pickupline(self, i: discord.Interaction):
         await i.response.defer()
         r = requests.get("https://api.popcat.xyz/pickuplines")
-        pickupline = r.json()["pickupline"]
-        await i.followup.send(pickupline)
+        try:
+            pickupline = r.json()["pickupline"]
+            await i.followup.send(pickupline)
+        except KeyError:
+            await i.followup.send("❌ Couldn't retrieve data. Try again later.")
 
     @app_commands.command(name="8ball", description="Ask the magic 8ball a question")
     @app_commands.describe(question="The question to ask")
@@ -215,9 +226,10 @@ class Fun(commands.Cog):
         fortune = random.choice(responses)
         embed = discord.Embed(
             colour=self.bot.colour,
-            title=f'"{question}"',
             description="**🎱 The Magic 8ball says:**\n\n" + f"||{fortune}||",
         )
+        if len(question) > 256:
+            embed.title = f'"{question[:251]}..."'
         await i.response.send_message(embed=embed)
 
     @app_commands.command(name="coinflip", description="Flip a coin")
@@ -243,17 +255,46 @@ class Fun(commands.Cog):
             f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
         )
 
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
+        if not message.content:
+            await i.response.send_message(
+                "❌ The message does not have any text content.", ephemeral=True
+            )
+            return
+        await self.mock.callback(self, i, message.content)
+
     @app_commands.command(name="mock", description="Mock text")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     @app_commands.describe(text="The text to mock")
     async def mock(self, i: discord.Interaction, text: str):
+        if len(text) > 2000:
+            await i.response.send_message(
+                "❌ Text must be no more than 2000 characters", ephemeral=True
+            )
+            return
         mock_text = "".join(
             [char.upper() if i % 2 else char.lower() for i, char in enumerate(text)]
         )
 
         await i.response.send_message(
-            mock_text, allowed_mentions=discord.AllowedMentions(users=False)
+            mock_text,
+            allowed_mentions=discord.AllowedMentions(users=False, roles=False),
         )
+
+    @app_commands.command(name="dadjoke", description="Get a dad joke")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def dadjoke(self, i: discord.Interaction):
+        r = requests.get(
+            "https://icanhazdadjoke.com/", headers={"Accept": "text/plain"}
+        )
+        if not r.ok:
+            await i.followup.send(
+                "❌ Couldn't retrieve data. Try again later.", ephemeral=True
+            )
+            return
+        joke = r.text
+        await i.followup.send(joke)
 
 
 async def setup(bot):

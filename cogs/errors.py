@@ -118,9 +118,14 @@ class Errors(commands.Cog):
                     )
 
             await self.bot.error_channel.send(embed=embed)
-            await i.response.send_message(
-                embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
-            )
+            try:
+                await i.response.send_message(
+                    embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
+                )
+            except discord.InteractionResponded:
+                await i.followup.send(
+                    embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
+                )
 
 
 async def setup(bot):

@@ -67,11 +67,16 @@ class Moderator(commands.Cog):
     async def purge(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
-            limit=count, after=datetime.utcnow() - timedelta(14), oldest_first=False
+            limit=count,
+            after=datetime.utcnow() - timedelta(14),
+            oldest_first=False,
+            reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages.")
 
-    @purge_group.command(name="bots", description="Bulk delete messages sent by bots")
+    @purge_group.command(
+        name="bots", description="Bulk delete messages sent by bots only"
+    )
     @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
@@ -87,11 +92,12 @@ class Moderator(commands.Cog):
             after=datetime.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author.bot,
+            reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from bots.")
 
     @purge_group.command(
-        name="humans", description="Bulk delete messages sent by humans"
+        name="humans", description="Bulk delete messages sent by humans only"
     )
     @app_commands.guild_only()
     @app_commands.checks.has_permissions(
@@ -108,6 +114,7 @@ class Moderator(commands.Cog):
             after=datetime.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: not m.author.bot,
+            reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from humans.")
 
@@ -129,6 +136,7 @@ class Moderator(commands.Cog):
             after=datetime.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author == user,
+            reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(f"Found and deleted {len(deleted)} messages from {user}.")
 
@@ -155,7 +163,9 @@ class Moderator(commands.Cog):
 
         await i.response.send_message("Disabling threads...", ephemeral=True)
         overwrite = discord.PermissionOverwrite(
-            create_public_threads=False, create_private_threads=False
+            create_public_threads=False,
+            create_private_threads=False,
+            reason=f"{i.user.name} disabled threads",
         )
         await channel.set_permissions(role, overwrite=overwrite)
         await i.followup.send("Done.", ephemeral=True)
@@ -193,7 +203,9 @@ class Moderator(commands.Cog):
             )
             return
 
-        await i.channel.edit(slowmode_delay=seconds)
+        await i.channel.edit(
+            slowmode_delay=seconds, reason=f"{i.user.name} set slowmode"
+        )
         await i.followup.send(
             f"Slowmode set to {amount} {'seconds' if unit == 1 else unit.name}.",
             ephemeral=True,

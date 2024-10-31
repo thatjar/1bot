@@ -1,11 +1,11 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
-import requests
-
 import random
-from urllib.parse import quote_plus
 import sys
+from urllib.parse import quote_plus
+
+import discord
+import requests
+from discord import app_commands
+from discord.ext import commands
 
 sys.path.insert(0, "/")  # to get access to views module
 from views import Confirm
@@ -141,7 +141,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
         if len(message.content) > 100:
-            await i.response.send_message("❌ The text is too long.", ephemeral=True)
+            await i.response.send_message(
+                "❌ The text must be no more than 100 characters.", ephemeral=True
+            )
             return
         elif len(message.content) == 0:
             await i.response.send_message(
@@ -170,7 +172,9 @@ class Fun(commands.Cog):
         if user is None:
             user = i.user
         if len(quote) > 100:
-            await i.response.send_message("❌ The text is too long.", ephemeral=True)
+            await i.response.send_message(
+                "❌ The text must be no more than 100 characters.", ephemeral=True
+            )
             return
         await i.response.defer()
         embed = discord.Embed(
@@ -255,7 +259,7 @@ class Fun(commands.Cog):
             f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
         )
 
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
             await i.response.send_message(
@@ -265,7 +269,7 @@ class Fun(commands.Cog):
         await self.mock.callback(self, i, message.content)
 
     @app_commands.command(name="mock", description="Mock text")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     @app_commands.describe(text="The text to mock")
     async def mock(self, i: discord.Interaction, text: str):
         if len(text) > 2000:
@@ -296,6 +300,78 @@ class Fun(commands.Cog):
             return
         joke = r.json()["joke"]
         await i.followup.send(joke)
+
+    @app_commands.command(name="dog", description="Get a random dog image and fact")
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def dog(self, i: discord.Interaction):
+        r = requests.get("https://some-random-api.com/animal/dog")
+        if not r.ok:
+            await i.response.send_message(
+                "❌ Couldn't retrieve data. Try again later.", ephemeral=True
+            )
+            return
+
+        json = r.json()
+        embed = discord.Embed(colour=self.bot.colour)
+        embed.set_image(url=json["image"])
+        embed.set_footer(text="Dog fact: " + json["fact"])
+        await i.response.send_message(embed=embed)
+
+    @app_commands.command(name="cat", description="Get a random cat image and fact")
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def cat(self, i: discord.Interaction):
+        r = requests.get("https://some-random-api.com/animal/cat")
+        if not r.ok:
+            await i.response.send_message(
+                "❌ Couldn't retrieve data. Try again later.", ephemeral=True
+            )
+            return
+
+        json = r.json()
+        embed = discord.Embed(colour=self.bot.colour)
+        embed.set_image(url=json["image"])
+        embed.set_footer(text="Cat fact: " + json["fact"])
+        await i.response.send_message(embed=embed)
+
+    @app_commands.command(name="panda", description="Get a random panda image and fact")
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def panda(self, i: discord.Interaction):
+        r = requests.get("https://some-random-api.com/animal/panda")
+        if not r.ok:
+            await i.response.send_message(
+                "❌ Couldn't retrieve data. Try again later.", ephemeral=True
+            )
+            return
+
+        json = r.json()
+        embed = discord.Embed(colour=self.bot.colour)
+        embed.set_image(url=json["image"])
+        embed.set_footer(text="Panda fact: " + json["fact"])
+        await i.response.send_message(embed=embed)
+
+    @app_commands.command(name="megamind", description="Generate a megamind meme")
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def megamind(self, i: discord.Interaction, text: str):
+        if len(text) > 200:
+            await i.response.send_message(
+                "❌ Text must be no more than 200 characters", ephemeral=True
+            )
+            return
+
+        r = requests.get(
+            f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
+        )
+        if not r.ok:
+            await i.response.send_message(
+                "❌ Couldn't retrieve data. Try again later.", ephemeral=True
+            )
+            return
+
+        embed = discord.Embed(colour=self.bot.colour)
+        embed.set_image(
+            url=f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
+        )
+        await i.response.send_message(embed=embed)
 
 
 async def setup(bot):

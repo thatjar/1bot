@@ -1,10 +1,10 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
-
-import requests
 from contextlib import suppress
 from urllib.parse import quote_plus
+
+import discord
+import requests
+from discord import app_commands
+from discord.ext import commands
 
 
 class Utilities(commands.Cog):

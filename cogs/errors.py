@@ -1,12 +1,12 @@
 # This file is a cog to handle command errors
 
 
+import sys
+from contextlib import suppress
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-
-from contextlib import suppress
-import sys
 
 sys.path.insert(0, "/")  # to get access to config module
 from config import config

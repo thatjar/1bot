@@ -1,8 +1,8 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
-
 import sys
+
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 sys.path.insert(0, "/")  # to get access to config module
 from views import InfoButtons

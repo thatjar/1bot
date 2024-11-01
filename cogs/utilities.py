@@ -230,10 +230,7 @@ class Utilities(commands.Cog):
         res = requests.get(f"https://pypi.org/pypi/{package}/json")
 
         if res.status_code == 404:
-            await i.response.send_message(
-                "❌ Module doesn't exist. Check for spelling errors.", ephemeral=True
-            )
-            return
+            raise ValueError("Package does not exist. Check for spelling errors.")
 
         json = res.json()
 

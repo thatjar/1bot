@@ -49,7 +49,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="embed", description="Create a rich embed")
     @app_commands.guild_only()
-    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.default_permissions(manage_messages=True)
     async def embed(self, i: discord.Interaction):
         await i.response.send_modal(EmbedSetup())
 
@@ -192,16 +192,11 @@ class Moderator(commands.Cog):
         amount: float = 0.0,
         unit: app_commands.Choice[int] = 1,
     ):
+        if not 0 <= amount <= 21600:
+            raise ValueError("Slowmode must be between 0 and 6 hours.")
         await i.response.defer(ephemeral=True)
 
         seconds = amount if unit == 1 else amount * unit.value
-
-        if seconds < 0 or seconds > 21600:
-            await i.response.send_message(
-                "❌ Slowmode must be between 0 and 6 hours.",
-                ephemeral=True,
-            )
-            return
 
         await i.channel.edit(
             slowmode_delay=seconds, reason=f"{i.user.name} set slowmode"

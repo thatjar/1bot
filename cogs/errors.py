@@ -2,7 +2,6 @@
 
 
 import sys
-from contextlib import suppress
 
 import discord
 from discord import app_commands
@@ -40,20 +39,29 @@ class Errors(commands.Cog):
             return
 
     async def tree_on_error(self, i: discord.Interaction, error):
-        with suppress(AttributeError):
-            if error.handled:
-                return
-
         if isinstance(error, app_commands.CommandNotFound):
             return
+
+        elif isinstance(error, app_commands.CommandInvokeError):
+            try:
+                await i.response.send_message(f"❌ {error.original}", ephemeral=True)
+            except discord.InteractionResponded:
+                await i.followup.send(f"❌ {error.original}", ephemeral=True)
         elif isinstance(error, app_commands.BotMissingPermissions):
-            msg = f"❌ I don't have enough permissions to complete this command!\nMissing permissions: `{', '.join([e.capitalize().replace('_', ' ') for e in error.missing_permissions])}`\n\nPlease add these permissions to my role ('{self.bot.user.display_name}') in your server settings."
+            msg = (
+                "❌ I don't have enough permissions to run this command!\n"
+                + f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
+                + f"Please add these permissions to my role ('{self.bot.user.global_name}') in your server settings."
+            )
             try:
                 await i.response.send_message(msg, ephemeral=True)
             except discord.InteractionResponded:
                 await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, app_commands.MissingPermissions):
-            msg = f"❌ You don't have enough permissions to use this command.\nMissing permissions: `{', '.join([err.capitalize().replace('_', ' ') for err in error.missing_permissions])}`"
+            msg = (
+                "❌ You don't have enough permissions to use this command.\n"
+                + f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
+            )
             try:
                 await i.response.send_message(msg, ephemeral=True)
             except discord.InteractionResponded:

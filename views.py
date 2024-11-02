@@ -12,16 +12,18 @@ class Confirm(discord.ui.View):
 
     @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
     async def accept(self, i: discord.Interaction, button: discord.ui.Button):
+        await i.response.defer(ephemeral=True)
         if i.user.id != self.target.id:
-            await i.response.send_message("❌ This is not for you.", ephemeral=True)
+            await i.followup.send("❌ This is not for you.", ephemeral=True)
             return
         self.accepted = True
         self.stop()
 
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def reject(self, i: discord.Interaction, button: discord.ui.Button):
+        await i.response.defer(ephemeral=True)
         if i.user.id != self.target.id:
-            await i.response.send_message("❌ This is not for you.", ephemeral=True)
+            await i.followup.send("❌ This is not for you.", ephemeral=True)
             return
         self.accepted = False
         self.stop()

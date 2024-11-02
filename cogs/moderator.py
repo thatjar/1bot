@@ -6,9 +6,6 @@ from discord.ext import commands
 
 
 class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
-    def __init__(self):
-        super().__init__(timeout=300)
-
     embed_title = discord.ui.TextInput(label="Title", max_length=256)
     contents = discord.ui.TextInput(
         label="Contents",

@@ -31,7 +31,6 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Uptime", value=f"<t:{self.bot.launch_time}:R>")
         if i.guild:
             embed.add_field(name="Shard ID", value=f"{i.guild.shard_id}")
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
 
         # COPYRIGHT NOTICE
         embed.set_footer(text="Copyright (C) 2024-present thatjar")

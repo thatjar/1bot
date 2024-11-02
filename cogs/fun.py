@@ -105,7 +105,12 @@ class Fun(commands.Cog):
                 colour=self.bot.colour,
             )
             await first_msg.edit(content=None, embed=embed, view=view)
-            await view.wait()
+            timed_out = await view.wait()
+            if timed_out:
+                await first_msg.edit(
+                    content="❌ The game timed out.", view=None, embed=None
+                )
+                return
             if view.winner is not None:
                 winning_choice = (
                     view.choices[i.user.id]

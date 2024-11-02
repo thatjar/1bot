@@ -40,4 +40,4 @@ config = {
 
 ```
 
-###### Copyright &copy; 2024-present thatjar
+###### Copyright &copy; 2024-present thatjar. Not affiliated with Discord, Inc.

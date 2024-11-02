@@ -216,7 +216,7 @@ class Utilities(commands.Cog):
 
         if json["total_count"] == 0:
             await i.response.send_message(
-                "No matching repositories found", ephemeral=True
+                "❌ No matching repositories found.", ephemeral=True
             )
         else:
             await i.response.send_message(

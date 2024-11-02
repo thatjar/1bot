@@ -33,7 +33,9 @@ class Miscellaneous(commands.Cog):
             embed.add_field(name="Shard ID", value=f"{i.guild.shard_id}")
 
         # COPYRIGHT NOTICE
-        embed.set_footer(text="Copyright (C) 2024-present thatjar")
+        embed.set_footer(
+            text="Copyright (C) 2024-present thatjar. Not affiliated with Discord, Inc."
+        )
         await i.response.send_message(embed=embed, view=InfoButtons(self.bot))
 
 

@@ -45,15 +45,20 @@ class Moderator(commands.Cog):
         self.bot: commands.Bot = bot
 
     @app_commands.command(name="embed", description="Create a rich embed")
-    @app_commands.guild_only()
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.default_permissions(manage_messages=True)
     async def embed(self, i: discord.Interaction):
         await i.response.send_modal(EmbedSetup())
 
-    purge_group = app_commands.Group(name="purge", description="Bulk delete messages")
+    purge_group = app_commands.Group(
+        name="purge",
+        description="Bulk delete messages",
+        allowed_contexts=app_commands.AppCommandContext(
+            guild=True, dm_channel=False, private_channel=False
+        ),
+    )
 
     @purge_group.command(name="any", description="Bulk delete messages of any type")
-    @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
     )
@@ -74,7 +79,6 @@ class Moderator(commands.Cog):
     @purge_group.command(
         name="bots", description="Bulk delete messages sent by bots only"
     )
-    @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
     )
@@ -96,7 +100,6 @@ class Moderator(commands.Cog):
     @purge_group.command(
         name="humans", description="Bulk delete messages sent by humans only"
     )
-    @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
     )
@@ -116,7 +119,6 @@ class Moderator(commands.Cog):
         await i.followup.send(f"Found and deleted {len(deleted)} messages from humans.")
 
     @purge_group.command(name="user", description="Bulk delete messages sent by a user")
-    @app_commands.guild_only()
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
     )
@@ -140,7 +142,7 @@ class Moderator(commands.Cog):
     @app_commands.command(
         name="disablethreads", description="Remove permissions to create threads"
     )
-    @app_commands.guild_only()
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(
@@ -168,7 +170,7 @@ class Moderator(commands.Cog):
         await i.followup.send("Done.", ephemeral=True)
 
     @app_commands.command(name="slowmode", description="Set slowmode")
-    @app_commands.guild_only()
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
@@ -204,7 +206,7 @@ class Moderator(commands.Cog):
         )
 
     @app_commands.command(name="lock", description="Make a channel read-only")
-    @app_commands.guild_only()
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(
@@ -232,7 +234,7 @@ class Moderator(commands.Cog):
     @app_commands.command(
         name="unlock", description="Undo the lock command (allow users to message)"
     )
-    @app_commands.guild_only()
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(

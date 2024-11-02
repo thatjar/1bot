@@ -60,7 +60,7 @@ class InfoButtons(discord.ui.View):
     ):
         await interaction.response.send_message(
             """1Bot - a free Discord bot to let you get things done without leaving Discord.
-Copyright (C) 2024-present thatjar
+Copyright (C) 2024-present thatjar. Not affiliated with Discord, Inc.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published

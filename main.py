@@ -15,6 +15,12 @@ class Bot(commands.AutoShardedBot):
             intents=discord.Intents.default(),
             case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False),
+            allowed_installs=discord.app_commands.AppInstallationType(
+                guild=True, user=True
+            ),
+            allowed_contexts=discord.app_commands.AppCommandContext(
+                guild=True, dm_channel=True, private_channel=True
+            ),
         )
 
     async def setup_hook(self):

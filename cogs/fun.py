@@ -75,7 +75,6 @@ class Fun(commands.Cog):
         name="rockpaperscissors",
         description="Play Rock Paper Scissors with another user",
     )
-    @app_commands.guild_only()
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def rps(self, i: discord.Interaction, user: discord.User):

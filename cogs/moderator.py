@@ -45,6 +45,7 @@ class Moderator(commands.Cog):
         self.bot: commands.Bot = bot
 
     @app_commands.command(name="embed", description="Create a rich embed")
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.default_permissions(manage_messages=True)
     async def embed(self, i: discord.Interaction):
@@ -53,6 +54,7 @@ class Moderator(commands.Cog):
     purge_group = app_commands.Group(
         name="purge",
         description="Bulk delete messages",
+        allowed_installs=app_commands.AppInstallationType(guild=True, user=False),
         allowed_contexts=app_commands.AppCommandContext(
             guild=True, dm_channel=False, private_channel=False
         ),
@@ -142,6 +144,7 @@ class Moderator(commands.Cog):
     @app_commands.command(
         name="disablethreads", description="Remove permissions to create threads"
     )
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
@@ -170,6 +173,7 @@ class Moderator(commands.Cog):
         await i.followup.send("Done.", ephemeral=True)
 
     @app_commands.command(name="slowmode", description="Set slowmode")
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
@@ -206,6 +210,7 @@ class Moderator(commands.Cog):
         )
 
     @app_commands.command(name="lock", description="Make a channel read-only")
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
@@ -234,6 +239,7 @@ class Moderator(commands.Cog):
     @app_commands.command(
         name="unlock", description="Undo the lock command (allow users to message)"
     )
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)

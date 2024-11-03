@@ -14,9 +14,11 @@ class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
         style=discord.TextStyle.paragraph,
     )
     thumbnail = discord.ui.TextInput(
-        label="Thumbnail", placeholder="URL", required=False
+        label="Thumbnail", placeholder="Image URL", required=False
     )
-    image = discord.ui.TextInput(label="Main Image", placeholder="URL", required=False)
+    image = discord.ui.TextInput(
+        label="Main Image", placeholder="Image URL", required=False
+    )
     show_author = discord.ui.TextInput(
         label="Show you as the author?",
         placeholder="y/n (default: no)",
@@ -142,7 +144,8 @@ class Moderator(commands.Cog):
         await i.followup.send(f"Found and deleted {len(deleted)} messages from {user}.")
 
     @app_commands.command(
-        name="disablethreads", description="Remove permissions to create threads"
+        name="disablethreads",
+        description="Remove permissions to create threads in this channel",
     )
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
@@ -150,27 +153,26 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(
         role="The role to remove permissions from (default: @everyone)",
-        channel="The channel to remove permissions from (default: current channel)",
+        reason="Reason (optional)",
     )
     async def disablethreads(
-        self,
-        i: discord.Interaction,
-        role: discord.Role = None,
-        channel: discord.TextChannel = None,
+        self, i: discord.Interaction, role: discord.Role = None, reason: str = None
     ):
         if role is None:
             role = i.guild.default_role
-        if channel is None:
-            channel = i.channel
+        if reason is None:
+            reason = f"{i.user.name} disabled threads"
 
-        await i.response.send_message("Disabling threads...", ephemeral=True)
+        await i.response.defer(ephemeral=True)
         overwrite = discord.PermissionOverwrite(
             create_public_threads=False,
             create_private_threads=False,
             reason=f"{i.user.name} disabled threads",
         )
-        await channel.set_permissions(role, overwrite=overwrite)
-        await i.followup.send("Done.", ephemeral=True)
+        await i.channel.set_permissions(role, overwrite=overwrite)
+        await i.followup.send(
+            f"✅ Disabled permissions for {role.name} to create public and private threads."
+        )
 
     @app_commands.command(name="slowmode", description="Set slowmode")
     @app_commands.allowed_installs(guilds=True, users=False)
@@ -215,24 +217,26 @@ class Moderator(commands.Cog):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(
-        channel="The channel to lock (default: current channel)",
-        reason="The reason for locking the channel",
+        role="The role to remove permissions from (default: @everyone)",
+        reason="The reason for locking the channel (optional)",
     )
     async def lock(
         self,
         i: discord.Interaction,
-        channel: discord.TextChannel = None,
-        reason: str = None,
+        role: discord.Role = None,
+        reason: str = "locked the channel",
     ):
-        if channel is None:
-            channel = i.channel
-        await i.response.send_message("Locking channel...", ephemeral=True)
-        await channel.set_permissions(
-            i.guild.default_role,
+        if role is None:
+            role = i.guild.default_role
+        if reason is None:
+            reason = "locked the channel"
+        await i.response.defer(ephemeral=True)
+        await i.channel.set_permissions(
+            role,
             send_messages=False,
             create_public_threads=False,
             create_private_threads=False,
-            reason=reason,
+            reason=f"{i.user.name}: {reason}",
         )
         await i.followup.send("Done.")
 
@@ -244,24 +248,25 @@ class Moderator(commands.Cog):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.describe(
-        channel="The channel to unlock (default: current channel)",
-        reason="The reason for unlocking the channel",
+        role="The role to reset permissions for (default: @everyone)",
+        reason="The reason for unlocking the channel (optional)",
     )
     async def unlock(
         self,
         i: discord.Interaction,
-        channel: discord.TextChannel = None,
-        reason: str = None,
+        role: discord.Role = None,
+        reason: str = "unlocked the channel",
     ):
-        if channel is None:
-            channel = i.channel
-        await i.response.send_message("Unlocking channel...", ephemeral=True)
-        await channel.set_permissions(
-            i.guild.default_role,
+        if role is None:
+            role = i.guild.default_role
+
+        await i.response.defer(ephemeral=True)
+        await i.channel.set_permissions(
+            role,
             send_messages=None,
             create_public_threads=None,
             create_private_threads=None,
-            reason=reason,
+            reason=f"{i.user.name}: {reason}",
         )
         await i.followup.send("Done.")
 

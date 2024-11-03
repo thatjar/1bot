@@ -220,7 +220,7 @@ class Utilities(commands.Cog):
             )
         else:
             await i.response.send_message(
-                f'First result for "{query}":\n{json["items"][0]["html_url"]}'
+                f'First result for your query:\n{json["items"][0]["html_url"]}'
             )
 
     @app_commands.command(name="pypi", description="Get info for a PyPI package")

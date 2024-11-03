@@ -73,7 +73,7 @@ class Errors(commands.Cog):
             except discord.InteractionResponded:
                 await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
-            msg = "❌ No Access"
+            msg = "❌ **No Access**. Check if my roles are high enough in the list, and if I have access to the channel I need to modify (if any)."
             try:
                 await i.response.send_message(msg, ephemeral=True)
             except discord.InteractionResponded:

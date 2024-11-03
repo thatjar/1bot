@@ -39,7 +39,7 @@ class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
         if self.show_author.value.lower() == "y":
             embed.set_author(name=i.user.display_name, icon_url=i.user.avatar.url)
         await i.channel.send(embed=embed)
-        await i.response.send_message("Sent.", ephemeral=True)
+        await i.response.send_message("✅ Sent the embed.", ephemeral=True)
 
 
 class Moderator(commands.Cog):
@@ -78,7 +78,7 @@ class Moderator(commands.Cog):
             oldest_first=False,
             reason=f"Purged by {i.user.name}",
         )
-        await i.followup.send(f"Found and deleted {len(deleted)} messages.")
+        await i.followup.send(f"✅ Found and deleted {len(deleted)} messages.")
 
     @purge_group.command(
         name="bots", description="Bulk delete messages sent by bots only"
@@ -99,7 +99,9 @@ class Moderator(commands.Cog):
             check=lambda m: m.author.bot,
             reason=f"Purged by {i.user.name}",
         )
-        await i.followup.send(f"Found and deleted {len(deleted)} messages from bots.")
+        await i.followup.send(
+            f" ✅ Found and deleted {len(deleted)} messages from bots."
+        )
 
     @purge_group.command(
         name="humans", description="Bulk delete messages sent by humans only"
@@ -120,7 +122,9 @@ class Moderator(commands.Cog):
             check=lambda m: not m.author.bot,
             reason=f"Purged by {i.user.name}",
         )
-        await i.followup.send(f"Found and deleted {len(deleted)} messages from humans.")
+        await i.followup.send(
+            f"✅ Found and deleted {len(deleted)} messages from humans."
+        )
 
     @purge_group.command(name="user", description="Bulk delete messages sent by a user")
     @app_commands.checks.has_permissions(
@@ -141,7 +145,9 @@ class Moderator(commands.Cog):
             check=lambda m: m.author == user,
             reason=f"Purged by {i.user.name}",
         )
-        await i.followup.send(f"Found and deleted {len(deleted)} messages from {user}.")
+        await i.followup.send(
+            f"✅ Found and deleted {len(deleted)} messages from {user}."
+        )
 
     @app_commands.command(
         name="disablethreads",
@@ -167,11 +173,12 @@ class Moderator(commands.Cog):
         overwrite = discord.PermissionOverwrite(
             create_public_threads=False,
             create_private_threads=False,
-            reason=f"{i.user.name} disabled threads",
         )
-        await i.channel.set_permissions(role, overwrite=overwrite)
+        await i.channel.set_permissions(
+            role, overwrite=overwrite, reason=f"{i.user.name} disabled threads"
+        )
         await i.followup.send(
-            f"✅ Disabled permissions for {role.name} to create public and private threads."
+            f"✅ Disabled permissions for {role.mention} to create public and private threads."
         )
 
     @app_commands.command(name="slowmode", description="Set slowmode")
@@ -207,7 +214,7 @@ class Moderator(commands.Cog):
             slowmode_delay=seconds, reason=f"{i.user.name} set slowmode"
         )
         await i.followup.send(
-            f"Slowmode set to {amount} {'seconds' if unit == 1 else unit.name}.",
+            f"✅ Slowmode set to {amount} {'seconds' if unit == 1 else unit.name}.",
             ephemeral=True,
         )
 
@@ -233,12 +240,14 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         await i.channel.set_permissions(
             role,
+            reason=f"{i.user.name}: {reason}",
             send_messages=False,
             create_public_threads=False,
             create_private_threads=False,
-            reason=f"{i.user.name}: {reason}",
         )
-        await i.followup.send("Done.")
+        await i.followup.send(
+            f"✅ Removed permissions for {role.mention} to send messages and create threads in this channel."
+        )
 
     @app_commands.command(
         name="unlock", description="Undo the lock command (allow users to message)"
@@ -263,12 +272,14 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         await i.channel.set_permissions(
             role,
+            reason=f"{i.user.name}: {reason}",
             send_messages=None,
             create_public_threads=None,
             create_private_threads=None,
-            reason=f"{i.user.name}: {reason}",
         )
-        await i.followup.send("Done.")
+        await i.followup.send(
+            f"✅ Reset permissions for {role.mention} to send messages and create threads in this channel."
+        )
 
 
 async def setup(bot):

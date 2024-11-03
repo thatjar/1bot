@@ -37,6 +37,8 @@ class Errors(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             return
+        else:
+            print(error)
 
     async def tree_on_error(self, i: discord.Interaction, error):
         if isinstance(error, app_commands.CommandNotFound):
@@ -73,7 +75,7 @@ class Errors(commands.Cog):
             except discord.InteractionResponded:
                 await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
-            msg = "❌ **No Access**. Check if my roles are high enough in the list, and if I have access to the channel I need to modify (if any)."
+            msg = "❌ **No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
             try:
                 await i.response.send_message(msg, ephemeral=True)
             except discord.InteractionResponded:

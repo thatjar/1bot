@@ -21,16 +21,19 @@ class Bot(commands.AutoShardedBot):
             allowed_contexts=discord.app_commands.AppCommandContext(
                 guild=True, dm_channel=True, private_channel=True
             ),
+            activity=discord.CustomActivity(name=self.website_url),
         )
 
     async def setup_hook(self):
-        print(f"Logged in as {bot.user} (ID: {bot.user.id})")
         await self.load_extension("jishaku")
         for cog in os.listdir("./cogs"):
             if cog.endswith(".py"):
                 await self.load_extension(f"cogs.{cog[:-3]}")
 
         self.error_channel = await self.fetch_channel(config["error_channel"])
+
+    async def on_ready(self):
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
 
     version = "v1.0.0beta"
 

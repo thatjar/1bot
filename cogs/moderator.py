@@ -178,7 +178,7 @@ class Moderator(commands.Cog):
             role, overwrite=overwrite, reason=f"{i.user.name} disabled threads"
         )
         await i.followup.send(
-            f"✅ Disabled permissions for {role.mention} to create public and private threads."
+            f"✅ Disabled permissions for `{role.name}` to create public and private threads."
         )
 
     @app_commands.command(name="slowmode", description="Set slowmode")
@@ -246,7 +246,7 @@ class Moderator(commands.Cog):
             create_private_threads=False,
         )
         await i.followup.send(
-            f"✅ Removed permissions for {role.mention} to send messages and create threads in this channel."
+            f"✅ Removed permissions for `{role.name}` to send messages and create threads in this channel."
         )
 
     @app_commands.command(
@@ -278,7 +278,7 @@ class Moderator(commands.Cog):
             create_private_threads=None,
         )
         await i.followup.send(
-            f"✅ Reset permissions for {role.mention} to send messages and create threads in this channel."
+            f"✅ Reset permissions for `{role.name}` to send messages and create threads in this channel."
         )
 
 

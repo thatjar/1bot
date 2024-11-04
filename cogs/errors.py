@@ -33,6 +33,45 @@ class Errors(commands.Cog):
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
 
+    # automatically report exceptions that are not handled by the cog
+    async def report_unknown_exception(self, i: discord.Interaction, error):
+        error_embed = discord.Embed(
+            title="❌ Unhandled error",
+            description="Oops, looks like that command returned an unknown error. The error has been automatically reported.\n",
+            colour=0xFF0000,
+        )
+        error_embed.add_field(
+            name="Join our server to track this error",
+            value="If you would like to see more about this error and our progress on fixing it, join our server.",
+        )
+
+        # Embed to send to error channel
+        embed = (
+            discord.Embed(
+                title="Error",
+                colour=0xFF0000,
+                description=f"Error while invoking command `/{i.command.name}`",
+            )
+            .add_field(name="Error:", value=error)
+            .set_footer(text=f"User ID: {i.user.id}")
+        )
+
+        if i.namespace:
+            for option, value in i.namespace:
+                embed.add_field(
+                    name=f"Param: {option}", value=f"Value: {value}", inline=False
+                )
+
+        await self.bot.error_channel.send(embed=embed)
+        try:
+            await i.response.send_message(
+                embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
+            )
+        except discord.InteractionResponded:
+            await i.followup.send(
+                embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
+            )
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
@@ -45,10 +84,15 @@ class Errors(commands.Cog):
             return
 
         elif isinstance(error, app_commands.CommandInvokeError):
-            try:
-                await i.response.send_message(f"❌ {error.original}", ephemeral=True)
-            except discord.InteractionResponded:
-                await i.followup.send(f"❌ {error.original}", ephemeral=True)
+            if isinstance(error.original, ValueError):
+                try:
+                    await i.response.send_message(
+                        f"❌ {error.original}", ephemeral=True
+                    )
+                except discord.InteractionResponded:
+                    await i.followup.send(f"❌ {error.original}", ephemeral=True)
+            else:
+                await self.report_unknown_exception(i, error.original)
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
                 "❌ I don't have enough permissions to run this command!\n"
@@ -98,44 +142,8 @@ class Errors(commands.Cog):
                         + f"Caused by: {i.user}"
                     )
 
-        # AUTOMATIC ERROR REPORTS
         else:
-            error_embed = discord.Embed(
-                title="❌ Unhandled error",
-                description="Oops, looks like that command returned an unknown error. The error has been automatically reported.\n",
-                colour=0xFF0000,
-            )
-            error_embed.add_field(
-                name="Join our server to track this error",
-                value="If you would like to see more about this error and our progress on fixing it, join our server.",
-            )
-
-            # Embed to send to error channel
-            embed = (
-                discord.Embed(
-                    title="Error",
-                    colour=0xFF0000,
-                    description=f"Error while invoking command `/{i.command.name}`",
-                )
-                .add_field(name="Error:", value=error)
-                .set_footer(text=f"User ID: {i.user.id}")
-            )
-
-            if i.namespace:
-                for option, value in i.namespace:
-                    embed.add_field(
-                        name=f"Param: {option}", value=f"Value: {value}", inline=False
-                    )
-
-            await self.bot.error_channel.send(embed=embed)
-            try:
-                await i.response.send_message(
-                    embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
-                )
-            except discord.InteractionResponded:
-                await i.followup.send(
-                    embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
-                )
+            await self.report_unknown_exception(i, error)
 
 
 async def setup(bot):

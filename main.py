@@ -21,7 +21,6 @@ class Bot(commands.AutoShardedBot):
             allowed_contexts=discord.app_commands.AppCommandContext(
                 guild=True, dm_channel=True, private_channel=True
             ),
-            activity=discord.CustomActivity(name=self.website_url),
         )
 
     async def setup_hook(self):

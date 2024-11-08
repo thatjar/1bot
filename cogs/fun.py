@@ -192,7 +192,7 @@ class Fun(commands.Cog):
         else:
             raise ValueError("Couldn't retrieve data. Try again later.")
 
-    @app_commands.command(name="8ball", description="Ask the magic 8ball a question")
+    @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")
     @app_commands.describe(question="The question to ask")
     @app_commands.checks.cooldown(1, 5, key=lambda i: i.channel)
     async def _8ball(self, i: discord.Interaction, question: str):
@@ -224,10 +224,12 @@ class Fun(commands.Cog):
         fortune = random.choice(responses)
         embed = discord.Embed(
             colour=self.bot.colour,
-            description="**🎱 The Magic 8ball says:**\n\n" + f"||{fortune}||",
         )
         if len(question) > 256:
             embed.title = f'"{question[:251]}..."'
+        else:
+            embed.title = f'"{question}"'
+        embed.add_field(name="🎱 The Magic 8Ball says:", value=f"||{fortune}||")
         await i.response.send_message(embed=embed)
 
     @app_commands.command(name="coinflip", description="Flip a coin")
@@ -286,6 +288,7 @@ class Fun(commands.Cog):
     @app_commands.command(name="dog", description="Get a random dog image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def dog(self, i: discord.Interaction):
+        await i.response.defer()
         r = requests.get("https://some-random-api.com/animal/dog")
         if not r.ok:
             raise ValueError("Couldn't retrieve data. Try again later.")
@@ -294,11 +297,12 @@ class Fun(commands.Cog):
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Dog fact: " + json["fact"])
-        await i.response.send_message(embed=embed)
+        await i.followup.send(embed=embed)
 
     @app_commands.command(name="cat", description="Get a random cat image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def cat(self, i: discord.Interaction):
+        await i.response.defer()
         r = requests.get("https://some-random-api.com/animal/cat")
         if not r.ok:
             raise ValueError("Couldn't retrieve data. Try again later.")
@@ -307,11 +311,12 @@ class Fun(commands.Cog):
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Cat fact: " + json["fact"])
-        await i.response.send_message(embed=embed)
+        await i.followup.send(embed=embed)
 
     @app_commands.command(name="panda", description="Get a random panda image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def panda(self, i: discord.Interaction):
+        await i.response.defer()
         r = requests.get("https://some-random-api.com/animal/panda")
         if not r.ok:
             raise ValueError("Couldn't retrieve data. Try again later.")
@@ -320,7 +325,7 @@ class Fun(commands.Cog):
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Panda fact: " + json["fact"])
-        await i.response.send_message(embed=embed)
+        await i.followup.send(embed=embed)
 
     @app_commands.command(name="megamind", description="Generate a megamind meme")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)

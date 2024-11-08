@@ -27,7 +27,7 @@ config = {
     "token": "BOT_TOKEN_HERE",
     "error_channel": error_channel_id_here,
     "server_invite": "https://discord.gg/JGcnKxEPsW",
-    "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288&permissions=1634181966967&scope=bot%20applications.commands",
+    "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
     "website": "https://1bot.netlify.app",
     # Emoji IDs to appear in buttons. If you do not want them, assign random integers.
     "emojis": {

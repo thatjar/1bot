@@ -13,6 +13,7 @@ class Miscellaneous(commands.Cog):
         self.bot: commands.Bot = bot
 
     @app_commands.command(name="botinfo", description="Get information about the bot")
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def botinfo(self, i: discord.Interaction):
         embed = discord.Embed(
             title="1Bot Stats and Information", colour=self.bot.colour

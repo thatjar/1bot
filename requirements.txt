@@ -1,3 +1,4 @@
 discord.py
+audioop-lts
 requests
 jishaku @ git+https://github.com/Gorialis/jishaku@master

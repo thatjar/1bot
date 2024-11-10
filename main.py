@@ -1,10 +1,10 @@
+import logging
 import os
 from datetime import datetime
 
 import discord
-from discord.ext import commands
-
 from config import config
+from discord.ext import commands
 
 
 class Bot(commands.AutoShardedBot):
@@ -46,4 +46,4 @@ bot = Bot()
 
 
 if __name__ == "__main__":
-    bot.run(config["token"])
+    bot.run(config["token"], log_level=logging.WARNING)

@@ -21,7 +21,7 @@
 <nav>
   <div>
     <a href="/">
-      <img src="/1bot.png" alt="Logo" height="50" />
+      <img src="/1bot.webp" alt="Logo" height="50" />
     </a>
   </div>
 

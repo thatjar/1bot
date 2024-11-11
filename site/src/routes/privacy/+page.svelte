@@ -5,13 +5,12 @@
 <h1>1Bot Privacy Policy</h1>
 <h2>Privacy is an inalienable human right, and we respect it.</h2>
 <p>
-  As for 1Bot itself, it does not have any Privileged Gateway Intents (which
-  include the Message Content intent) and is technically incapable of reading
-  any messages in any Discord server unless it @mentions 1Bot. It is technically
-  capable of reading direct messages to it, but it does not do so. However, it
-  does collect a minimal amount of data in specific cases - read the next
-  section to know more about it. <br />
-  As for this website, it collects absolutely no data from you.
+  As for this website, it collects absolutely no data from you. <br />
+  As for 1Bot itself, it does not have any Privileged Gateway Intents (which include
+  the Message Content intent) and is technically incapable of reading any messages
+  in any Discord server unless it @mentions 1Bot. It is technically capable of reading
+  direct messages to it, but it does not do so. However, it does collect a minimal
+  amount of data in specific cases - read the next section for more.
 </p>
 
 <h2>The only data we collect</h2>
@@ -32,14 +31,11 @@
 </p>
 
 <p>
-  You can see the source code of <a href="https://github.com/thatjar/1bot"
-    >1Bot</a
-  >
-  or <a href="https://github.com/thatjar/1bot-site">this website</a> for yourself.
-  IPs are not collected, zero cookies are used.
+  You can see the <a href="https://github.com/thatjar/1bot">source code</a> of 1Bot
+  or this website for yourself.
 </p>
 
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2024-11-04</h4>
+<h4>Last updated: 2024-11-11</h4>

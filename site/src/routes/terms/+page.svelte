@@ -37,8 +37,9 @@
     1Bot itself is <a href="https://github.com/thatjar/1bot"
       >open-source on GitHub</a
     >
-    and is licensed under the GNU AGPL v3 License. To build the bot, we incorporate
-    and make use of third-party software and services.
+    and is licensed under the GNU AGPL v3 License. We retain all intellectual property
+    rights in 1Bot. To build the bot, we incorporate and make use of third-party
+    software and services.
   </p>
 
   <h2>
@@ -53,7 +54,12 @@
   </p>
 
   <h2>1Bot does not provide a warranty.</h2>
-  <p>As stated in the License:</p>
+  <p>
+    As stated in the <a
+      href="https://gnu.org/licenses/agpl-3.0.html"
+      target="_blank">License</a
+    >:
+  </p>
   <p>
     THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE
     LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
@@ -66,7 +72,12 @@
   </p>
 
   <h2>We have limited liability for damages.</h2>
-  <p>As stated in the License:</p>
+  <p>
+    As stated in the <a
+      href="https://gnu.org/licenses/agpl-3.0.html"
+      target="_blank">License</a
+    >:
+  </p>
   <p>
     IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL
     ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE
@@ -80,10 +91,10 @@
   </p>
 
   <h2>These Terms are subject to change.</h2>
-  <p>We reserve the right to change these Terms without prior notice.</p>
+  <p>We reserve the right to change these Terms without notice.</p>
 </main>
 
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2024-10-27</h4>
+<h4>Last updated: 2024-11-11</h4>

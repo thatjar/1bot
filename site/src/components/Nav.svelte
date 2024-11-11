@@ -30,6 +30,7 @@
     on:keydown={handleMobileIconClick}
     class={`mobile-icon${showMobileMenu ? " active" : ""}`}
     role="button"
+    aria-label="Menu"
     tabindex="0"
   >
     <div class="middle-line"></div>

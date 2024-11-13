@@ -152,7 +152,7 @@ class Fun(commands.Cog):
             title=f"a beautiful quote from {message.author.display_name}",
         )
         embed.set_image(
-            url=f"https://api.popcat.xyz/quote?image={quote_plus(message.author.display_avatar.url)}&text={quote_plus(message.content)}&name={quote_plus(message.author.name)}"
+            url=f"https://api.popcat.xyz/quote?image={quote_plus(message.author.display_avatar.url)}&text={quote_plus(message.content)}&name={quote_plus(message.author.display_name)}"
         )
 
         await i.followup.send(embed=embed)
@@ -175,7 +175,7 @@ class Fun(commands.Cog):
             title=f"a beautiful quote from {user.display_name}",
         )
         embed.set_image(
-            url=f"https://api.popcat.xyz/quote?image={quote_plus(user.display_avatar.url)}&text={quote_plus(quote)}&name={quote_plus(user.name)}"
+            url=f"https://api.popcat.xyz/quote?image={quote_plus(user.display_avatar.url)}&text={quote_plus(quote)}&name={quote_plus(user.display_name)}"
         )
 
         await i.followup.send(embed=embed)

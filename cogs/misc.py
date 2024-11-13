@@ -26,7 +26,7 @@ class Miscellaneous(commands.Cog):
             inline=False,
         )
         embed.add_field(name="Servers", value=f"{len(self.bot.guilds)} servers")
-        embed.add_field(name="Uptime", value=f"<t:{self.bot.launch_time}:R>")
+        embed.add_field(name="Last run (Uptime)", value=f"<t:{self.bot.launch_time}:R>")
         embed.add_field(
             name="Websocket Latency", value=f"{round(self.bot.latency * 1000)} ms"
         )

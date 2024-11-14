@@ -15,13 +15,20 @@
 
 <div class="features">
   <section class="card">
-    <h2>Free</h2>
+    <h2>Freedom</h2>
     <p>
-      1Bot is completely free to use for everyone. There are no pay-to-use
-      features, or any kind of restrictions. Not only free of charge, but also
-      free as in freedom - it is <a href="https://github.com/thatjar/1bot"
-        >open source.</a
-      >
+      1Bot is completely free to use for everyone. There are no paywalls or any
+      other kinds of restrictions. Not only free of charge, but also free as in
+      freedom - it's <a href="https://github.com/thatjar/1bot">open source!</a>
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>Multipurpose</h2>
+    <p>
+      1Bot has a wide variety of features. Whether it is poking fun at your
+      friends, managing channel permissions, or getting lyrics to a song - 1Bot
+      is here to help.
     </p>
   </section>
 
@@ -35,11 +42,11 @@
   </section>
 
   <section class="card">
-    <h2>Multipurpose</h2>
+    <h2>Use Anywhere</h2>
     <p>
-      1Bot has a wide variety of features. Whether it is poking fun at your
-      friends, managing channel permissions, or getting lyrics to a song - 1Bot
-      is here to help.
+      1Bot now supports user installation - add it to your account and use it
+      anywhere you want, including in DMs and group chats. Moderator commands
+      will not be usable via user install.
     </p>
   </section>
 </div>

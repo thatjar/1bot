@@ -1,13 +1,11 @@
 <div align=right>
-<a href="https://discord.gg/JGcnKxEPsW">
-  <img src="https://img.shields.io/discord/884078410010333235?label=Server&logo=discord&logoColor=white&style=for-the-badge">
-</a>
-<a href="https://www.codefactor.io/repository/github/thatjar/1bot">
-  <img src="https://www.codefactor.io/repository/github/thatjar/1bot/badge" alt="CodeFactor" />
-</a>
+  <a href="https://discord.gg/JGcnKxEPsW">
+    <img src="https://img.shields.io/discord/884078410010333235?label=server&logo=discord&logoColor=white">
+  </a>
+  <a href="https://www.codefactor.io/repository/github/thatjar/1bot">
+    <img src="https://www.codefactor.io/repository/github/thatjar/1bot/badge" alt="CodeFactor" />
+  </a>
 </div>
-
----
 
 # 1Bot - One bot, several uses.
 
@@ -33,7 +31,7 @@ config = {
     "server_invite": "https://discord.gg/JGcnKxEPsW",
     "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
     "website": "https://1bot.netlify.app",
-    # Emoji IDs to appear in buttons. If you do not want them, use None.
+    # Emoji IDs to appear in buttons. If you don't want them, use None.
     "emojis": {
         "add_to_server": ...,
         "website": ...,

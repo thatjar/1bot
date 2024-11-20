@@ -34,7 +34,7 @@ class Bot(commands.AutoShardedBot):
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
-    version = "v1.0.0beta"
+    version = "v1.0.0"
 
     colour = 0xFF7000
     server_invite = config["server_invite"]
@@ -43,7 +43,6 @@ class Bot(commands.AutoShardedBot):
 
 
 bot = Bot()
-
 
 if __name__ == "__main__":
     bot.run(config["token"], log_level=logging.WARNING)

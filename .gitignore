@@ -1,6 +1,7 @@
-# Bot
+# Global
 config.py
 __pycache__
+.vscode
 
 # Site
 site/.svelte-kit

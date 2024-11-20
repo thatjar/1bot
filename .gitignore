@@ -1,2 +1,10 @@
+# Bot
 config.py
 __pycache__
+
+# Site
+site/.svelte-kit
+site/node_modules
+site/build
+site/package
+site/.netlify

@@ -233,14 +233,14 @@ class Fun(commands.Cog):
         await i.response.send_message(embed=embed)
 
     @app_commands.command(name="coinflip", description="Flip a coin")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(3, 15, key=lambda i: i.channel)
     async def coinflip(self, i: discord.Interaction):
         await i.response.send_message(
             f"🪙 Flipped a coin for you, it's **{random.choice(('heads', 'tails'))}**!"
         )
 
     @app_commands.command(name="dice", description="Roll dice")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(3, 15, key=lambda i: i.channel)
     @app_commands.describe(
         number="The number of dice to roll",
     )
@@ -252,14 +252,14 @@ class Fun(commands.Cog):
             f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
         )
 
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
             raise ValueError("The message has no text.")
         await self.mock.callback(self, i, message.content)
 
     @app_commands.command(name="mock", description="Mock text")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     @app_commands.describe(text="The text to mock")
     async def mock(self, i: discord.Interaction, text: str):
         if len(text) > 2000:
@@ -274,7 +274,7 @@ class Fun(commands.Cog):
         )
 
     @app_commands.command(name="dadjoke", description="Get a dad joke")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def dadjoke(self, i: discord.Interaction):
         r = requests.get(
             "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}

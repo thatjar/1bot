@@ -34,8 +34,6 @@ class Bot(commands.AutoShardedBot):
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
-    version = "v1.0.0"
-
     colour = 0xFF7000
     server_invite = config["server_invite"]
     website_url = config["website"]

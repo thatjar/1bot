@@ -18,7 +18,6 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title="1Bot Stats and Information", colour=self.bot.colour
         )
-        embed.add_field(name="Bot version", value=f"{self.bot.version}", inline=False)
         embed.add_field(
             name="Source code",
             value="The bot's original source code is hosted on [GitHub](https://github.com/thatjar/1bot) "

@@ -2,6 +2,7 @@
 
 
 import sys
+from contextlib import suppress
 
 import discord
 from discord import app_commands
@@ -83,16 +84,6 @@ class Errors(commands.Cog):
         if isinstance(error, app_commands.CommandNotFound):
             return
 
-        elif isinstance(error, app_commands.CommandInvokeError):
-            if isinstance(error.original, ValueError):
-                try:
-                    await i.response.send_message(
-                        f"❌ {error.original}", ephemeral=True
-                    )
-                except discord.InteractionResponded:
-                    await i.followup.send(f"❌ {error.original}", ephemeral=True)
-            else:
-                await self.report_unknown_exception(i, error.original)
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
                 "❌ I don't have enough permissions to run this command!\n"
@@ -120,10 +111,11 @@ class Errors(commands.Cog):
                 await i.followup.send(msg, ephemeral=True)
         elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
             msg = "❌ **No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
-            try:
-                await i.response.send_message(msg, ephemeral=True)
-            except discord.InteractionResponded:
-                await i.followup.send(msg, ephemeral=True)
+            with suppress(discord.Forbidden):
+                try:
+                    await i.response.send_message(msg, ephemeral=True)
+                except discord.InteractionResponded:
+                    await i.followup.send(msg, ephemeral=True)
         elif "cannot identify image file" in str(
             error
         ) or "Unsupported image type" in str(error):
@@ -142,6 +134,16 @@ class Errors(commands.Cog):
                         + f"Caused by: {i.user}"
                     )
 
+        elif isinstance(error, app_commands.CommandInvokeError):
+            if isinstance(error.original, ValueError):
+                try:
+                    await i.response.send_message(
+                        f"❌ {error.original}", ephemeral=True
+                    )
+                except discord.InteractionResponded:
+                    await i.followup.send(f"❌ {error.original}", ephemeral=True)
+            else:
+                await self.tree_on_error(i, error.original)
         else:
             await self.report_unknown_exception(i, error)
 

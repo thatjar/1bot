@@ -1,4 +1,5 @@
 from contextlib import suppress
+from typing import Union
 from urllib.parse import quote_plus
 
 import discord
@@ -71,22 +72,15 @@ class Utilities(commands.Cog):
             app_commands.Choice(name="User", value=1),
         ]
     )
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def avatar(
         self,
         i: discord.Interaction,
-        user: discord.Member = None,
+        user: Union[discord.Member, discord.User] = None,
         type: app_commands.Choice[int] = 0,
     ):
         user = user or i.user
-        embed = discord.Embed(
-            colour=self.bot.colour,
-            title=(
-                f"{user.global_name}'s user avatar"
-                if type
-                else f"{user.display_name}'s avatar"
-            ),
-        )
+        embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
         embed.set_image(url=user.avatar.url if type else user.display_avatar.url)
         await i.response.send_message(embed=embed)
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import discord
 from discord import app_commands
@@ -6,11 +6,11 @@ from discord.ext import commands
 
 
 class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
-    embed_title = discord.ui.TextInput(label="Title", max_length=256)
+    embed_title = discord.ui.TextInput(label="Title (Required)", max_length=256)
     contents = discord.ui.TextInput(
-        label="Contents",
+        label="Contents (Required)",
         placeholder="Markdown supported",
-        max_length=1024,
+        max_length=4000,
         style=discord.TextStyle.paragraph,
     )
     thumbnail = discord.ui.TextInput(
@@ -54,6 +54,7 @@ class Moderator(commands.Cog):
     async def embed(self, i: discord.Interaction):
         await i.response.send_modal(EmbedSetup())
 
+    # /purge group
     purge_group = app_commands.Group(
         name="purge",
         description="Bulk delete messages",
@@ -61,8 +62,13 @@ class Moderator(commands.Cog):
         allowed_contexts=app_commands.AppCommandContext(
             guild=True, dm_channel=False, private_channel=False
         ),
+        # default_permissions hides the commands for users without perms
+        default_permissions=discord.Permissions(
+            manage_messages=True, read_message_history=True
+        ),
     )
 
+    # /purge any
     @purge_group.command(name="any", description="Bulk delete messages of any type")
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
@@ -75,12 +81,13 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.utcnow() - timedelta(14),
+            after=datetime.now(timezone.utc) - timedelta(14),
             oldest_first=False,
             reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(f"✅ Found and deleted {len(deleted)} messages.")
 
+    # /purge bots
     @purge_group.command(
         name="bots", description="Bulk delete messages sent by bots only"
     )
@@ -95,7 +102,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.utcnow() - timedelta(14),
+            after=datetime.now(timezone.utc) - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -104,6 +111,7 @@ class Moderator(commands.Cog):
             f" ✅ Found and deleted {len(deleted)} messages from bots."
         )
 
+    # /purge humans
     @purge_group.command(
         name="humans", description="Bulk delete messages sent by humans only"
     )
@@ -118,7 +126,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.utcnow() - timedelta(14),
+            after=datetime.now(timezone.utc) - timedelta(14),
             oldest_first=False,
             check=lambda m: not m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -127,6 +135,7 @@ class Moderator(commands.Cog):
             f"✅ Found and deleted {len(deleted)} messages from humans."
         )
 
+    # /purge user
     @purge_group.command(name="user", description="Bulk delete messages sent by a user")
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
@@ -141,7 +150,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.utcnow() - timedelta(14),
+            after=datetime.now(timezone.utc) - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author == user,
             reason=f"Purged by {i.user.name}",
@@ -156,8 +165,10 @@ class Moderator(commands.Cog):
     )
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.checks.cooldown(1, 30, key=lambda i: i.channel)
     @app_commands.describe(
         role="The role to remove permissions from (default: @everyone)",
         reason="Reason (optional)",
@@ -183,6 +194,7 @@ class Moderator(commands.Cog):
     @app_commands.command(name="slowmode", description="Set slowmode")
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
@@ -220,13 +232,15 @@ class Moderator(commands.Cog):
     @app_commands.command(name="lock", description="Make a channel read-only")
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.checks.cooldown(1, 30, key=lambda i: i.channel)
     @app_commands.describe(
         channel="The channel to lock (default: current channel)",
         role="The role to remove permissions from (default: @everyone)",
         reason="The reason for locking the channel (optional)",
-        silent="Disable sending the lock message publicly in the channel (default: False)",
+        silent="Keep the lock message private (default: False)",
     )
     async def lock(
         self,
@@ -276,13 +290,15 @@ class Moderator(commands.Cog):
     )
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.checks.cooldown(1, 30, key=lambda i: i.channel)
     @app_commands.describe(
         channel="The channel to unlock (default: current channel)",
         role="The role to reset permissions for (default: @everyone)",
         reason="The reason for unlocking the channel (optional)",
-        silent="Disable sending the unlock message publicly in the channel (default: False)",
+        silent="Keep the unlock message private (default: False)",
     )
     async def unlock(
         self,
@@ -330,6 +346,65 @@ class Moderator(commands.Cog):
             await channel.send(embed=embed)
         await i.followup.send(
             f"✅ Reset permissions for `{role.name}` to send messages and create threads in {channel.mention}."
+        )
+
+    @app_commands.command(
+        name="timeout", description="Time out a user (or remove timeout)"
+    )
+    @app_commands.allowed_installs(guilds=True, users=False)
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(moderate_members=True)
+    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_commands.checks.bot_has_permissions(moderate_members=True)
+    @app_commands.describe(
+        user="The user to time out (or remove timeout from)",
+        minutes="The number of minutes to time out the user (default: 0)",
+        hours="The number of hours to time out the user (default: 0)",
+        days="The number of days to time out the user (default: 0)",
+        reason="The reason for timing out the user (optional)",
+        silent="Keep the timeout message private (default: True)",
+    )
+    async def timeout(
+        self,
+        i: discord.Interaction,
+        user: discord.Member,
+        minutes: int = 0,
+        hours: int = 0,
+        days: int = 0,
+        reason: str = "",
+        silent: bool = True,
+    ):
+        if user == i.user:
+            raise ValueError("You cannot time out yourself.")
+        if user == i.guild.me:
+            raise ValueError("You cannot timeout 1Bot.")
+
+        total_minutes = days * 1440 + hours * 60 + minutes
+        if not 0 <= total_minutes <= 40320:
+            raise ValueError("Timeout duration must be between 0 and 28 days.")
+
+        # reason string that appears in audit log
+        log_reason = reason or f"{i.user.name}: No reason specified"
+        # if total_minutes is 0, pass None for a proper removal of timeout and audit log message
+        await user.timeout(
+            timedelta(minutes=total_minutes) if total_minutes else None,
+            reason=log_reason,
+        )
+
+        embed = discord.Embed(
+            title="User Timed Out",
+            description=f"🕒 {user.mention} has been timed out for {days} days, {hours} hours and {minutes} minutes.",
+            color=self.bot.colour,
+        )
+        if reason:
+            embed.add_field(name="Reason", value=reason, inline=False)
+        if total_minutes == 0:
+            embed.title = "User Removed from Timeout"
+            embed.description = f"🕒 {user.mention} has been removed from timeout."
+
+        await i.response.send_message(
+            embed=embed,
+            ephemeral=silent,
         )
 
 

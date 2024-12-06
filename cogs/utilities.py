@@ -1,5 +1,3 @@
-from contextlib import suppress
-from typing import Union
 from urllib.parse import quote_plus
 
 import discord
@@ -76,7 +74,7 @@ class Utilities(commands.Cog):
     async def avatar(
         self,
         i: discord.Interaction,
-        user: Union[discord.Member, discord.User] = None,
+        user: discord.Member | discord.User = None,
         type: app_commands.Choice[int] = 0,
     ):
         user = user or i.user
@@ -274,7 +272,7 @@ class Utilities(commands.Cog):
     async def npm(self, i: discord.Interaction, package: str):
         json = requests.get(f"https://registry.npmjs.org/{package}").json()
 
-        if json.get("error") is not None:
+        if "error" in json:
             await i.response.send_message("❌ " + json["error"], ephemeral=True)
             return
 
@@ -284,13 +282,13 @@ class Utilities(commands.Cog):
             url="https://www.npmjs.com/package/" + package,
         )
 
-        with suppress(KeyError):
+        if "description" in json:
             embed.description = json["description"]
-        with suppress(KeyError):
+        if "version" in json:
             embed.add_field(name="Homepage", value=json["homepage"], inline=False)
-        with suppress(KeyError):
+        if "author" in json:
             embed.add_field(name="Author", value=json["author"]["name"])
-        with suppress(KeyError):
+        if "repository" in json:
             embed.add_field(
                 name="Repository",
                 value=json["repository"]["url"],
@@ -301,7 +299,7 @@ class Utilities(commands.Cog):
             value=", ".join(maintainer["name"] for maintainer in json["maintainers"]),
             inline=False,
         )
-        with suppress(KeyError):
+        if "license" in json:
             embed.add_field(name="License", value=json["license"], inline=False)
 
         await i.response.send_message(embed=embed)
@@ -315,17 +313,16 @@ class Utilities(commands.Cog):
             f"https://some-random-api.com/lyrics?title={quote_plus(query)}"
         ).json()
 
-        with suppress(KeyError):
-            if json["error"]:
-                await i.followup.send("❌ " + json["error"])
-                return
+        if "error" in json:
+            await i.followup.send("❌ " + json["error"])
+            return
 
         embed = discord.Embed(
             title=json["title"],
             url=json["links"]["genius"],
             colour=self.bot.colour,
         )
-        with suppress(KeyError):
+        if "thumbnail" in json and "genius" in json["thumbnail"]:
             embed.set_thumbnail(url=json["thumbnail"]["genius"])
         if len(json["lyrics"]) > 4096:
             embed.description = json["lyrics"][:4093] + "..."

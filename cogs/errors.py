@@ -35,7 +35,7 @@ class Errors(commands.Cog):
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
 
-    # automatically report exceptions that are not handled by the cog
+    # automatically report exceptions that are not handled by the event listener
     async def report_unknown_exception(self, i: discord.Interaction, error):
         error_embed = discord.Embed(
             title="❌ Unhandled error",
@@ -81,51 +81,43 @@ class Errors(commands.Cog):
         else:
             logging.error(f"Error in command {ctx.command}: {error}")
 
+    async def send_error(self, i: discord.Interaction, error: str):
+        try:
+            await i.response.send_message(f"❌ {error}", ephemeral=True)
+        except discord.InteractionResponded:
+            await i.followup.send(f"❌ {error}", ephemeral=True)
+
     async def tree_on_error(self, i: discord.Interaction, error):
         if isinstance(error, app_commands.CommandNotFound):
             return
 
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
-                "❌ I don't have enough permissions to run this command!\n"
+                "I don't have enough permissions to run this command!\n"
                 + f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
                 + f"Please add these permissions to my role ('{self.bot.user.global_name}') in your server settings."
             )
-            try:
-                await i.response.send_message(msg, ephemeral=True)
-            except discord.InteractionResponded:
-                await i.followup.send(msg, ephemeral=True)
+            await self.send_error(i, msg)
         elif isinstance(error, app_commands.MissingPermissions):
             msg = (
-                "❌ You don't have enough permissions to use this command.\n"
+                "You don't have enough permissions to use this command.\n"
                 + f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
             )
-            try:
-                await i.response.send_message(msg, ephemeral=True)
-            except discord.InteractionResponded:
-                await i.followup.send(msg, ephemeral=True)
+            await self.send_error(i, msg)
         elif isinstance(error, app_commands.CommandOnCooldown):
-            msg = f"❌ This command is on cooldown, try again in {round(error.retry_after, 1)} seconds."
-            try:
-                await i.response.send_message(msg, ephemeral=True)
-            except discord.InteractionResponded:
-                await i.followup.send(msg, ephemeral=True)
+            msg = f"This command is on cooldown, try again in {round(error.retry_after, 1)} seconds."
+            await self.send_error(i, msg)
+        elif isinstance(error, app_commands.TransformerError):
+            await self.send_error(i, error)
         elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
-            msg = "❌ **No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
+            msg = "**No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
             with suppress(discord.Forbidden):
-                try:
-                    await i.response.send_message(msg, ephemeral=True)
-                except discord.InteractionResponded:
-                    await i.followup.send(msg, ephemeral=True)
+                await self.send_error(i, msg)
         elif "cannot identify image file" in str(
             error
         ) or "Unsupported image type" in str(error):
-            try:
-                await i.response.send_message(
-                    "❌ Image may be malformed.", ephemeral=True
-                )
-            except discord.InteractionResponded:
-                await i.followup.send("❌ Image may be malformed.", ephemeral=True)
+            msg = "Image may be malformed."
+            await self.send_error(i, msg)
         elif isinstance(error, discord.HTTPException):
             if error.status == 429:
                 if error.response.content["global"]:
@@ -137,12 +129,7 @@ class Errors(commands.Cog):
 
         elif isinstance(error, app_commands.CommandInvokeError):
             if isinstance(error.original, ValueError):
-                try:
-                    await i.response.send_message(
-                        f"❌ {error.original}", ephemeral=True
-                    )
-                except discord.InteractionResponded:
-                    await i.followup.send(f"❌ {error.original}", ephemeral=True)
+                await self.send_error(i, error.original)
             else:
                 logging.error(f"Error in command {i.command}: {error.original}")
 

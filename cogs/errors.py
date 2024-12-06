@@ -1,6 +1,7 @@
 # This file is a cog to handle command errors
 
 
+import logging
 import sys
 from contextlib import suppress
 
@@ -78,7 +79,7 @@ class Errors(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             return
         else:
-            print(error)
+            logging.error(f"Error in command {ctx.command}: {error}")
 
     async def tree_on_error(self, i: discord.Interaction, error):
         if isinstance(error, app_commands.CommandNotFound):
@@ -128,10 +129,10 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.HTTPException):
             if error.status == 429:
                 if error.response.content["global"]:
-                    print(
+                    logging.warning(
                         "GLOBAL RATELIMIT\n"
                         + f"Retry after:{error.response.content['retry_after']}\n"
-                        + f"Caused by: {i.user}"
+                        + f"Caused by: {i.user.name} ({i.user.id})"
                     )
 
         elif isinstance(error, app_commands.CommandInvokeError):
@@ -143,7 +144,8 @@ class Errors(commands.Cog):
                 except discord.InteractionResponded:
                     await i.followup.send(f"❌ {error.original}", ephemeral=True)
             else:
-                await self.tree_on_error(i, error.original)
+                logging.error(f"Error in command {i.command}: {error.original}")
+
         else:
             await self.report_unknown_exception(i, error)
 

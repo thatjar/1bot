@@ -15,22 +15,25 @@ class Miscellaneous(commands.Cog):
     @app_commands.command(name="botinfo", description="Get information about the bot")
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def botinfo(self, i: discord.Interaction):
+        appinfo = await self.bot.application_info()
+        user_installs = appinfo.approximate_user_install_count
         embed = discord.Embed(
-            title="1Bot Stats and Information", colour=self.bot.colour
+            title="1Bot Stats and Information",
+            colour=self.bot.colour,
+            description=f"**Servers**: {len(self.bot.guilds)}\n"
+            + f"**User installs**: {user_installs}\n"
+            + f"**Uptime**: <t:{self.bot.launch_time}:R>\n"
+            + f"**Websocket latency**: {round(self.bot.latency * 1000)} ms\n",
         )
+        if i.guild:
+            embed.description += f"**Shard ID**: {i.guild.shard_id}"
+
         embed.add_field(
             name="Source code",
             value="The bot's original source code is hosted on [GitHub](https://github.com/thatjar/1bot) "
             + "under the [GNU Affero General Public License](https://github.com/thatjar/1bot/blob/main/LICENSE).\n",
             inline=False,
         )
-        embed.add_field(name="Servers", value=f"{len(self.bot.guilds)} servers")
-        embed.add_field(name="Last run (Uptime)", value=f"<t:{self.bot.launch_time}:R>")
-        embed.add_field(
-            name="Websocket Latency", value=f"{round(self.bot.latency * 1000)} ms"
-        )
-        if i.guild:
-            embed.add_field(name="Shard ID", value=f"{i.guild.shard_id}")
 
         # COPYRIGHT NOTICE
         embed.set_footer(

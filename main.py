@@ -42,5 +42,22 @@ class Bot(commands.AutoShardedBot):
 
 bot = Bot()
 
+
+@bot.command()
+@commands.is_owner()
+async def reload(ctx, extension: str = None):
+    if not extension:
+        for cog in os.listdir("./cogs"):
+            if cog.endswith(".py"):
+                await bot.reload_extension(f"cogs.{cog[:-3]}")
+        await ctx.send("✅ Reloaded all cogs.")
+    else:
+        try:
+            await bot.reload_extension(f"cogs.{extension}")
+            await ctx.send(f"✅ Reloaded cog `{extension}`.")
+        except commands.ExtensionNotLoaded:
+            await ctx.send(f"❌ Invalid cog `{extension}`")
+
+
 if __name__ == "__main__":
     bot.run(config["token"], log_level=logging.WARNING)

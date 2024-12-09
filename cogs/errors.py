@@ -39,7 +39,7 @@ class Errors(commands.Cog):
     async def report_unknown_exception(self, i: discord.Interaction, error):
         error_embed = discord.Embed(
             title="❌ Unhandled error",
-            description="Oops, looks like that command returned an unknown error. The error has been automatically reported.\n",
+            description="Oops, looks like that command returned an unknown error. The error has been automatically reported.",
             colour=0xFF0000,
         )
         error_embed.add_field(
@@ -131,7 +131,7 @@ class Errors(commands.Cog):
             if isinstance(error.original, ValueError):
                 await self.send_error(i, error.original)
             else:
-                logging.error(f"Error in command {i.command}: {error.original}")
+                await self.report_unknown_exception(i, error.original)
 
         else:
             await self.report_unknown_exception(i, error)

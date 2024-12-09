@@ -56,7 +56,7 @@ async def reload(ctx, extension: str = None):
             await bot.reload_extension(f"cogs.{extension}")
             await ctx.send(f"✅ Reloaded cog `{extension}`.")
         except commands.ExtensionNotLoaded:
-            await ctx.send(f"❌ Invalid cog `{extension}`")
+            await ctx.send(f"❌ Invalid cog `cogs.{extension}`")
 
 
 if __name__ == "__main__":

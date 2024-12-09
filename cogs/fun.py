@@ -194,7 +194,6 @@ class Fun(commands.Cog):
             return await i.response.send_message(
                 "❌ You can't play with yourself!", ephemeral=True
             )
-            return
         if user.bot:
             return await i.response.send_message(
                 "❌ You can't play with a bot!", ephemeral=True
@@ -202,7 +201,7 @@ class Fun(commands.Cog):
 
         view = Confirm(user)
         await i.response.send_message(
-            content=f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Respond within 60 seconds.",
+            content=f"{user.mention}, you have been challenged to **Tic Tac Toe** by {i.user.mention}! Respond within 60 seconds.",
             view=view,
         )
         await view.wait()
@@ -230,7 +229,7 @@ class Fun(commands.Cog):
         description="Play Rock Paper Scissors with another user",
     )
     @app_commands.describe(user="The user to play with")
-    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
     async def rps(self, i: discord.Interaction, user: discord.User):
         if i.user.id == user.id:
             await i.response.send_message(
@@ -295,7 +294,7 @@ class Fun(commands.Cog):
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
 
-    @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
         if not 0 < len(message.content) <= 100:
             raise ValueError("The text must have 1-100 characters.")
@@ -305,7 +304,11 @@ class Fun(commands.Cog):
             title=f"a beautiful quote from {message.author.display_name}",
         )
         embed.set_image(
-            url=f"https://api.popcat.xyz/quote?image={quote_plus(message.author.display_avatar.url)}&text={quote_plus(message.content)}&name={quote_plus(message.author.display_name)}"
+            url=(
+                f"https://api.popcat.xyz/quote?image={quote_plus(message.author.display_avatar.url)}"
+                f"&text={quote_plus(message.content)}"
+                f"&name={quote_plus(message.author.display_name)}"
+            )
         )
 
         await i.followup.send(embed=embed)
@@ -314,7 +317,7 @@ class Fun(commands.Cog):
     @app_commands.describe(
         quote="The quote", user="The author of the quote (default: yourself)"
     )
-    @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote(
         self, i: discord.Interaction, quote: str, user: discord.Member = None
     ):
@@ -328,7 +331,12 @@ class Fun(commands.Cog):
             title=f"a beautiful quote from {user.display_name}",
         )
         embed.set_image(
-            url=f"https://api.popcat.xyz/quote?image={quote_plus(user.display_avatar.url)}&text={quote_plus(quote)}&name={quote_plus(user.display_name)}"
+            url=(
+                "https://api.popcat.xyz/quote?image="
+                f"{quote_plus(user.display_avatar.url)}"
+                f"&text={quote_plus(quote)}"
+                f"&name={quote_plus(user.display_name)}"
+            )
         )
 
         await i.followup.send(embed=embed)

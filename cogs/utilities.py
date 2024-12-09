@@ -228,25 +228,12 @@ class Utilities(commands.Cog):
 
         embed = discord.Embed(
             title=json["info"]["name"],
-            colour=self.bot.colour,
+            colour=0x0073B7,
             url=json["info"]["package_url"],
         )
 
         if json["info"]["summary"] != "UNKNOWN":
             embed.description = json["info"]["summary"]
-
-        # Max length for embed fields is 1024
-        if len(json["info"]["description"]) <= 1024:
-            embed.add_field(
-                name="Description", value=json["info"]["description"], inline=False
-            )
-        else:
-            # Slice description to 1021 characters and add ellipsis
-            embed.add_field(
-                name="Description",
-                value=json["info"]["description"][:1021] + "...",
-                inline=False,
-            )
 
         if json["info"]["home_page"]:
             embed.add_field(name="Homepage", value=json["info"]["home_page"])
@@ -260,7 +247,7 @@ class Utilities(commands.Cog):
             else:
                 embed.add_field(
                     name="License",
-                    value=json["info"]["license"][:1021] + "...",
+                    value=json["info"]["license"][:30] + "...",
                     inline=False,
                 )
 

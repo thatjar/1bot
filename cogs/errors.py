@@ -48,15 +48,18 @@ class Errors(commands.Cog):
         )
 
         # Embed to send to error channel
-        embed = (
-            discord.Embed(
-                title="Error",
-                colour=0xFF0000,
-                description=f"Error while invoking command `/{i.command.name}`",
-            )
-            .add_field(name="Error:", value=error)
-            .set_footer(text=f"User ID: {i.user.id}")
+        embed = discord.Embed(
+            title="Error",
+            colour=0xFF0000,
+            description=f"Error while invoking command `{i.command.name}`:\n{error}",
         )
+        embed.add_field(name="Via user install?", value=i.is_user_integration())
+        embed.add_field(name="Used in guild?", value=i.guild is not None)
+        if hasattr(i.command, "type"):
+            embed.add_field(name="Command type", value=i.command.type)
+        else:
+            embed.add_field(name="Command type", value="Slash")
+        embed.set_footer(text=f"User ID: {i.user.id}")
 
         if i.namespace:
             for option, value in i.namespace:

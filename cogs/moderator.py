@@ -46,6 +46,7 @@ class Moderator(commands.Cog):
     def __init__(self, bot):
         self.bot: commands.Bot = bot
 
+    # embed
     @app_commands.command(name="embed", description="Create a rich embed")
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
@@ -54,7 +55,7 @@ class Moderator(commands.Cog):
     async def embed(self, i: discord.Interaction):
         await i.response.send_modal(EmbedSetup())
 
-    # /purge group
+    # group for /purge commands
     purge_group = app_commands.Group(
         name="purge",
         description="Bulk delete messages",
@@ -159,6 +160,7 @@ class Moderator(commands.Cog):
             f"✅ Found and deleted {len(deleted)} messages from {user}."
         )
 
+    # disable threads
     @app_commands.command(
         name="disablethreads",
         description="Remove permissions to create threads in this channel",
@@ -191,6 +193,7 @@ class Moderator(commands.Cog):
             f"✅ Disabled permissions for `{role.name}` to create public and private threads."
         )
 
+    # slowmode
     @app_commands.command(name="slowmode", description="Set slowmode")
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
@@ -229,6 +232,7 @@ class Moderator(commands.Cog):
             ephemeral=True,
         )
 
+    # lock
     @app_commands.command(name="lock", description="Make a channel read-only")
     @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
@@ -282,6 +286,7 @@ class Moderator(commands.Cog):
             f"✅ Removed permissions for `{role.name}` to send messages and create threads in this channel."
         )
 
+    # unlock
     @app_commands.command(
         name="unlock", description="Undo the lock command (allow users to message)"
     )
@@ -342,6 +347,7 @@ class Moderator(commands.Cog):
             f"✅ Reset permissions for `{role.name}` to send messages and create threads in {i.channel.mention}."
         )
 
+    # timeout
     @app_commands.command(
         name="timeout", description="Time out a user (or remove timeout)"
     )

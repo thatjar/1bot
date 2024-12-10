@@ -185,7 +185,11 @@ class Fun(commands.Cog):
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Mock", callback=self.mock_ctx),
         )
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(name="Woosh", callback=self.woosh_ctx),
+        )
 
+    # tic tac toe
     @app_commands.command(name="tictactoe", description="Play Tic Tac Toe")
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
@@ -224,6 +228,7 @@ class Fun(commands.Cog):
                 content=":information_source: The game timed out.", view=None
             )
 
+    # rock paper scissors
     @app_commands.command(
         name="rockpaperscissors",
         description="Play Rock Paper Scissors with another user",
@@ -294,6 +299,7 @@ class Fun(commands.Cog):
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
 
+    # quote (ctxmenu)
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
         if not 0 < len(message.content) <= 100:
@@ -313,6 +319,7 @@ class Fun(commands.Cog):
 
         await i.followup.send(embed=embed)
 
+    # quote
     @app_commands.command(name="quote", description="Create a quote image")
     @app_commands.describe(
         quote="The quote", user="The author of the quote (default: yourself)"
@@ -341,6 +348,7 @@ class Fun(commands.Cog):
 
         await i.followup.send(embed=embed)
 
+    # pickupline
     @app_commands.command(name="pickupline", description="Get a pickup line")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def pickupline(self, i: discord.Interaction):
@@ -353,6 +361,7 @@ class Fun(commands.Cog):
         else:
             raise ValueError("Couldn't retrieve data. Try again later.")
 
+    # 8ball
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")
     @app_commands.describe(question="The question to ask")
     @app_commands.checks.cooldown(1, 5, key=lambda i: i.channel)
@@ -393,6 +402,7 @@ class Fun(commands.Cog):
         embed.add_field(name="🎱 The Magic 8Ball says:", value=f"||{fortune}||")
         await i.response.send_message(embed=embed)
 
+    # coinflip
     @app_commands.command(name="coinflip", description="Flip a coin")
     @app_commands.checks.cooldown(3, 15, key=lambda i: i.channel)
     async def coinflip(self, i: discord.Interaction):
@@ -400,6 +410,7 @@ class Fun(commands.Cog):
             f"🪙 Flipped a coin for you, it's **{random.choice(('heads', 'tails'))}**!"
         )
 
+    # dice
     @app_commands.command(name="dice", description="Roll dice")
     @app_commands.checks.cooldown(3, 15, key=lambda i: i.channel)
     @app_commands.describe(
@@ -413,12 +424,14 @@ class Fun(commands.Cog):
             f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
         )
 
+    # mock (ctxmenu)
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
             raise ValueError("The message has no text.")
         await self.mock.callback(self, i, message.content)
 
+    # mock
     @app_commands.command(name="mock", description="Mock text")
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     @app_commands.describe(text="The text to mock")
@@ -434,6 +447,7 @@ class Fun(commands.Cog):
             allowed_mentions=discord.AllowedMentions(users=False, roles=False),
         )
 
+    # dadjoke
     @app_commands.command(name="dadjoke", description="Get a dad joke")
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def dadjoke(self, i: discord.Interaction):
@@ -446,6 +460,7 @@ class Fun(commands.Cog):
         joke = r.json()["joke"]
         await i.followup.send(joke)
 
+    # dog
     @app_commands.command(name="dog", description="Get a random dog image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def dog(self, i: discord.Interaction):
@@ -460,6 +475,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="Dog fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
+    # cat
     @app_commands.command(name="cat", description="Get a random cat image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def cat(self, i: discord.Interaction):
@@ -474,6 +490,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="Cat fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
+    # panda
     @app_commands.command(name="panda", description="Get a random panda image and fact")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def panda(self, i: discord.Interaction):
@@ -488,6 +505,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="Panda fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
+    # megamind
     @app_commands.command(name="megamind", description="Generate a megamind meme")
     @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
     async def megamind(self, i: discord.Interaction, text: str):
@@ -504,6 +522,62 @@ class Fun(commands.Cog):
         embed.set_image(
             url=f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
         )
+        await i.response.send_message(embed=embed)
+
+    # woosh
+    @app_commands.command(
+        name="woosh", description="Generate a woosh (joke-over-head) image"
+    )
+    @app_commands.describe(user="The user who didn't get the joke")
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def woosh(self, i: discord.Interaction, user: discord.Member | discord.User):
+        # remove url parameters at the end of avatar url
+        avatar = user.display_avatar.replace(format="png").url
+        embed = discord.Embed(
+            colour=self.bot.colour,
+            description=f"Woosh... that's the sound of a joke going over {user.display_name}'s head",
+        )
+        embed.set_image(url=f"https://api.popcat.xyz/jokeoverhead?image={avatar}")
+        await i.response.send_message(embed=embed)
+
+    # woosh (ctxmenu)
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def woosh_ctx(
+        self, i: discord.Interaction, user: discord.Member | discord.User
+    ):
+        await self.woosh.callback(self, i, user)
+
+    # xkcd
+    @app_commands.command(name="xkcd", description="Get xkcd comics")
+    @app_commands.describe(mode="Random or latest comic (default: random)")
+    @app_commands.choices(
+        mode=[
+            app_commands.Choice(name="random", value="random"),
+            app_commands.Choice(name="latest", value="latest"),
+        ]
+    )
+    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    async def xkcd(self, i: discord.Interaction, mode: str = "random"):
+        r = requests.get("https://xkcd.com/info.0.json")
+        if not r.ok:
+            raise ValueError("Couldn't retrieve data. Try again later.")
+        json = r.json()
+
+        if mode == "random":
+            latest_num = r.json()["num"]
+            comic_num = random.randint(1, latest_num)
+            r = requests.get(f"https://xkcd.com/{comic_num}/info.0.json")
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
+            json = r.json()
+
+        embed = discord.Embed(
+            title=f"xkcd #{json['num']}: {json['safe_title']}",
+            description=f"[Comic explanation](https://explainxkcd.com/{json['num']})",
+            url=f"https://xkcd.com/{json['num']}",
+            colour=self.bot.colour,
+        )
+        embed.set_image(url=json["img"])
         await i.response.send_message(embed=embed)
 
 

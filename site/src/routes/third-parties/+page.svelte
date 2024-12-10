@@ -54,6 +54,7 @@
     <b>User avatar and text sent with the commands:</b>
     <ul>
       <li><code>quote</code></li>
+      <li><code>woosh</code></li>
     </ul>
   </li>
   <br />
@@ -63,9 +64,15 @@
     <code>dadjoke</code> command. Does not take any data.
   </li>
   <br />
+
+  <li>
+    <a href="https://xkcd.com">xkcd</a> and
+    <a href="https://explainxkcd.com">explain xkcd</a> - for the xkcd command. Does
+    not take any data.
+  </li>
 </ul>
 
 <div style="height: 50px;"></div>
 
 <hr />
-<h4>Last updated: 2024-10-31</h4>
+<h4>Last updated: 2024-12-10</h4>

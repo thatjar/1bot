@@ -16,18 +16,31 @@
 <h2>The only data we collect</h2>
 <p>
   When you use any of 1Bot's commands, it does not log or store anything unless
-  the command results in an unexpected error. The only data that will be logged
-  in case of an unhandled error is the name of the command, the parameters you
-  provide to it (if any), the time of invocation of the command, as well as your
-  Discord User ID. <br />
-  This is purely to improve the reliability and functionality of the bot, and ensure
-  that the user who invokes the command in question is not a malicious actor who
-  may be attempting to rate-limit the bot from Discord.
+  the command results in an unexpected error. In case of an unhandled error,
+  1Bot may log any or all of the following piece of information:
 </p>
+<ul>
+  <li>The command name</li>
+  <li>Any parameters you include in it</li>
+  <li>
+    Whether the command was invoked via user integration or server integration
+  </li>
+  <li>Whether the command was invoked in a server or not</li>
+  <li>Your Discord user ID</li>
+</ul>
+<p>
+  This information is collected purely to improve the reliability and
+  functionality of the bot, and ensure that the user who invokes the command in
+  question is not a malicious actor who may be attempting to rate-limit the bot
+  from Discord.
+</p>
+
 <p>
   For some commands that connect to third parties, the data you include in the
   command parameters will be sent to the third party. A list of third parties
-  that 1Bot connects to can be found <a href="/third-parties">here</a>.
+  that 1Bot connects to, along with what data is sent to them, can be found <a
+    href="/third-parties">here</a
+  >. We are not responsible for how these third parties handle your data.
 </p>
 
 <p>
@@ -38,4 +51,4 @@
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2024-11-11</h4>
+<h4>Last updated: 2024-12-10</h4>

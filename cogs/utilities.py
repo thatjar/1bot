@@ -10,6 +10,7 @@ class Utilities(commands.Cog):
     def __init__(self, bot):
         self.bot: commands.Bot = bot
 
+    # weather
     @app_commands.command(name="weather", description="Get weather information")
     @app_commands.describe(
         location="The location to get weather information for",
@@ -59,31 +60,10 @@ class Utilities(commands.Cog):
 
         await i.followup.send(embed=embed)
 
-    @app_commands.command(name="avatar", description="Get a user's avatar")
-    @app_commands.describe(
-        user="The user to get the avatar of (default: yourself)",
-        type="Server avatar or user avatar (default: server avatar)",
-    )
-    @app_commands.choices(
-        type=[
-            app_commands.Choice(name="Server", value=0),
-            app_commands.Choice(name="User", value=1),
-        ]
-    )
-    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
-    async def avatar(
-        self,
-        i: discord.Interaction,
-        user: discord.Member | discord.User = None,
-        type: app_commands.Choice[int] = 0,
-    ):
-        user = user or i.user
-        embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
-        embed.set_image(url=user.avatar.url if type else user.display_avatar.url)
-        await i.response.send_message(embed=embed)
-
+    # group for /convert
     convert = app_commands.Group(name="convert", description="Convert units")
 
+    # convert temperature
     @convert.command(
         name="temperature",
         description="Convert temperatures between Fahrenheit and Celsius",
@@ -113,6 +93,7 @@ class Utilities(commands.Cog):
                 f"{temperature}°C = **{round((temperature * 9 / 5) + 32, 2)}°F**"
             )
 
+    # convert distance
     @convert.command(
         name="distance",
         description="Convert distances between Kilometres and Miles",
@@ -142,6 +123,7 @@ class Utilities(commands.Cog):
                 f"{distance} mi = **{round(distance * 1.609344, 3)} km**"
             )
 
+    # convert length
     @convert.command(
         name="length", description="Convert lengths between Centimetres and Inches"
     )
@@ -170,6 +152,7 @@ class Utilities(commands.Cog):
                 f"{length} in = **{round(length * 2.54, 2)} cm**"
             )
 
+    # convert weight
     @convert.command(
         name="weight", description="Convert weights between Kilograms and Pounds"
     )
@@ -198,6 +181,7 @@ class Utilities(commands.Cog):
                 f"{weight} lbs = **{round(weight / 2.20462, 2)} kg**"
             )
 
+    # github
     @app_commands.command(name="github", description="Search GitHub repositories")
     @app_commands.describe(query="The query to search for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
@@ -215,6 +199,7 @@ class Utilities(commands.Cog):
                 f'First result for your query:\n{json["items"][0]["html_url"]}'
             )
 
+    # pypi
     @app_commands.command(name="pypi", description="Get info for a PyPI package")
     @app_commands.describe(package="The package to look for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
@@ -253,6 +238,7 @@ class Utilities(commands.Cog):
 
         await i.response.send_message(embed=embed)
 
+    # npm
     @app_commands.command(name="npm", description="Get info for a NPM package")
     @app_commands.describe(package="The package to look for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
@@ -291,6 +277,7 @@ class Utilities(commands.Cog):
 
         await i.response.send_message(embed=embed)
 
+    # lyrics
     @app_commands.command(name="lyrics", description="Get lyrics for a song")
     @app_commands.describe(query="The query to search for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)

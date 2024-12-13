@@ -90,10 +90,11 @@ class Errors(commands.Cog):
         except discord.InteractionResponded:
             await i.followup.send(f"❌ {error}", ephemeral=True)
 
+    # Main application command error handler
     async def tree_on_error(self, i: discord.Interaction, error):
         if isinstance(error, app_commands.CommandNotFound):
             return
-        elif isinstance(error, discord.errors.NotFound):
+        elif "Unknown interaction" in str(error):
             return
 
         elif isinstance(error, app_commands.BotMissingPermissions):

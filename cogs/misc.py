@@ -1,365 +1,157 @@
-from datetime import datetime
-
 import discord
+from discord import app_commands
 from discord.ext import commands
-from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option
-from utils import cluster
 
-banned = cluster["1bot"]["bans"]
-
-__version__ = "0.8.7"
+from views import InfoButtons
 
 
-class Miscellaneous(commands.Cog, description="Other miscellaneous commands."):
-    def __init__(self, client):
-        self.client: commands.Bot = client
-        self.emoji = "<:miscellaneous:907550152775073802>"
+class Miscellaneous(commands.Cog):
+    def __init__(self, bot):
+        self.bot: commands.Bot = bot
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(name="User Info", callback=self.userinfo_ctx)
+        )
 
-    # Bot info command
-    @commands.command(
-        help="View the bot's information",
-        brief="View 1Bot's information",
-        aliases=["stats", "information", "botinfo"],
-    )
-    async def info(self, ctx):
-        cmd_list = [c for c in self.client.commands if not c.hidden]
-
+    # botinfo
+    @app_commands.command(name="botinfo", description="Get information about the bot")
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
+    async def botinfo(self, i: discord.Interaction):
+        appinfo = await self.bot.application_info()
+        user_installs = appinfo.approximate_user_install_count
         embed = discord.Embed(
-            title="1Bot Stats and Information", colour=self.client.colour
+            title="1Bot Stats and Information",
+            colour=self.bot.colour,
+            description=f"**Servers**: {len(self.bot.guilds)}\n"
+            f"**User installs**: {user_installs}\n"
+            f"**Uptime**: <t:{self.bot.launch_time}:R>\n"
+            f"**Websocket latency**: {round(self.bot.latency * 1000)} ms\n"
+            f"**Command count**: {len(self.bot.tree.get_commands())} (not including subcommands)\n",
         )
-        embed.add_field(name="Bot version", value=f"v{__version__}", inline=False)
-        embed.add_field(
-            name="Command count", value=f"{len(cmd_list)} commands", inline=False
-        )
+        if i.guild:
+            embed.description += f"**Shard ID**: {i.guild.shard_id}"
+
         embed.add_field(
             name="Source code",
-            value="View the bot's source code on [GitHub](https://github.com/opensourze/1bot).\nIf you want to use the code, remember to check the license terms!",
+            value="The bot's original source code is hosted on [GitHub](https://github.com/thatjar/1bot) "
+            + "under the [GNU Affero General Public License](https://github.com/thatjar/1bot/blob/main/LICENSE).\n",
             inline=False,
         )
-        embed.add_field(name="Servers", value=f"{len(self.client.guilds)} servers")
-        embed.add_field(
-            name="Users",
-            value=f"{len(self.client.users)} users",
+
+        embed.set_footer(
+            text="Copyright (C) 2024-present thatjar. Not affiliated with Discord, Inc."
         )
-        embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.set_footer(text=f"Copyright (C) {datetime.now().date().year} OpenSourze")
-        await ctx.send(embed=embed, components=[self.client.info_btns])
+        await i.response.send_message(embed=embed, view=InfoButtons(self.bot))
 
-    @cog_ext.cog_slash(name="info", description="View the bot's information")
-    async def info_slash(self, ctx: SlashContext):
-        await self.info(ctx)
-
-    # Suggest command
-    @commands.command(help="Submit a suggestion for the bot")
-    @commands.cooldown(1, 900, commands.BucketType.guild)
-    async def suggest(self, ctx, *, suggestion):
-        result = banned.find_one({"_id": ctx.author.id})
-
-        if result:
-            return await ctx.send("❌ You are blocked from submitting suggestions.")
-
-        # Get 1Bot support server's suggestions channel
-        channel = self.client.get_channel(884095439190786059)
-
-        embed = discord.Embed(
-            title="Suggestion", description=suggestion, colour=self.client.colour
-        )
-        embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
-        embed.set_footer(text=f"User ID: {ctx.author.id}")
-
-        message = await channel.send(embed=embed)
-        await ctx.send(
-            "✅ Your suggestion has been submitted to 1Bot's server! A link to the server can be found in my About Me, or the `info` command.",
-        )
-        await message.add_reaction("✅")
-        await message.add_reaction("❌")
-
-    @cog_ext.cog_slash(name="suggest", description="Submit a suggestion for the bot")
-    @commands.cooldown(1, 900, commands.BucketType.guild)
-    async def suggest_slash(self, ctx: SlashContext, suggestion):
-        await self.suggest(ctx, suggestion=suggestion)
-
-    # Avatar command
-    @commands.command(
-        help="Get your/any user's avatar",
-        brief="Get a user's avatar",
-        aliases=["av", "pfp"],
+    # avatar
+    @app_commands.command(name="avatar", description="Get a user's avatar")
+    @app_commands.describe(
+        user="The user to get the avatar of (default: yourself)",
+        type="Server avatar or user avatar (default: server avatar)",
     )
-    async def avatar(self, ctx, *, member: commands.MemberConverter = None):
-        member = member or ctx.author  # Set to author if user is None
-        url_as = member.avatar_url_as
-
-        embed = discord.Embed(
-            colour=self.client.colour, title=f"{member.name}'s avatar"
-        )
-        embed.set_image(url=f"{member.avatar_url}")
-
-        av_links = [
-            {"name": "JPG", "url": url_as(format="jpg")},
-            {"name": "128px", "url": url_as(format="png", size=128)},
-            {"name": "256px", "url": url_as(format="png", size=256)},
-            {"name": "512px", "url": url_as(format="png", size=512)},
-            {"name": "1024px", "url": url_as(format="png", size=1024)},
+    @app_commands.choices(
+        type=[
+            app_commands.Choice(name="Server", value=0),
+            app_commands.Choice(name="User", value=1),
         ]
-        embed.set_footer(text="All links ending with px are PNGs, in each size.")
+    )
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
+    async def avatar(
+        self,
+        i: discord.Interaction,
+        user: discord.Member | discord.User = None,
+        type: app_commands.Choice[int] = 0,
+    ):
+        user = user or i.user
+        embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
+        embed.set_image(url=user.avatar.url if type else user.display_avatar.url)
+        await i.response.send_message(embed=embed)
 
-        embed.description = " | ".join(
-            f"[{link['name']}]({link['url']})" for link in av_links
+    # userinfo
+    @app_commands.command(name="userinfo", description="Get information about a user")
+    @app_commands.describe(user="The user to get information on (default: yourself)")
+    async def userinfo(
+        self, i: discord.Interaction, user: discord.Member | discord.User = None
+    ):
+        user = user or i.user
+        embed = discord.Embed(
+            title=user.name,
+            colour=self.bot.colour,
+            description=f"**ID**: {user.id}\n"
+            f"**Bot**: {user.bot}\n"
+            f"**Display name**: {user.global_name}\n",
+        )
+        embed.add_field(
+            name="Created at",
+            value=f"<t:{round(user.created_at.timestamp())}:F>\n"
+            f"(Timestamp: {round(user.created_at.timestamp())})",
         )
 
-        await ctx.send(embed=embed)
+        if i.guild:
+            try:
+                embed.add_field(
+                    name="Joined at",
+                    value=f"<t:{round(user.joined_at.timestamp())}:F>\n"
+                    f"(Timestamp: {round(user.created_at.timestamp())})",
+                )
+            except AttributeError:
+                embed.description += "**Joined at**: Could not determine\n"
 
-    @cog_ext.cog_slash(
-        name="avatar",
-        description="Get a user's avatar",
-        options=[
-            create_option(
-                name="member",
-                description="Which user's avatar do you want to see?",
-                required=True,
-                option_type=6,
-            )
-        ],
-    )
-    async def avatar_slash(self, ctx: SlashContext, *, member):
-        await self.avatar(ctx, member=member)
+            if not user.bot:
+                if user.global_name != user.display_name:
+                    embed.description += f"**Nickname**: {user.display_name}\n"
+            else:
+                # bots do not have global_names
+                if user.name != user.display_name:
+                    embed.description += f"**Nickname**: {user.display_name}\n"
 
-    # Server Info command
-    @commands.command(
-        help="View information about the current server",
-        brief="View server info",
-        aliases=["server", "si"],
+            if i.is_guild_integration():
+                embed.description += f"**Role count**: {len(user.roles)-1}\n"
+
+        embed.set_thumbnail(url=user.avatar.url)
+        await i.response.send_message(embed=embed)
+
+    # userinfo (ctxmenu)
+    async def userinfo_ctx(
+        self, i: discord.Interaction, user: discord.Member | discord.User
+    ):
+        await self.userinfo.callback(self, i, user)
+
+    # server info
+    @app_commands.command(
+        name="serverinfo", description="Get information about the server"
     )
-    @commands.guild_only()
-    async def serverinfo(self, ctx):
-        humans = [mem for mem in ctx.guild.members if not mem.bot]
-        bots = [mem for mem in ctx.guild.members if mem.bot]
+    @app_commands.allowed_installs(guilds=True, users=False)
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
+    async def serverinfo(self, i: discord.Interaction):
+        vl = discord.VerificationLevel
+        vl_strings = {
+            vl.none: "None",
+            vl.low: "Members must have a verified email on their Discord account.",
+            vl.medium: "Members must have a verified email and be registered on Discord for more than five minutes.",
+            vl.high: "Members must have a verified email, be registered on Discord for more than five minutes,"
+            " and be a member of the server for more than ten minutes.",
+            vl.highest: "Members must have a verified phone number.",
+        }
+
+        guild = await self.bot.fetch_guild(i.guild.id)
 
         embed = discord.Embed(
-            title=f"{ctx.guild.name} information", colour=self.client.colour
+            title=guild.name,
+            colour=self.bot.colour,
+            description=f"**Member count**: {guild.approximate_member_count} (approximate)\n"
+            f"**Created at**: <t:{round(guild.created_at.timestamp())}:F>\n"
+            f"**Verification**: {vl_strings[guild.verification_level]}\n"
+            f"**Boost level**: {guild.premium_tier}\n"
+            f"**Boosts**: {guild.premium_subscription_count}\n"
+            f"**Roles**: {len(guild.roles)}\n"
+            f"**Emojis**: {len(guild.emojis)}\n",
         )
-
-        embed.set_thumbnail(url=ctx.guild.icon_url)
-        embed.add_field(
-            name="Owner",
-            value=ctx.guild.owner.mention,
-        )
-        embed.add_field(
-            name="Server created",
-            value=f"<t:{round(ctx.guild.created_at.timestamp())}:R>",
-            inline=False,
-        )
-        embed.add_field(
-            name="Total member count",
-            value=ctx.guild.member_count,
-        )
-        embed.add_field(
-            name="Humans",
-            value=f"{len(humans)} human members",
-        )
-        embed.add_field(
-            name="Bots",
-            value=f"{len(bots)} bots",
-        )
-        embed.add_field(
-            name="Emojis",
-            value=f"{len(ctx.guild.emojis)} emojis",
-        )
-        embed.add_field(
-            name="Roles",
-            value=f"{len(ctx.guild.roles)} roles",
-        )
-        embed.add_field(
-            name="Boost tier",
-            value=f"Level {ctx.guild.premium_tier}",
-        )
-        embed.add_field(name="Categories", value=f"{len(ctx.guild.categories)}")
-        embed.add_field(
-            name="Text channels",
-            value=len(ctx.guild.text_channels),
-        )
-        embed.add_field(
-            name="Voice channels",
-            value=len(ctx.guild.voice_channels),
-        )
-
-        embed.set_footer(text=f"Shard {ctx.guild.shard_id} | Server ID {ctx.guild.id}")
-
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(
-        name="serverinfo", description="View information about the current server"
-    )
-    async def serverinfo_slash(self, ctx: SlashContext):
-        await self.serverinfo(ctx)
-
-    # Member count command
-    @commands.command(
-        help="View the number of humans and bots in the server",
-        aliases=["members", "mem"],
-    )
-    @commands.guild_only()
-    async def membercount(self, ctx):
-        humans = [mem for mem in ctx.guild.members if not mem.bot]
-        bots = [mem for mem in ctx.guild.members if mem.bot]
-
-        embed = discord.Embed(
-            title=f"{ctx.guild.name} member info", colour=self.client.colour
-        )
-        embed.set_thumbnail(url=ctx.guild.icon_url)
-        embed.add_field(
-            name="Humans",
-            value=f"**{len(humans)} human members** are in this server",
-            inline=False,
-        )
-        embed.add_field(
-            name="Bots", value=f"**{len(bots)} bots** are in this server", inline=False
-        )
-        embed.add_field(
-            name="Total member count",
-            value=f"**{ctx.guild.member_count} members in total**",
-            inline=False,
-        )
-
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(
-        name="membercount",
-        description="View the number of humans and bots in the server",
-    )
-    async def membercount_slash(self, ctx: SlashContext):
-        await self.membercount(ctx)
-
-    # User Info command
-    @commands.command(
-        help="View a member's information", aliases=["whois", "user", "ui"]
-    )
-    @commands.guild_only()
-    async def userinfo(self, ctx, *, member: commands.MemberConverter = None):
-        member = member or ctx.author
-
-        roles = [role.mention for role in member.roles][::-1][:-1] or ["None"]
-        if roles[0] == "None":
-            role_length = 0
-        else:
-            role_length = len(roles)
-
-        embed = discord.Embed(title=member.name, colour=member.colour)
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.add_field(
-            name="Account created",
-            value=f"<t:{round(member.created_at.timestamp())}:R>",
-        )
-        embed.add_field(
-            name="Joined this server",
-            value=f"<t:{round(member.joined_at.timestamp())}:R>",
-        )
-        members = sorted(ctx.guild.members, key=lambda m: m.joined_at)
-        embed.add_field(name="Join position", value=str(members.index(member) + 1))
-        embed.add_field(name="Display name", value=member.display_name)
-        if len(" ".join(roles)) <= 1024:
-            embed.add_field(
-                name=f"Roles ({role_length})",
-                value=" ".join(roles),
-                inline=False,
-            )
-        else:
-            embed.add_field(
-                name=f"Roles ({role_length})",
-                value="**[Only showing first 5 roles since there are too many roles to show]**\n"
-                + " ".join(roles[:5]),
-                inline=False,
-            )
-
-        if member.bot:
-            embed.add_field(name="Is this user a bot?", value="Yes, beep boop")
-        else:
-            embed.add_field(name="Is this user a bot?", value="No - normal human user")
-
-        embed.set_footer(text=f"User ID: {member.id}")
-
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(
-        name="userinfo",
-        description="View information about a user",
-        options=[
-            create_option(
-                name="member",
-                description="Which user's information do you want to see?",
-                option_type=6,
-                required=True,
-            )
-        ],
-    )
-    async def userinfo_slash(self, ctx: SlashContext, member):
-        try:
-            await self.userinfo(ctx, member=member)
-        except AttributeError:
-            await ctx.send(
-                "❌ The user you specified is not in the server. Please try again."
-            )
-
-    # Upvote command
-    @commands.command(help="Upvote me on Top.gg", aliases=["vote"])
-    async def upvote(self, ctx):
-        embed = discord.Embed(
-            title="Upvote 1Bot",
-            description="Help 1Bot grow by upvoting it on Top.gg!\n\nLink to upvote: **https://top.gg/bot/884080176416309288/vote**",
-            colour=self.client.colour,
-        )
-        embed.set_footer(text="You can upvote every 12 hours. Thank you!")
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(name="upvote", description="Upvote me on Top.gg")
-    async def upvote_slash(self, ctx: SlashContext):
-        await self.upvote(ctx)
-
-    # Ping command
-    @commands.command(
-        help="Tests the bot's latency and displays it in milliseconds",
-        brief="Tests the bot's latency",
-    )
-    async def ping(self, ctx):
-        await ctx.send(
-            f"Pong! The bot's latency is `{round(self.client.latency * 1000)}ms`"
-        )
-
-    @cog_ext.cog_slash(name="ping", description="Test the bot's latency")
-    async def ping_slash(self, ctx: SlashContext):
-        await self.ping(ctx)
-
-    # Invite command
-    @commands.command(help="Add the bot to your server", aliases=["addbot"])
-    async def invite(self, ctx):
-        await ctx.send(
-            "Here's the link to add the bot to your server. Thanks!\nhttps://dsc.gg/1bot"
-        )
-
-    @cog_ext.cog_slash(name="invite", description="Add the bot to your server")
-    async def invite_slash(self, ctx: SlashContext):
-        await ctx.send(
-            "Here's the link to add the bot to your server. Thanks!\nhttps://dsc.gg/1bot"
-        )
-
-    # Changelog
-    @commands.command(help="See what's new in the latest version of 1Bot")
-    async def changelog(self, ctx):
-        changelog = discord.Embed(
-            title=f"What's new in version {__version__} of 1Bot",
-            colour=self.client.colour,
-            description="Just a bunch of improvements and fixes to ensure 1Bot runs reliably. The prefix has been changed to `1` without a space, so commands will not invoke when a sentence starts with 1.",
-        )
-
-        await ctx.send(embed=changelog)
-
-    @cog_ext.cog_slash(
-        name="changelog", description="See what's new in the latest version of 1Bot"
-    )
-    async def changelog_slash(self, ctx: SlashContext):
-        await self.changelog(ctx)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        embed.set_footer(text=f"Server ID: {guild.id} | Shard ID: {guild.shard_id}")
+        await i.response.send_message(embed=embed)
 
 
-def setup(client):
-    client.add_cog(Miscellaneous(client))
+async def setup(bot):
+    await bot.add_cog(Miscellaneous(bot))

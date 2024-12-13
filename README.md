@@ -1,27 +1,45 @@
 <div align=right>
-<img src="https://img.shields.io/discord/884078410010333235?label=Server&logo=discord&logoColor=white&style=for-the-badge">
-<a href="https://www.codefactor.io/repository/github/opensourze/1bot"><img src="https://www.codefactor.io/repository/github/opensourze/1bot/badge" alt="CodeFactor" /></a>
+  <a href="https://discord.gg/JGcnKxEPsW">
+    <img src="https://img.shields.io/discord/884078410010333235?label=server&logo=discord&logoColor=white">
+  </a>
+  <a href="https://www.codefactor.io/repository/github/thatjar/1bot">
+    <img src="https://www.codefactor.io/repository/github/thatjar/1bot/badge" alt="CodeFactor" />
+  </a>
 </div>
 
-## 1Bot - One bot, several uses.
+# 1Bot - One bot, several uses.
 
-[![Banner](https://1bot.opensourze.gq/banner.png)](https://1bot.opensourze.gq/)
+[![Banner](https://1bot.netlify.app/banner.png)](https://1bot.netlify.app/)
 
-1Bot is a multipurpose bot that has all the moderation tools you need, lots of useful utility commands, and a bunch of fun commands that we all need once in a while.
+1Bot is a free Discord bot that lets you get things done without leaving Discord - from poking fun at your friends to managing channels.
 
-- [Add the bot to your server](https://dsc.gg/1bot)
-- [Website (with command list)](https://1bot.opensourze.gq)
-- [Support and Updates Server](https://discord.gg/JGcnKxEPsW)
+- [Add the bot to your server/account](https://discord.com/oauth2/authorize?client_id=884080176416309288)
+- [Website (ToS & Privacy Policy)](https://1bot.netlify.app)
+- [Server for Updates and Support](https://discord.gg/JGcnKxEPsW)
 - [Top.gg page (upvote 1Bot!)](https://top.gg/bot/884080176416309288)
 
-### Self-hosting?
+## Self-hosting
 
-1Bot is a public bot, so it's best to just add it to your server.
+1Bot is **not intended to be a self-hosted bot**, but it is possible.  
+Copyright notices must be preserved, and if your bot is made public, its source code must be published under the AGPL.  
+You will have to create a `config.py` file in the root directory with the following contents:
 
-The code is open-source only so that people can contribute to the bot and also in case anyone needs to refer to some code for help with discordpy development.  
-The code is not at all optimised for customisation or self-hosting.
+```py
+config = {
+    "token": "BOT_TOKEN_HERE",
+    "error_channel": error_channel_id_here,
+    "server_invite": "https://discord.gg/JGcnKxEPsW",
+    "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
+    "website": "https://1bot.netlify.app",
+    # Emoji IDs to appear in buttons. If you don't want them, use None.
+    "emojis": {
+        "add_to_server": ...,
+        "website": ...,
+        "support": ...,
+        "license": ...,
+    },
+}
 
-Remember: 1Bot is under the [GNU AGPL-3.0 License](https://www.gnu.org/licenses/agpl-3.0.en.html), which means cloning the bot and claiming it as your own is a license violation. This also includes modified clones, by the definition of "modified version" according to the license.  
-(I'm looking at you, [President Om](https://imgur.com/a/0UBHLDA))
+```
 
-###### Copyright (C) 2022 OpenSourze
+###### Copyright &copy; 2024-present thatjar. Not affiliated with Discord, Inc.

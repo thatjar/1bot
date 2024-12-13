@@ -1,463 +1,38 @@
-import asyncio
-import base64
-import binascii
-from contextlib import suppress
+from urllib.parse import quote_plus
 
 import discord
 import requests
+from discord import app_commands
 from discord.ext import commands
-from discord.utils import escape_markdown
-from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option
-from temperature_converter_py import celsius_to_fahrenheit, fahrenheit_to_celsius
-from utils import Pager
 
 
-class Utilities(commands.Cog, description="A set of useful utility commands."):
-    def __init__(self, client):
-        self.client: commands.Bot = client
-        self.emoji = "<:utilities:907550185629040680>"
+class Utilities(commands.Cog):
+    def __init__(self, bot):
+        self.bot: commands.Bot = bot
 
-    # Celsius to Fahrenheit
-    @commands.command(help="Convert Celsius to Fahrenheit", aliases=["c2f", "ctof"])
-    async def celsiustofahrenheit(self, ctx, *, temperature: float):
-        await ctx.send(
-            f"{temperature}°C is {round(celsius_to_fahrenheit(temperature), 2)}°F"
-        )
-
-    @cog_ext.cog_slash(
-        name="celsius-to-fahrenheit", description="Convert Celsius to Fahrenheit"
+    # weather
+    @app_commands.command(name="weather", description="Get weather information")
+    @app_commands.describe(
+        location="The location to get weather information for",
     )
-    async def c2f_slash(self, ctx: SlashContext, *, temperature: float):
-        await self.celsiustofahrenheit(ctx, temperature=temperature)
-
-    # Fahrenheit to Celsius
-    @commands.command(help="Convert Fahrenheit to Celsius", aliases=["f2c", "ftoc"])
-    async def fahrenheittocelsius(self, ctx, *, temperature: float):
-        await ctx.send(
-            f"{temperature}°F is {round(fahrenheit_to_celsius(temperature), 2)}°C"
-        )
-
-    @cog_ext.cog_slash(
-        name="fahrenheit-to-celsius", description="Convert Fahrenheit to Celsius"
-    )
-    async def f2c_slash(self, ctx: SlashContext, *, temperature: float):
-        await self.fahrenheittocelsius(ctx, temperature=temperature)
-
-    # Calc command
-    @commands.command(
-        help="Run a math operation with two numbers. Separate the numbers and the operation by spaces.",
-        brief="A simple calculator with two numbers",
-        aliases=["calculate", "calculator"],
-    )
-    async def calc(self, ctx, num_1: float, operation: str, num_2: float):
-        o = operation.lower()
-
-        if o == "+" or o == "plus":
-            return await ctx.send(str(num_1 + num_2))
-        if o == "-" or o == "minus":
-            return await ctx.send(str(num_1 - num_2))
-        if o == "*" or o == "times" or o == "x":
-            return await ctx.send(str(num_1 * num_2))
-        if o == "/" or o == "by":
-            try:
-                return await ctx.send(str(num_1 / num_2))
-            except ZeroDivisionError:
-                await ctx.send("❌ You can't divide by zero!")
-        else:
-            await ctx.send(
-                "❌ Invalid operation. Use one of these for the operation: `+, plus, -, minus, *, x, /`"
-            )
-
-    @cog_ext.cog_slash(
-        name="calculate",
-        description="Run a math operation with two numbers",
-        options=[
-            create_option(
-                name="num_1",
-                description="The first number (can be decimal)",
-                required=True,
-                option_type=3,
-            ),
-            create_option(
-                name="operation",
-                description="Choose between: + - x /",
-                required=True,
-                option_type=3,
-            ),
-            create_option(
-                name="num_2",
-                description="The second number (can be decimal)",
-                required=True,
-                option_type=3,
-            ),
-        ],
-    )
-    async def calc_slash(self, ctx: SlashContext, num_1, operation, num_2):
+    @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
+    async def weather(self, i: discord.Interaction, location: str):
+        await i.response.defer()
+        req = requests.get(f"https://api.popcat.xyz/weather?q={location}")
         try:
-            await self.calc(ctx, float(num_1), operation, float(num_2))
-        except:
-            await ctx.send("❌ Please use valid numbers!")
-
-    # Emoji command
-    @commands.command(
-        name="emoji",
-        aliases=["createemoji", "addemoji", "emote"],
-        help="Create a custom emoji on this server",
-    )
-    @commands.has_permissions(manage_emojis=True)
-    @commands.bot_has_permissions(manage_emojis=True)
-    async def emoji_cmd(self, ctx, emoji_name: str, *, image_link: str = None):
-        with suppress(AttributeError):
-            if not ctx.message.attachments and not image_link:
-                return await ctx.send(
-                    f"❌ You need to attach an image or provide an image link to create an emoji."
-                )
-
-        try:
-            if image_link:
-                image = requests.get(image_link).content
-            else:
-                image = await ctx.message.attachments[0].read()
-
-            created_emoji = await ctx.guild.create_custom_emoji(
-                name=emoji_name, image=image
-            )
-
-            await ctx.send(f"✅ Emoji created! {created_emoji}")
-
-        # errors
-        except discord.HTTPException as e:
-            if "File cannot be larger than 256" in str(e):
-                await ctx.send(
-                    "❌ That image is too big for an emoji. Use an image that is smaller than 256 kb (you can try <https://squoosh.app> to compress it)."
-                )
-            elif "String value did not match validation regex" in str(e):
-                await ctx.send(
-                    "❌ Invalid emoji name; you have unsupported characters in the emoji name."
-                )
-            elif "Must be between 2 and 32 in length" in str(e):
-                await ctx.send("❌ The emoji name must be 2 to 32 characters long.")
-            elif "Maximum number of emojis reached" in str(e):
-                await ctx.send(
-                    "❌ This server has reached its emoji limit.\n"
-                    + "You'll have to boost the server to the next level to get more emoji slots!"
-                )
-
+            json = req.json()
+        except ValueError:
+            await i.followup.send("❌ Invalid location")
             return
-        except Exception as e:
-            request_errs = requests.exceptions
-
-            if isinstance(
-                e,
-                (
-                    request_errs.MissingSchema,
-                    request_errs.InvalidSchema,
-                    request_errs.ConnectionError,
-                    discord.InvalidArgument,
-                ),
-            ):
-                await ctx.send(
-                    "❌ Invalid image. Please provide a valid image attachment or URL."
-                )
-
-    @cog_ext.cog_slash(
-        name="emoji",
-        description="Create a custom emoji on this server",
-        options=[
-            create_option(
-                name="emoji_name",
-                description="The name of the emoji",
-                required=True,
-                option_type=3,
-            ),
-            create_option(
-                name="image_link",
-                description="The URL of the image to create an emoji from.",
-                required=True,
-                option_type=3,
-            ),
-        ],
-    )
-    @commands.has_permissions(manage_emojis=True)
-    async def emoji_slash(self, ctx: SlashContext, emoji_name, image_link):
-        await self.emoji_cmd(ctx, emoji_name, image_link=image_link)
-
-    # Raw text command
-    @commands.command(
-        aliases=["rawtext"],
-        help="Get the raw, unformatted text of the message you replied to. You can also use a message ID.",
-        brief="Get raw text of the message you replied to.",
-    )
-    async def raw(self, ctx, message_id: str = None):
-        message = None  # gets reassigned after message is fetched
-
-        try:
-            # try fetching the replied message
-            message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-            if message is None:
-                return await ctx.send(
-                    "❌ This message could not be fetched, or it might not have text content."
-                )
-        except (discord.NotFound, AttributeError):  # if the message is not a reply
-            if not message_id:
-                return await ctx.send(
-                    "❌ You need to either reply to a message with this command or provide a message ID!"
-                )
-
-            try:
-                message = await ctx.channel.fetch_message(message_id)
-            except discord.NotFound:
-                return await ctx.send(
-                    "❌ The message you provided was not found in this channel!"
-                )
-
-        if not message.content:
-            await ctx.send("❌ This message has no content.")
-            return
-
-        embed = discord.Embed(
-            description=escape_markdown(message.content), colour=self.client.colour
-        )
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(
-        name="raw",
-        description="Get raw text of a message with its ID",
-        options=[
-            create_option(
-                name="message_id",
-                description="The ID of the message to get raw text from",
-                required=True,
-                option_type=3,
-            )
-        ],
-    )
-    async def raw_slash(self, ctx: SlashContext, message_id):
-        await self.raw(ctx, message_id=message_id)
-
-    # Search repositories
-    @commands.command(
-        help="Search for a GitHub repository",
-        aliases=["searchrepo", "githubsearch"],
-    )
-    async def github(self, ctx, *, search_query):
-        json = requests.get(
-            f"https://api.github.com/search/repositories?q={search_query}"
-        ).json()
-
-        if json["total_count"] == 0:
-            await ctx.send("No matching repositories found")
-        else:
-            await ctx.send(
-                f"First result for '{search_query}':\n{json['items'][0]['html_url']}"
-            )
-
-    @cog_ext.cog_slash(
-        name="search_github", description="Search for repositories on GitHub"
-    )
-    async def github_slash(self, ctx: SlashContext, *, search_query):
-        await self.github(ctx, search_query=search_query)
-
-    # PyPI command
-    @commands.command(help="Get info for a PyPI module")
-    async def pypi(self, ctx, *, package):
-        # Get package JSON
-        res = requests.get(f"https://pypi.org/pypi/{package}/json")
-
-        if res.status_code == 404:
-            # Exit with an error message if status is 404 (not found)
-            await ctx.send("❌ That module doesn't exist!")
-            return
-
-        json = res.json()
-
-        embed = discord.Embed(
-            title=json["info"]["name"],
-            colour=self.client.colour,
-            url=json["info"]["package_url"],
-        )
-
-        if json["info"]["summary"] != "UNKNOWN":
-            embed.description = json["info"]["summary"]
-
-        # Max length for embed fields is 1024
-        if len(json["info"]["description"]) <= 1024:
-            embed.add_field(
-                name="Description", value=json["info"]["description"], inline=False
-            )
-        else:
-            # Slice description to 1021 characters and add ellipsis
-            embed.add_field(
-                name="Description",
-                value=json["info"]["description"][:1021] + "...",
-                inline=False,
-            )
-
-        if json["info"]["home_page"]:
-            embed.add_field(name="Homepage", value=json["info"]["home_page"])
-
-        embed.add_field(name="Version", value=json["info"]["version"])
-        embed.add_field(name="Author", value=json["info"]["author"])
-
-        if json["info"]["license"]:
-            embed.add_field(name="License", value=json["info"]["license"])
-
-        await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(name="pypi", description="Get info for a PyPI module")
-    async def pypi_slash(self, ctx: SlashContext, *, package):
-        await self.pypi(ctx, package=package)
-
-    # NPM command
-    @commands.command(help="Get info for an NPM module")
-    async def npm(self, ctx, *, package):
-        json = requests.get(f"https://registry.npmjs.org/{package}").json()
-
-        try:
-            if json["error"]:
-                await ctx.send("❌ " + json["error"])
-
-        except KeyError:
-            embed = discord.Embed(
-                title=json["name"],
-                colour=0xD50000,
-                url="https://www.npmjs.com/package/" + package,
-            )
-
-            with suppress(KeyError):
-                embed.description = json["description"]
-            with suppress(KeyError):
-                embed.add_field(name="Homepage", value=json["homepage"], inline=False)
-            with suppress(KeyError):
-                embed.add_field(name="Author", value=json["author"]["name"])
-            with suppress(KeyError):
-                embed.add_field(
-                    name="GitHub repository",
-                    # Remove "git+" and ".git" from the url
-                    value=json["repository"]["url"],
-                    inline=False,
-                )
-            embed.add_field(
-                name="Repository maintainers",
-                value=", ".join(
-                    maintainer["name"] for maintainer in json["maintainers"]
-                ),
-                inline=False,
-            )
-            with suppress(KeyError):
-                embed.add_field(name="License", value=json["license"], inline=False)
-
-            await ctx.send(embed=embed)
-
-    @cog_ext.cog_slash(name="npm", description="Get info for an NPM module")
-    async def npm_slash(self, ctx: SlashContext, *, package):
-        await self.npm(ctx, package=package)
-
-    # Lyrics command
-    @commands.command(help="Get lyrics for a song", aliases=["ly"])
-    async def lyrics(self, ctx, *, song):
-        with suppress(AttributeError):
-            await ctx.trigger_typing()
-
-        json = requests.get(f"https://some-random-api.ml/lyrics?title={song}").json()
-
-        with suppress(KeyError):
-            if json["error"]:
-                await ctx.send("❌ " + json["error"])
-                return
-
-        pager = Pager(
-            title=json["title"],
-            thumbnail=json["thumbnail"]["genius"],
-            timeout=100,
-            entries=[
-                json["lyrics"][i : i + 700] for i in range(0, len(json["lyrics"]), 700)
-            ],
-            length=1,
-            colour=self.client.colour,
-        )
-
-        await pager.start(ctx)
-
-    @cog_ext.cog_slash(name="lyrics", description="Get lyrics for a song")
-    async def lyrics_slash(self, ctx: SlashContext, *, song):
-        await ctx.defer()
-        await self.lyrics(ctx, song=song)
-
-    # Base64 commands
-    @commands.group(
-        invoke_without_command=True, help="Encode/decode base64", aliases=["b64"]
-    )
-    async def base64(self, ctx):
-        embed = discord.Embed(
-            title="Base64 commands",
-            description="Run `1 base64 e {text}` to convert the text into base64.\n"
-            + "Run `1 base64 d {base64}` to decode base64 code.\n",
-            colour=self.client.colour,
-        ).set_footer(text="Don't include the brackets while running commands!")
-
-        await ctx.send(embed=embed)
-
-    @base64.command(help="Encode text into base64", aliases=["e"])
-    async def encode(self, ctx, *, text):
-        embed = discord.Embed(
-            title="Encoded Base64 code",
-            description=escape_markdown(base64.b64encode(text.encode()).decode()),
-            colour=self.client.colour,
-        )
-        embed.set_footer(text=f"Encoded by {ctx.author}")
-
-        await ctx.send(embed=embed)
-
-    @base64.command(help="Decode base64 into text", aliases=["d"])
-    async def decode(self, ctx, *, code):
-        try:
-            embed = discord.Embed(
-                title="Decoded Base64 text",
-                description=escape_markdown(base64.b64decode(code).decode()),
-                colour=self.client.colour,
-            )
-            embed.set_footer(text=f"Decoded by {ctx.author}")
-            await ctx.send(embed=embed)
-        except binascii.Error:
-            await ctx.send("❌ Invalid code! Are you sure that's base64?")
-
-    @cog_ext.cog_subcommand(
-        base="base64", name="encode", description="Encode text into base64"
-    )
-    async def encode_slash(self, ctx: SlashContext, *, text):
-        await self.encode(ctx, text=text)
-
-    @cog_ext.cog_subcommand(
-        base="base64", name="decode", description="Decode base64 into text"
-    )
-    async def decode_slash(self, ctx: SlashContext, *, code):
-        await self.decode(ctx, code=code)
-
-    # Weather command
-    @commands.command(
-        help="Get weather info for a city",
-    )
-    @commands.cooldown(1, 5, commands.BucketType.channel)
-    async def weather(self, ctx, *, query):
-        req = requests.get(f"https://api.popcat.xyz/weather?q={query}")
-        json = req.json()
-
-        # If json is an empty array (occurs when query is invalid), send an error message
-        if json == []:
-            return await ctx.send(
-                "❌ Couldn't find the city you specified. Please check for typos."
-            )
 
         data = json[0]
 
         embed = discord.Embed(
-            colour=self.client.colour, description=data["current"]["skytext"]
+            colour=self.bot.colour, description=data["current"]["skytext"]
         )
         embed.set_author(
             icon_url=data["current"]["imageUrl"],
-            name=f"Weather in {data['location']['name']}",
+            name=f"Weather in {data['current']['observationpoint']}",
         )
 
         embed.add_field(
@@ -483,209 +58,311 @@ class Utilities(commands.Cog, description="A set of useful utility commands."):
             inline=False,
         )
 
-        await ctx.send(embed=embed)
+        await i.followup.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="weather",
-        description="Get weather info for a city",
-        options=[
-            create_option(
-                name="city",
-                description="City name. Optionally add state code and country code separated by commas",
-                required=True,
-                option_type=3,
-            )
-        ],
+    # group for /convert
+    convert = app_commands.Group(name="convert", description="Convert units")
+
+    # convert temperature
+    @convert.command(
+        name="temperature",
+        description="Convert temperatures between Fahrenheit and Celsius",
     )
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def weather_slash(self, ctx: SlashContext, city):
-        await self.weather(ctx, query=city)
+    @app_commands.describe(
+        temperature="The temperature to convert",
+        target="Convert to Fahrenheit or Celsius?",
+    )
+    @app_commands.choices(
+        target=[
+            app_commands.Choice(name="Celsius", value=0),
+            app_commands.Choice(name="Fahrenheit", value=1),
+        ]
+    )
+    async def convert_temp(
+        self,
+        i: discord.Interaction,
+        temperature: float,
+        target: app_commands.Choice[int],
+    ):
+        if target.value == 0:
+            await i.response.send_message(
+                f"{temperature}°F = **{round((temperature - 32) / 1.8, 2)}°C**"
+            )
+        else:
+            await i.response.send_message(
+                f"{temperature}°C = **{round((temperature * 9 / 5) + 32, 2)}°F**"
+            )
 
-    # Embed command
-    @commands.command(aliases=["makeembed", "createembed"], help="Create an embed")
-    @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(manage_messages=True)
-    async def embed(self, ctx):
-        msg1 = await ctx.send(
-            "I'll now ask you to send some messages to use for the embed!\n___"
+    # convert distance
+    @convert.command(
+        name="distance",
+        description="Convert distances between Kilometres and Miles",
+    )
+    @app_commands.describe(
+        distance="The distance to convert",
+        target="Convert to Miles or Kilometres?",
+    )
+    @app_commands.choices(
+        target=[
+            app_commands.Choice(name="Miles", value=0),
+            app_commands.Choice(name="Kilometres", value=1),
+        ]
+    )
+    async def convert_distance(
+        self,
+        i: discord.Interaction,
+        distance: float,
+        target: app_commands.Choice[int],
+    ):
+        if target.value == 0:
+            await i.response.send_message(
+                f"{distance} km = **{round(distance / 1.609344, 3)} mi**"
+            )
+        else:
+            await i.response.send_message(
+                f"{distance} mi = **{round(distance * 1.609344, 3)} km**"
+            )
+
+    # convert length
+    @convert.command(
+        name="length", description="Convert lengths between Centimetres and Inches"
+    )
+    @app_commands.describe(
+        length="The length to convert",
+        target="Convert to Centimetres or Inches?",
+    )
+    @app_commands.choices(
+        target=[
+            app_commands.Choice(name="Inches", value=0),
+            app_commands.Choice(name="Centimetres", value=1),
+        ]
+    )
+    async def convert_length(
+        self,
+        i: discord.Interaction,
+        length: float,
+        target: app_commands.Choice[int],
+    ):
+        if target.value == 0:
+            await i.response.send_message(
+                f"{length} cm = **{round(length / 2.54, 2)} in**"
+            )
+        else:
+            await i.response.send_message(
+                f"{length} in = **{round(length * 2.54, 2)} cm**"
+            )
+
+    # convert weight
+    @convert.command(
+        name="weight", description="Convert weights between Kilograms and Pounds"
+    )
+    @app_commands.describe(
+        weight="The weight to convert",
+        target="Convert to Pounds or Kilograms?",
+    )
+    @app_commands.choices(
+        target=[
+            app_commands.Choice(name="Pounds", value=0),
+            app_commands.Choice(name="Kilograms", value=1),
+        ]
+    )
+    async def convert_weight(
+        self,
+        i: discord.Interaction,
+        weight: float,
+        target: app_commands.Choice[int],
+    ):
+        if target.value == 0:
+            await i.response.send_message(
+                f"{weight} kg = **{round(weight * 2.20462, 2)} lbs**"
+            )
+        else:
+            await i.response.send_message(
+                f"{weight} lbs = **{round(weight / 2.20462, 2)} kg**"
+            )
+
+    # github
+    @app_commands.command(name="github", description="Search GitHub repositories")
+    @app_commands.describe(query="The query to search for")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def github(self, i: discord.Interaction, query: str):
+        json = requests.get(
+            f"https://api.github.com/search/repositories?q={query}"
+        ).json()
+
+        if json["total_count"] == 0:
+            await i.response.send_message(
+                "❌ No matching repositories found.", ephemeral=True
+            )
+        else:
+            await i.response.send_message(
+                f'First result for your query:\n{json["items"][0]["html_url"]}'
+            )
+
+    # pypi
+    @app_commands.command(name="pypi", description="Get info for a PyPI package")
+    @app_commands.describe(package="The package to look for")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def pypi(self, i: discord.Interaction, package: str):
+        res = requests.get(f"https://pypi.org/pypi/{package}/json")
+
+        if res.status_code == 404:
+            raise ValueError("Package does not exist. Check for spelling errors.")
+
+        json = res.json()
+
+        embed = discord.Embed(
+            title=json["info"]["name"],
+            colour=0x0073B7,
+            url=json["info"]["package_url"],
         )
 
-        msg2 = await ctx.channel.send(
-            "Now send the **title you want to use for the embed** within 60 seconds."
+        if json["info"]["summary"] != "UNKNOWN":
+            embed.description = json["info"]["summary"]
+
+        if json["info"]["home_page"]:
+            embed.add_field(name="Homepage", value=json["info"]["home_page"])
+
+        embed.add_field(name="Version", value=json["info"]["version"])
+        embed.add_field(name="Author", value=json["info"]["author"])
+
+        if json["info"]["license"]:
+            if len(json["info"]["license"]) <= 1024:
+                embed.add_field(name="License", value=json["info"]["license"])
+            else:
+                embed.add_field(
+                    name="License",
+                    value=json["info"]["license"][:30] + "...",
+                    inline=False,
+                )
+
+        await i.response.send_message(embed=embed)
+
+    # npm
+    @app_commands.command(name="npm", description="Get info for a NPM package")
+    @app_commands.describe(package="The package to look for")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def npm(self, i: discord.Interaction, package: str):
+        json = requests.get(f"https://registry.npmjs.org/{package}").json()
+
+        if "error" in json:
+            await i.response.send_message("❌ " + json["error"], ephemeral=True)
+            return
+
+        embed = discord.Embed(
+            title=json["name"],
+            colour=0xCA3836,
+            url="https://www.npmjs.com/package/" + package,
         )
+
+        if "description" in json:
+            embed.description = json["description"]
+        if "version" in json:
+            embed.add_field(name="Homepage", value=json["homepage"], inline=False)
+        if "author" in json:
+            embed.add_field(name="Author", value=json["author"]["name"])
+        if "repository" in json:
+            embed.add_field(
+                name="Repository",
+                value=json["repository"]["url"],
+                inline=False,
+            )
+        embed.add_field(
+            name="Repository maintainers",
+            value=", ".join(maintainer["name"] for maintainer in json["maintainers"]),
+            inline=False,
+        )
+        if "license" in json:
+            embed.add_field(name="License", value=json["license"], inline=False)
+
+        await i.response.send_message(embed=embed)
+
+    # lyrics
+    @app_commands.command(name="lyrics", description="Get lyrics for a song")
+    @app_commands.describe(query="The query to search for")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def lyrics(self, i: discord.Interaction, query: str):
+        await i.response.defer()
+        json = requests.get(
+            f"https://some-random-api.com/lyrics?title={quote_plus(query)}"
+        ).json()
+
+        if "error" in json:
+            await i.followup.send("❌ " + json["error"])
+            return
+
+        embed = discord.Embed(
+            title=json["title"],
+            url=json["links"]["genius"],
+            colour=self.bot.colour,
+        )
+        if "thumbnail" in json and "genius" in json["thumbnail"]:
+            embed.set_thumbnail(url=json["thumbnail"]["genius"])
+        if len(json["lyrics"]) > 4096:
+            embed.description = json["lyrics"][:4093] + "..."
+        else:
+            embed.description = json["lyrics"]
+
+        await i.followup.send(embed=embed)
+
+    # create emoji
+    @app_commands.command(name="emoji", description="Create an emoji from a link")
+    @app_commands.allowed_installs(guilds=True, users=False)
+    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
+    @app_commands.default_permissions(create_expressions=True)
+    @app_commands.checks.has_permissions(create_expressions=True)
+    @app_commands.checks.bot_has_permissions(create_expressions=True)
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
+    @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
+    async def emoji(self, i: discord.Interaction, url: str, name: str):
+        await i.response.defer(ephemeral=True)
+        try:
+            req = requests.get(url)
+            if req.status_code != 200:
+                raise ValueError("Invalid image link")
+        except requests.RequestException:
+            raise ValueError("Invalid image link")
 
         try:
-            title_msg = await self.client.wait_for(
-                "message",
-                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                timeout=60,
+            emoji = await i.guild.create_custom_emoji(
+                name=name, image=req.content, reason=f"Uploaded by {i.user}"
             )
-            title = title_msg.content
-
-            if len(title) > 256:
-                await ctx.send(
-                    "❌ Title is too long. Run the command again but use a shorter title!"
+        except discord.HTTPException as e:
+            if "File cannot be larger than 256" in str(e):
+                await i.followup.send(
+                    "❌ That image is too big for an emoji. Use an image/gif that is smaller than 256 KB."
                 )
-                return
-
-            await msg2.delete()
-            await title_msg.delete()
-
-            msg3 = await ctx.channel.send(
-                f"Title of the embed will be set to '{title}'.\n"
-                + "Now send the text to use for the **content of the embed** within 60 seconds."
-            )
-            desc_msg = await self.client.wait_for(
-                "message",
-                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                timeout=60,
-            )
-
-            description = desc_msg.content
-            await msg3.delete()
-            await desc_msg.delete()
-
-            msg4 = await ctx.channel.send(
-                "Please send the text to use as a **footer**.\n"
-                + "The footer text will be small and light and will be at the bottom of the embed.\n\n"
-                + "**If you don't want a footer, say 'empty'.**"
-            )
-            footer_msg = await self.client.wait_for(
-                "message",
-                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                timeout=60,
-            )
-
-            footer = footer_msg.content
-            await msg4.delete()
-            await footer_msg.delete()
-
-            msg5 = await ctx.channel.send(
-                "Do you want me to display you as the author of the embed?\n"
-                + "Please answer with **yes** or **no** within 60 seconds.\n\n"
-                + "__Send anything *other than* yes or no to cancel__ - the embed will not be sent if you cancel."
-            )
-            author_msg = await self.client.wait_for(
-                "message",
-                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                timeout=60,
-            )
-
-            author = author_msg.content
-            await msg5.delete()
-            await author_msg.delete()
-
-            embed = discord.Embed(title=title, description=description)
-
-            if author.lower() == "yes":
-                embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            elif author.lower() != "no":
-                await ctx.send(
-                    "❗ Cancelled - you will have to run the command again if you want to make an embed."
+            elif "String value did not match validation regex" in str(e):
+                await i.followup.send(
+                    "❌ Invalid emoji name; you have unsupported characters in the emoji name."
                 )
-                return
-
-            if footer.lower() != "empty":
-                embed.set_footer(text=footer)
-
-            await msg1.delete()
-            with suppress(AttributeError):
-                await ctx.message.delete()
-
-            await ctx.channel.send(embed=embed)
-
-        except asyncio.TimeoutError:
-            await ctx.channel.send("❌ Command has timed out. Exiting embed creator.")
-
-    @cog_ext.cog_slash(name="embed", description="Create an embed")
-    @commands.has_permissions(manage_messages=True)
-    async def embed_slash(self, ctx: SlashContext):
-        await ctx.defer()
-        await self.embed(ctx)
-
-    # Poll command
-    @commands.command(help="Create a poll")
-    @commands.guild_only()
-    async def poll(self, ctx, question, *, options=None):
-        if len(question) > 256:
-            return await ctx.send(
-                "❌ Your question is too long. Try again with a question shorter than 256 characters!"
-            )
-
-        if options:
-            numbers = (
-                "1️⃣",
-                "2️⃣",
-                "3️⃣",
-                "4️⃣",
-                "5️⃣",
-                "6️⃣",
-                "7️⃣",
-                "8️⃣",
-                "9️⃣",
-                "🔟",
-            )
-
-            option_list = options.split("/")
-
-            if len(option_list) > 10:
-                return await ctx.send("❌ You cannot have more than 10 choices.")
-            if len(option_list) < 2:
-                return await ctx.send(
-                    '❌ Usage: `poll "Question in quotes" options/separated/by slashes`.\nLeave the options blank for a yes/no poll.'
+            elif "Must be between 2 and 32 in length" in str(e):
+                await i.followup.send(
+                    "❌ The emoji name must be 2 to 32 characters long."
                 )
+            elif "Maximum number of emojis reached" in str(e):
+                await i.followup.send("❌ This server has reached its emoji limit.")
 
-            embed = discord.Embed(
-                title=question,
-                colour=self.client.colour,
-                description="\n\n".join(
-                    [
-                        f"{numbers[i]} {option_list[i]}"  # number emoji + option
-                        for i in range(len(option_list))
-                    ]
+            return
+        except Exception as e:
+            if isinstance(
+                e,
+                (
+                    requests.exceptions.MissingSchema,
+                    requests.exceptions.InvalidSchema,
+                    requests.exceptions.ConnectionError,
                 ),
-            )
-            embed.set_footer(text=f"Poll created by {str(ctx.author.name)}")
+            ):
+                await i.followup.send(
+                    "❌ Invalid image. Please provide a valid image/gif URL."
+                )
+            elif isinstance(e, ValueError):
+                await i.followup.send(f"❌ {e}")
 
-            poll_msg = await ctx.send(embed=embed)
+            return
 
-            # loop through emojis until the end of the option list is reached
-            for emoji in numbers[: len(option_list)]:
-                await poll_msg.add_reaction(emoji)  # react with the number emoji
-
-        else:
-            embed = discord.Embed(
-                title=question,
-                colour=self.client.colour,
-                description="👍 Yes\n\n👎 No",
-            ).set_footer(text=f"Poll created by {str(ctx.author.name)}")
-
-            poll_msg = await ctx.send(embed=embed)
-            await poll_msg.add_reaction("👍")
-            await poll_msg.add_reaction("👎")
-
-    @cog_ext.cog_slash(
-        name="poll",
-        description="Create a poll",
-        options=[
-            create_option(
-                name="question",
-                description="The title of the poll",
-                required=True,
-                option_type=3,
-            ),
-            create_option(
-                name="options",
-                description="The choices you want for the poll separated by slashes (skip this for a yes/no poll)",
-                required=False,
-                option_type=3,
-            ),
-        ],
-    )
-    async def poll_slash(self, ctx, question, options=None):
-        await self.poll(ctx, question, options=options)
+        await i.followup.send(f"✅ Created emoji {emoji}")
 
 
-# Add cog
-def setup(client):
-    client.add_cog(Utilities(client))
+async def setup(bot):
+    await bot.add_cog(Utilities(bot))

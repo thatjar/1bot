@@ -1,97 +1,63 @@
-"This is the file to run. It contains owner-only commands and background tasks."
-
+import logging
 import os
+from datetime import datetime
 
 import discord
-import topgg
-import dotenv
-from discord.ext import commands, tasks
-from discord_slash import SlashCommand
+from config import config
+from discord.ext import commands
 
-from client import Client
-from utils import cluster
 
-bans = cluster["1bot"]["bans"]
+class Bot(commands.AutoShardedBot):
+    def __init__(self):
+        super().__init__(
+            command_prefix=commands.when_mentioned,
+            help_command=None,
+            intents=discord.Intents.default(),
+            case_insensitive=True,
+            allowed_mentions=discord.AllowedMentions(everyone=False),
+            allowed_installs=discord.app_commands.AppInstallationType(
+                guild=True, user=True
+            ),
+            allowed_contexts=discord.app_commands.AppCommandContext(
+                guild=True, dm_channel=True, private_channel=True
+            ),
+        )
 
-dotenv.load_dotenv()
+    async def setup_hook(self):
+        await self.load_extension("jishaku")
+        for cog in os.listdir("./cogs"):
+            if cog.endswith(".py"):
+                await self.load_extension(f"cogs.{cog[:-3]}")
 
-client = Client()
-slash = SlashCommand(
-    client, sync_commands=True, delete_from_unused_guilds=True, sync_on_cog_reload=True
-)
-client.topggpy = topgg.DBLClient(client, os.environ["TOPGG_TOKEN"])
+        self.error_channel = await self.fetch_channel(config["error_channel"])
 
-# Command to message a user from 1Bot
-@client.command(hidden=True)
+    async def on_ready(self):
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
+
+    colour = 0xFF7000
+    server_invite = config["server_invite"]
+    website_url = config["website"]
+    launch_time = int(datetime.now().timestamp())
+
+
+bot = Bot()
+
+
+@bot.command()
 @commands.is_owner()
-async def messageuser(ctx, id: int, *, message):
-    if id in client.owner_ids:
-        return await ctx.send("You can't send messages to an owner through 1Bot.")
-    try:
-        user: discord.User = client.get_user(id)
+async def reload(ctx, extension: str = None):
+    if not extension:
+        for cog in os.listdir("./cogs"):
+            if cog.endswith(".py"):
+                await bot.reload_extension(f"cogs.{cog[:-3]}")
+        await ctx.send("✅ Reloaded all cogs.")
+    else:
+        try:
+            await bot.reload_extension(f"cogs.{extension}")
+            await ctx.send(f"✅ Reloaded cog `{extension}`.")
+        except commands.ExtensionNotLoaded:
+            await ctx.send(f"❌ Invalid cog `cogs.{extension}`")
 
-        embed = discord.Embed(
-            title="My developers have sent you a message!",
-            colour=client.colour,
-        )
-
-        embed.add_field(name="Message", value=message)
-
-        await user.send(embed=embed)
-        await ctx.send(f"✅ Messaged user `{user.name}` with this embed.", embed=embed)
-
-    except Exception as e:
-        await ctx.send(f"❌ **Error:**\n\n{e}")
-
-
-# Command to ban a user from submitting suggestions
-@client.command(hidden=True, aliases=["suggestionban", "suggestionblock"])
-@commands.is_owner()
-async def block(ctx, id: int, *, reason):
-    if id in client.owner_ids:
-        return await ctx.send("You can't block an owner.")
-
-    bans.insert_one({"_id": id})
-
-    try:
-        user: discord.User = client.get_user(id)
-
-        embed = discord.Embed(
-            title="You've been blocked from sending suggestions!",
-            colour=0xFF0000,
-            description=f"You've been banned from submitting suggestions as we have noticed that you are spamming them.",
-        )
-        embed.add_field(name="Reason", value=reason, inline=False)
-
-        await user.send(embed=embed)
-        await ctx.send(f"✅ Blocked user `{user.name}` with this embed:", embed=embed)
-
-    except discord.Forbidden:
-        await ctx.send(
-            f"{user.name} has DMs disabled, but they have been blocked from suggestions."
-        )
-    except Exception as e:
-        await ctx.send(f"❌ **Error:**\n\n{e}")
-
-
-# Update Top.gg stats every 30 minutes
-@tasks.loop(minutes=30)
-async def update_stats():
-    try:
-        await client.topggpy.post_guild_count()
-    except:
-        pass
-
-
-update_stats.start()
 
 if __name__ == "__main__":
-    # Loop through py files in cogs directory and load them
-    for file in os.listdir("./cogs"):
-        if file.endswith(".py"):
-            client.load_extension(f"cogs.{file[:-3]}")
-
-    # Load Jishaku
-    client.load_extension("jishaku")
-
-    client.run(os.environ["TOKEN"])
+    bot.run(config["token"], log_level=logging.WARNING)

@@ -93,6 +93,8 @@ class Errors(commands.Cog):
     async def tree_on_error(self, i: discord.Interaction, error):
         if isinstance(error, app_commands.CommandNotFound):
             return
+        elif isinstance(error, discord.errors.NotFound):
+            return
 
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (

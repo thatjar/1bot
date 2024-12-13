@@ -51,9 +51,12 @@
     <ul>
       <li><code>weather</code></li>
     </ul>
-    <b>User avatar and text sent with the commands:</b>
+    <b>User avatar and message content sent with the commands:</b>
     <ul>
       <li><code>quote</code></li>
+    </ul>
+    <b>Only user avatar sent with the commands:</b>
+    <ul>
       <li><code>woosh</code></li>
     </ul>
   </li>
@@ -61,18 +64,18 @@
 
   <li>
     <a href="https://icanhazdadjoke.com">icanhazdadjoke</a> - for the
-    <code>dadjoke</code> command. Does not take any data.
+    <code>dadjoke</code> command. No data sent.
   </li>
   <br />
 
   <li>
     <a href="https://xkcd.com">xkcd</a> and
-    <a href="https://explainxkcd.com">explain xkcd</a> - for the xkcd command. Does
-    not take any data.
+    <a href="https://explainxkcd.com">explain xkcd</a> - for the
+    <code>xkcd</code> command. No data sent.
   </li>
 </ul>
 
 <div style="height: 50px;"></div>
 
 <hr />
-<h4>Last updated: 2024-12-10</h4>
+<h4>Last updated: 2024-12-13</h4>

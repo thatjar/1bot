@@ -26,8 +26,8 @@ You will have to create a `config.py` file in the root directory with the follow
 
 ```py
 config = {
-    "token": "BOT_TOKEN_HERE",
-    "error_channel": error_channel_id_here,
+    "token": BOT_TOKEN,
+    "error_channel": ERROR_CHANNEL_ID,
     "server_invite": "https://discord.gg/JGcnKxEPsW",
     "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
     "website": "https://1bot.netlify.app",

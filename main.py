@@ -3,8 +3,9 @@ import os
 from datetime import datetime
 
 import discord
-from config import config
 from discord.ext import commands
+
+from config import config
 
 
 class Bot(commands.AutoShardedBot):
@@ -60,4 +61,4 @@ async def reload(ctx, extension: str = None):
 
 
 if __name__ == "__main__":
-    bot.run(config["token"], log_level=logging.WARNING)
+    bot.run(config["token"], log_level=logging.WARNING, root_logger=True)

@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 
 import discord
-from discord.ext import commands
+import requests
+from discord.ext import commands, tasks
 
 from config import config
 
@@ -58,6 +59,21 @@ async def reload(ctx, extension: str = None):
             await ctx.send(f"✅ Reloaded cog `{extension}`.")
         except commands.ExtensionNotLoaded:
             await ctx.send(f"❌ Invalid cog `cogs.{extension}`")
+
+
+# Post server count to top.gg
+@tasks.loop(hours=6)
+async def post_stats():
+    try:
+        r = requests.post(
+            f"https://top.gg/api/bots/{bot.user.id}/stats",
+            headers={"Authorization": config["topgg_token"]},
+            json={"server_count": len(bot.guilds)},
+        )
+        if not r.ok:
+            logging.error(f"Failed to post guild count to top.gg:\n{r.text}")
+    except Exception as e:
+        logging.error(f"Failed to post guild count to top.gg:\n{e}")
 
 
 if __name__ == "__main__":

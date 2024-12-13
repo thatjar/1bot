@@ -1,4 +1,4 @@
 discord.py @ git+https://github.com/Rapptz/discord.py@master
 audioop-lts
 requests
-jishaku @ git+https://github.com/Gorialis/jishaku@master
+jishaku @ git+https://github.com/scarletcafe/jishaku@master

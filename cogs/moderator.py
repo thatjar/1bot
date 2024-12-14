@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 
 import discord
 from discord import app_commands
@@ -85,7 +85,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(timezone.utc) - timedelta(14),
+            after=datetime.now(UTC) - timedelta(14),
             oldest_first=False,
             reason=f"Purged by {i.user.name}",
         )
@@ -106,7 +106,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(timezone.utc) - timedelta(14),
+            after=datetime.now(UTC) - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -130,7 +130,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(timezone.utc) - timedelta(14),
+            after=datetime.now(UTC) - timedelta(14),
             oldest_first=False,
             check=lambda m: not m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -154,7 +154,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(timezone.utc) - timedelta(14),
+            after=datetime.now(UTC) - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author == user,
             reason=f"Purged by {i.user.name}",
@@ -442,7 +442,7 @@ class Moderator(commands.Cog):
         try:
             if not silent:
                 dm_embed = discord.Embed(
-                    description=f"You have been banned from `{i.guild.name}`.",
+                    description=f"You have been banned from {i.guild.name}.",
                     color=0xFF0000,
                 )
                 if reason:

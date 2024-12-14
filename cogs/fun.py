@@ -1,12 +1,13 @@
 import random
 from urllib.parse import quote_plus
 
+from aiohttp import ClientSession
 import discord
-import requests
 from discord import app_commands
 from discord.ext import commands
 
 from views import Confirm
+from main import Bot
 
 
 class TicTacToeButton(discord.ui.Button):
@@ -174,9 +175,10 @@ class RockPaperScissors(discord.ui.View):
         self.add_item(RPSButton(label="Scissors", emoji="✂️"))
 
 
+# Cog containing the actual commands
 class Fun(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: Bot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Quote", callback=self.quote_ctx)
         )
@@ -186,6 +188,17 @@ class Fun(commands.Cog):
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Woosh", callback=self.woosh_ctx),
         )
+
+    @staticmethod
+    async def get_reddit_post(session: ClientSession) -> dict:
+        nsfw = True
+        while nsfw:
+            async with session.get("https://meme-api.com/gimme") as r:
+                json = await r.json()
+                if "message" in json:
+                    return json
+                nsfw = json["nsfw"]
+        return json
 
     # tic tac toe
     @app_commands.command(name="tictactoe", description="Play Tic Tac Toe")
@@ -341,9 +354,10 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def pickupline(self, i: discord.Interaction):
         await i.response.defer()
-        r = requests.get("https://api.popcat.xyz/pickuplines")
-        json = r.json()
-        if json.get("pickupline"):
+        async with self.bot.session.get("https://api.popcat.xyz/pickuplines") as r:
+            json = await r.json()
+
+        if "pickupline" in json:
             pickupline = json["pickupline"]
             await i.followup.send(pickupline)
         else:
@@ -439,25 +453,25 @@ class Fun(commands.Cog):
     @app_commands.command(name="dadjoke", description="Get a dad joke")
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def dadjoke(self, i: discord.Interaction):
-        r = requests.get(
-            "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
-        )
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
         await i.response.defer()
-        joke = r.json()["joke"]
-        await i.followup.send(joke)
+        async with self.bot.session.get(
+            "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
+        ) as r:
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
+            json = await r.json()
+            await i.followup.send(json["joke"])
 
     # dog
     @app_commands.command(name="dog", description="Get a random dog image and fact")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def dog(self, i: discord.Interaction):
         await i.response.defer()
-        r = requests.get("https://some-random-api.com/animal/dog")
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+        async with self.bot.session.get("https://some-random-api.com/animal/dog") as r:
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
+            json = await r.json()
 
-        json = r.json()
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Dog fact: " + json["fact"])
@@ -465,14 +479,14 @@ class Fun(commands.Cog):
 
     # cat
     @app_commands.command(name="cat", description="Get a random cat image and fact")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def cat(self, i: discord.Interaction):
         await i.response.defer()
-        r = requests.get("https://some-random-api.com/animal/cat")
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+        async with self.bot.session.get("https://some-random-api.com/animal/cat") as r:
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
+            json = await r.json()
 
-        json = r.json()
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Cat fact: " + json["fact"])
@@ -480,14 +494,16 @@ class Fun(commands.Cog):
 
     # panda
     @app_commands.command(name="panda", description="Get a random panda image and fact")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def panda(self, i: discord.Interaction):
         await i.response.defer()
-        r = requests.get("https://some-random-api.com/animal/panda")
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+        async with self.bot.session.get(
+            "https://some-random-api.com/animal/panda"
+        ) as r:
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
+            json = await r.json()
 
-        json = r.json()
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Panda fact: " + json["fact"])
@@ -495,16 +511,16 @@ class Fun(commands.Cog):
 
     # megamind
     @app_commands.command(name="megamind", description="Generate a megamind meme")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def megamind(self, i: discord.Interaction, text: str):
         if len(text) > 200:
             raise ValueError("The text must be no more than 200 characters.")
 
-        r = requests.get(
+        async with self.bot.session.get(
             f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
-        )
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+        ) as r:
+            if not r.ok:
+                raise ValueError("Couldn't retrieve data. Try again later.")
 
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(
@@ -517,7 +533,7 @@ class Fun(commands.Cog):
         name="woosh", description="Generate a woosh (joke-over-head) image"
     )
     @app_commands.describe(user="The user who didn't get the joke")
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def woosh(self, i: discord.Interaction, user: discord.Member | discord.User):
         # remove url parameters at the end of avatar url
         avatar = user.display_avatar.replace(format="png").url
@@ -529,7 +545,7 @@ class Fun(commands.Cog):
         await i.response.send_message(embed=embed)
 
     # woosh (ctxmenu)
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def woosh_ctx(
         self, i: discord.Interaction, user: discord.Member | discord.User
     ):
@@ -544,20 +560,22 @@ class Fun(commands.Cog):
             app_commands.Choice(name="latest", value="latest"),
         ]
     )
-    @app_commands.checks.cooldown(1, 15, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def xkcd(self, i: discord.Interaction, mode: str = "random"):
-        r = requests.get("https://xkcd.com/info.0.json")
-        if not r.ok:
-            raise ValueError("Couldn't retrieve data. Try again later.")
-        json = r.json()
-
-        if mode == "random":
-            latest_num = r.json()["num"]
-            comic_num = random.randint(1, latest_num)
-            r = requests.get(f"https://xkcd.com/{comic_num}/info.0.json")
+        async with self.bot.session.get("https://xkcd.com/info.0.json") as r:
             if not r.ok:
                 raise ValueError("Couldn't retrieve data. Try again later.")
-            json = r.json()
+            json = await r.json()
+
+        if mode == "random":
+            latest_num = json["num"]
+            comic_num = random.randint(1, latest_num)
+            async with self.bot.session.get(
+                f"https://xkcd.com/{comic_num}/info.0.json"
+            ) as r:
+                if not r.ok:
+                    raise ValueError("Couldn't retrieve data. Try again later.")
+                json = await r.json()
 
         embed = discord.Embed(
             title=f"xkcd #{json['num']}: {json['safe_title']}",
@@ -567,6 +585,28 @@ class Fun(commands.Cog):
         )
         embed.set_image(url=json["img"])
         await i.response.send_message(embed=embed)
+
+    # meme
+    @app_commands.command(name="meme", description="Get a random meme")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def meme(self, i: discord.Interaction):
+        await i.response.defer()
+        try:
+            json = await self.get_reddit_post(self.bot.session)
+        except Exception:
+            raise ValueError("Couldn't retrieve data. Try again later.")
+
+        if "message" in json:
+            raise ValueError(json["message"])
+
+        embed = (
+            discord.Embed(
+                title=json["title"], url=json["postLink"], colour=self.bot.colour
+            )
+            .set_image(url=json["url"])
+            .set_footer(text=f"⬆️ {json['ups']}")
+        )
+        await i.followup.send(embed=embed)
 
 
 async def setup(bot):

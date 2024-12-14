@@ -2,9 +2,9 @@ import logging
 import os
 from datetime import datetime
 
+from aiohttp import ClientSession
 import discord
-import requests
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 from config import config
 
@@ -33,6 +33,8 @@ class Bot(commands.AutoShardedBot):
 
         self.error_channel = await self.fetch_channel(config["error_channel"])
 
+        self.session = ClientSession()
+
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
@@ -43,38 +45,6 @@ class Bot(commands.AutoShardedBot):
 
 
 bot = Bot()
-
-
-@bot.command()
-@commands.is_owner()
-async def reload(ctx, extension: str = None):
-    if not extension:
-        for cog in os.listdir("./cogs"):
-            if cog.endswith(".py"):
-                await bot.reload_extension(f"cogs.{cog[:-3]}")
-        await ctx.send("✅ Reloaded all cogs.")
-    else:
-        try:
-            await bot.reload_extension(f"cogs.{extension}")
-            await ctx.send(f"✅ Reloaded cog `{extension}`.")
-        except commands.ExtensionNotLoaded:
-            await ctx.send(f"❌ Invalid cog `cogs.{extension}`")
-
-
-# Post server count to top.gg
-@tasks.loop(hours=6)
-async def post_stats():
-    try:
-        r = requests.post(
-            f"https://top.gg/api/bots/{bot.user.id}/stats",
-            headers={"Authorization": config["topgg_token"]},
-            json={"server_count": len(bot.guilds)},
-        )
-        if not r.ok:
-            logging.error(f"Failed to post guild count to top.gg:\n{r.text}")
-    except Exception as e:
-        logging.error(f"Failed to post guild count to top.gg:\n{e}")
-
 
 if __name__ == "__main__":
     bot.run(config["token"], log_level=logging.WARNING, root_logger=True)

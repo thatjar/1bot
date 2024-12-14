@@ -1,14 +1,16 @@
 from urllib.parse import quote_plus
 
+import aiohttp
 import discord
-import requests
 from discord import app_commands
 from discord.ext import commands
+
+from main import Bot
 
 
 class Utilities(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: Bot = bot
 
     # weather
     @app_commands.command(name="weather", description="Get weather information")
@@ -18,12 +20,13 @@ class Utilities(commands.Cog):
     @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
     async def weather(self, i: discord.Interaction, location: str):
         await i.response.defer()
-        req = requests.get(f"https://api.popcat.xyz/weather?q={location}")
-        try:
-            json = req.json()
-        except ValueError:
-            await i.followup.send("❌ Invalid location")
-            return
+        async with self.bot.session.get(
+            f"https://api.popcat.xyz/weather?q={location}"
+        ) as r:
+            try:
+                json = await r.json()
+            except aiohttp.ContentTypeError:
+                raise ValueError("Invalid location")
 
         data = json[0]
 
@@ -186,9 +189,10 @@ class Utilities(commands.Cog):
     @app_commands.describe(query="The query to search for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def github(self, i: discord.Interaction, query: str):
-        json = requests.get(
+        async with self.bot.session.get(
             f"https://api.github.com/search/repositories?q={query}"
-        ).json()
+        ) as r:
+            json = await r.json()
 
         if json["total_count"] == 0:
             await i.response.send_message(
@@ -204,12 +208,11 @@ class Utilities(commands.Cog):
     @app_commands.describe(package="The package to look for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def pypi(self, i: discord.Interaction, package: str):
-        res = requests.get(f"https://pypi.org/pypi/{package}/json")
+        async with self.bot.session.get(f"https://pypi.org/pypi/{package}/json") as r:
+            if r.status == 404:
+                raise ValueError("Package does not exist. Check for spelling errors.")
 
-        if res.status_code == 404:
-            raise ValueError("Package does not exist. Check for spelling errors.")
-
-        json = res.json()
+            json = await r.json()
 
         embed = discord.Embed(
             title=json["info"]["name"],
@@ -243,7 +246,8 @@ class Utilities(commands.Cog):
     @app_commands.describe(package="The package to look for")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def npm(self, i: discord.Interaction, package: str):
-        json = requests.get(f"https://registry.npmjs.org/{package}").json()
+        async with self.bot.session.get(f"https://registry.npmjs.org/{package}") as r:
+            json = await r.json()
 
         if "error" in json:
             await i.response.send_message("❌ " + json["error"], ephemeral=True)
@@ -283,9 +287,10 @@ class Utilities(commands.Cog):
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def lyrics(self, i: discord.Interaction, query: str):
         await i.response.defer()
-        json = requests.get(
+        async with self.bot.session.get(
             f"https://some-random-api.com/lyrics?title={quote_plus(query)}"
-        ).json()
+        ) as r:
+            json = await r.json()
 
         if "error" in json:
             await i.followup.send("❌ " + json["error"])
@@ -317,15 +322,16 @@ class Utilities(commands.Cog):
     async def emoji(self, i: discord.Interaction, url: str, name: str):
         await i.response.defer(ephemeral=True)
         try:
-            req = requests.get(url)
-            if req.status_code != 200:
-                raise ValueError("Invalid image link")
-        except requests.RequestException:
-            raise ValueError("Invalid image link")
+            async with self.bot.session.get(url) as r:
+                if r.status != 200:
+                    raise ValueError("Invalid/incomplete URL.")
+                emoji_bytes = await r.read()
+        except aiohttp.ClientError:
+            raise ValueError("Invalid/incomplete URL.")
 
         try:
             emoji = await i.guild.create_custom_emoji(
-                name=name, image=req.content, reason=f"Uploaded by {i.user}"
+                name=name, image=emoji_bytes, reason=f"Uploaded by {i.user}"
             )
         except discord.HTTPException as e:
             if "File cannot be larger than 256" in str(e):
@@ -345,19 +351,11 @@ class Utilities(commands.Cog):
 
             return
         except Exception as e:
-            if isinstance(
-                e,
-                (
-                    requests.exceptions.MissingSchema,
-                    requests.exceptions.InvalidSchema,
-                    requests.exceptions.ConnectionError,
-                ),
-            ):
-                await i.followup.send(
-                    "❌ Invalid image. Please provide a valid image/gif URL."
-                )
-            elif isinstance(e, ValueError):
-                await i.followup.send(f"❌ {e}")
+            if isinstance(e, ValueError):
+                if "Unsupported image type given" in str(e):
+                    await i.followup.send(
+                        "❌ URL must directly point to a PNG, JPEG, GIF or WEBP."
+                    )
 
             return
 

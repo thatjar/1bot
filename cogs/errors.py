@@ -24,6 +24,8 @@ class ErrorButton(discord.ui.View):
 
 
 class Errors(commands.Cog):
+    """Cog to handle command errors. Does not contain any commands."""
+
     def __init__(self, bot):
         self.bot: commands.Bot = bot
 
@@ -33,8 +35,9 @@ class Errors(commands.Cog):
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
 
-    # automatically report exceptions that are not handled by the event listener
-    async def report_unknown_exception(self, i: discord.Interaction, error):
+    async def report_unknown_exception(self, i: discord.Interaction, error) -> None:
+        """Report an unknown exception to the error channel and send an error message to the user."""
+
         error_embed = discord.Embed(
             title="❌ Unhandled error",
             description="Oops, looks like that command returned an unknown error. The error has been automatically reported.",
@@ -75,6 +78,16 @@ class Errors(commands.Cog):
                 embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
             )
 
+    @staticmethod
+    async def send_error(i: discord.Interaction, error: str) -> None:
+        """Send an error message to the user."""
+
+        try:
+            await i.response.send_message(f"❌ {error}", ephemeral=True)
+        except discord.InteractionResponded:
+            await i.followup.send(f"❌ {error}", ephemeral=True)
+
+    # Error listeners
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandNotFound):
@@ -82,19 +95,13 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.NotOwner):
             return
         else:
-            logging.error(f"Error in command {ctx.command}: {error}")
+            await ctx.send(f"❌ {error}")
 
-    async def send_error(self, i: discord.Interaction, error: str):
-        try:
-            await i.response.send_message(f"❌ {error}", ephemeral=True)
-        except discord.InteractionResponded:
-            await i.followup.send(f"❌ {error}", ephemeral=True)
-
-    # Main application command error handler
+    # Main application command error listener
     async def tree_on_error(self, i: discord.Interaction, error):
-        if isinstance(error, app_commands.CommandNotFound):
-            return
-        elif "Unknown interaction" in str(error):
+        if isinstance(
+            error, app_commands.CommandNotFound
+        ) or "Unknown interaction" in str(error):
             return
 
         elif isinstance(error, app_commands.BotMissingPermissions):

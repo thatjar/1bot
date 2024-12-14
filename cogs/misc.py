@@ -1,3 +1,5 @@
+from sys import version_info
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -29,6 +31,12 @@ class Miscellaneous(commands.Cog):
         )
         if i.guild:
             embed.description += f"**Shard ID**: {i.guild.shard_id}"
+
+        embed.add_field(
+            name="Software versions",
+            value=f"Python: {version_info.major}.{version_info.minor}.{version_info.micro}\n"
+            f"discord.py: {discord.__version__}\n",
+        )
 
         embed.add_field(
             name="Source code",
@@ -64,6 +72,13 @@ class Miscellaneous(commands.Cog):
         user = user or i.user
         embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
         embed.set_image(url=user.avatar.url if type else user.display_avatar.url)
+        # Download links for all formats
+        links = []
+        for format in ("png", "jpg", "webp", "gif"):
+            if format == "gif" and not user.avatar.is_animated():
+                continue
+            links.append(f"[{format.upper()}]({user.avatar.with_format(format).url})")
+        embed.description = "**Download Links**\n" + " | ".join(links)
         await i.response.send_message(embed=embed)
 
     # userinfo
@@ -87,6 +102,9 @@ class Miscellaneous(commands.Cog):
         )
 
         if i.guild:
+            if user.nick:
+                embed.description += f"**Nickname**: {user.nick}\n"
+
             try:
                 embed.add_field(
                     name="Joined at",
@@ -95,14 +113,6 @@ class Miscellaneous(commands.Cog):
                 )
             except AttributeError:
                 embed.description += "**Joined at**: Could not determine\n"
-
-            if not user.bot:
-                if user.global_name != user.display_name:
-                    embed.description += f"**Nickname**: {user.display_name}\n"
-            else:
-                # bots do not have global_names
-                if user.name != user.display_name:
-                    embed.description += f"**Nickname**: {user.display_name}\n"
 
             if i.is_guild_integration():
                 embed.description += f"**Role count**: {len(user.roles)-1}\n"

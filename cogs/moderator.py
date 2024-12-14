@@ -57,8 +57,6 @@ class Moderator(commands.Cog):
 
     # embed
     @app_commands.command(name="embed", description="Create a rich embed")
-    @app_commands.allowed_installs(guilds=True, users=False)
-    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.checks.bot_has_permissions(send_messages=True)
     async def embed(self, i: discord.Interaction):

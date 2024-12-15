@@ -10,8 +10,10 @@ from config import config
 
 
 class Bot(commands.AutoShardedBot):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
+            *args,
+            **kwargs,
             command_prefix=commands.when_mentioned,
             help_command=None,
             intents=discord.Intents.default(),
@@ -25,7 +27,7 @@ class Bot(commands.AutoShardedBot):
             ),
         )
 
-    async def setup_hook(self):
+    async def setup_hook(self) -> None:
         await self.load_extension("jishaku")
         for cog in os.listdir("./cogs"):
             if cog.endswith(".py"):
@@ -35,16 +37,16 @@ class Bot(commands.AutoShardedBot):
 
         self.session = ClientSession()
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
     colour = 0xFF7000
-    server_invite = config["server_invite"]
-    website_url = config["website"]
     launch_time = int(datetime.now().timestamp())
 
 
 bot = Bot()
 
 if __name__ == "__main__":
-    bot.run(config["token"], log_level=logging.WARNING, root_logger=True)
+    logging_level = logging.DEBUG if config.get("debug") else logging.WARNING
+
+    bot.run(config["token"], log_level=logging_level, root_logger=True)

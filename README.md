@@ -25,21 +25,22 @@ Copyright notices must be preserved, and if your bot is made public, its source 
 You will have to create a `config.py` file in the root directory with the following contents:
 
 ```py
-config = {
+# Everything except "token" and "error_channel" is optional.
+config: dict = {
     "token": BOT_TOKEN,
-    "error_channel": ERROR_CHANNEL_ID,
+    "error_channel": ERROR_CHANNEL_ID, # Where unhandled exceptions will be reported. Bot must have access to the channel
     "server_invite": "https://discord.gg/JGcnKxEPsW",
     "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
     "website": "https://1bot.netlify.app",
-    # Emoji IDs to appear in buttons. If you don't want them, use None.
+    # Emoji IDs to appear in buttons
     "emojis": {
         "add_to_server": ...,
         "website": ...,
         "support": ...,
-        "license": ...,
     },
+    "debug": True # to use logging.DEBUG as log_level. Prints a LOT of stuff to the console
 }
 
 ```
 
-###### Copyright &copy; 2024-present thatjar. Not affiliated with Discord, Inc.
+###### Copyright &copy; 2024 thatjar. Not affiliated with Discord, Inc.

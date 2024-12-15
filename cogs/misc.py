@@ -48,7 +48,7 @@ class Miscellaneous(commands.Cog):
         embed.set_footer(
             text="Copyright (C) 2024-present thatjar. Not affiliated with Discord, Inc."
         )
-        await i.response.send_message(embed=embed, view=InfoButtons(self.bot))
+        await i.response.send_message(embed=embed, view=InfoButtons())
 
     # avatar
     @app_commands.command(name="avatar", description="Get a user's avatar")

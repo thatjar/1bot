@@ -12,13 +12,13 @@ from config import config
 
 
 class ErrorButton(discord.ui.View):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, _: commands.Bot):
         super().__init__()
         self.add_item(
             discord.ui.Button(
                 label="Join the Server",
-                url=bot.server_invite,
-                emoji=bot.get_emoji(config["emojis"]["support"]),
+                url=config["server_invite"],
+                emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
             )
         )
 

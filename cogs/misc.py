@@ -130,6 +130,7 @@ class Miscellaneous(commands.Cog):
     @app_commands.command(
         name="serverinfo", description="Get information about the server"
     )
+    @app_commands.allowed_installs(guilds=True, users=False)
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def serverinfo(self, i: discord.Interaction):

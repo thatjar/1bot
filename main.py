@@ -2,8 +2,8 @@ import logging
 import os
 from datetime import datetime
 
-from aiohttp import ClientSession
 import discord
+from aiohttp import ClientSession
 from discord.ext import commands
 
 from config import config

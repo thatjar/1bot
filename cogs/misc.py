@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from config import config
 from views import InfoButtons
 
 
@@ -38,12 +39,13 @@ class Miscellaneous(commands.Cog):
             f"discord.py: {discord.__version__}\n",
         )
 
-        embed.add_field(
-            name="Source code",
-            value="The bot's original source code is hosted on [GitHub](https://github.com/thatjar/1bot) "
-            + "under the [GNU Affero General Public License](https://github.com/thatjar/1bot/blob/main/LICENSE).\n",
-            inline=False,
-        )
+        if config.get("repository"):
+            embed.add_field(
+                name="Source code",
+                value=f"The bot's original source code is hosted on [GitHub]({config['repository']}) "
+                "under the [GNU Affero General Public License](https://gnu.org/licenses/agpl-3.0.html).\n",
+                inline=False,
+            )
 
         embed.set_footer(
             text="Copyright (C) 2024-present thatjar. Not affiliated with Discord, Inc."

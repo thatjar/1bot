@@ -1,4 +1,4 @@
-# This file is a cog to handle command errors
+# An extension to handle command errors
 
 
 import logging
@@ -12,15 +12,16 @@ from config import config
 
 
 class ErrorButton(discord.ui.View):
-    def __init__(self, _: commands.Bot):
-        super().__init__()
-        self.add_item(
-            discord.ui.Button(
-                label="Join the Server",
-                url=config["server_invite"],
-                emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if config.get("server_invite"):
+            self.add_item(
+                discord.ui.Button(
+                    label="Join the Server",
+                    url=config["server_invite"],
+                    emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
+                )
             )
-        )
 
 
 class Errors(commands.Cog):
@@ -28,55 +29,68 @@ class Errors(commands.Cog):
 
     def __init__(self, bot):
         self.bot: commands.Bot = bot
+        self.error_channel = None
 
-    def cog_load(self):
+    async def cog_load(self):
+        if config.get("error_channel"):
+            self.error_channel = await self.bot.fetch_channel(config["error_channel"])
         # attaching the handler when the cog is loaded and storing the old handler
         tree = self.bot.tree
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
 
+    @staticmethod
+    def create_error_embed(i: discord.Interaction, error) -> discord.Embed:
+        """Creates an error embed from an interaction and its error."""
+
+        embed = discord.Embed(
+            title="Error",
+            colour=0xFF0000,
+            description=f"Error while invoking command `{i.command.name}`:\n{error}",
+        )
+        embed.add_field(name="Via user install?", value=i.is_user_integration())
+        embed.add_field(name="Used in guild?", value=i.guild is not None)
+        if hasattr(i.command, "type"):
+            embed.add_field(name="Command type", value=i.command.type)
+        else:
+            embed.add_field(name="Command type", value="Slash")
+        embed.set_footer(text=f"User ID: {i.user.id}")
+
+        if i.namespace:
+            for option, value in i.namespace:
+                embed.add_field(
+                    name=f"Param: {option}", value=f"Value: {value}", inline=False
+                )
+
+        return embed
+
     async def report_unknown_exception(self, i: discord.Interaction, error) -> None:
-        """Report an unknown exception to the error channel and send an error message to the user."""
+        """Reports an unknown exception to the error channel and send an error message to the user."""
 
         error_embed = discord.Embed(
             title="❌ Unhandled error",
             description="Oops, looks like that command returned an unknown error. The error has been automatically reported.",
             colour=0xFF0000,
         )
-        error_embed.add_field(
-            name="Join our server to track this error",
-            value="If you would like to see more about this error and our progress on fixing it, join our server.",
-        )
+        if config.get("server_invite"):
+            error_embed.add_field(
+                name="Join our server to track this error",
+                value="If you would like to see more about this error and our progress on fixing it, join our server.",
+            )
 
-        # Embed to send to error channel
-        report_embed = discord.Embed(
-            title="Error",
-            colour=0xFF0000,
-            description=f"Error while invoking command `{i.command.name}`:\n{error}",
-        )
-        report_embed.add_field(name="Via user install?", value=i.is_user_integration())
-        report_embed.add_field(name="Used in guild?", value=i.guild is not None)
-        if hasattr(i.command, "type"):
-            report_embed.add_field(name="Command type", value=i.command.type)
+        if self.error_channel:
+            report_embed = self.create_error_embed(i, error)
+            await self.error_channel.send(embed=report_embed)
+
         else:
-            report_embed.add_field(name="Command type", value="Slash")
-        report_embed.set_footer(text=f"User ID: {i.user.id}")
+            logging.error(f"In command '{i.command.name}': {error}")
 
-        if i.namespace:
-            for option, value in i.namespace:
-                report_embed.add_field(
-                    name=f"Param: {option}", value=f"Value: {value}", inline=False
-                )
-
-        await self.bot.error_channel.send(embed=report_embed)
         try:
             await i.response.send_message(
-                embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
+                embed=error_embed, ephemeral=True, view=ErrorButton()
             )
         except discord.InteractionResponded:
-            await i.followup.send(
-                embed=error_embed, ephemeral=True, view=ErrorButton(self.bot)
-            )
+            await i.followup.send(embed=error_embed, ephemeral=True, view=ErrorButton())
 
     @staticmethod
     async def send_error(i: discord.Interaction, error: str) -> None:
@@ -107,14 +121,14 @@ class Errors(commands.Cog):
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
                 "I don't have enough permissions to run this command!\n"
-                + f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
-                + f"Please add these permissions to my role ('{self.bot.user.global_name}') in your server settings."
+                f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
+                f"Please add these permissions to my role ('{self.bot.user.global_name}') in your server settings."
             )
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.MissingPermissions):
             msg = (
                 "You don't have enough permissions to use this command.\n"
-                + f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
+                f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
             )
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.CommandOnCooldown):
@@ -136,8 +150,8 @@ class Errors(commands.Cog):
                 if error.response.content.get("global"):
                     logging.warning(
                         "GLOBAL RATELIMIT\n"
-                        + f"Retry after:{error.response.content['retry_after']}\n"
-                        + f"Caused by: {i.user.name} ({i.user.id})"
+                        f"Retry after:{error.response.content['retry_after']}\n"
+                        f"Caused by: {i.user.name} ({i.user.id})"
                     )
 
         elif isinstance(error, app_commands.CommandInvokeError):

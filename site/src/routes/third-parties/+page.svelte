@@ -3,6 +3,10 @@
 </svelte:head>
 
 <h1>List of Third Parties</h1>
+<p>
+  1Bot relies on these third parties for some of its functionality. We are not
+  responsible for how they handle the data you send to them.
+</p>
 <ul>
   <li>
     <a href="https://pypi.org">PyPI</a> <br />
@@ -78,4 +82,4 @@
 <div style="height: 50px;"></div>
 
 <hr />
-<h4>Last updated: 2024-12-13</h4>
+<h4>List last updated: 2024-12-13</h4>

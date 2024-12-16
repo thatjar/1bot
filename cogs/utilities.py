@@ -89,11 +89,11 @@ class Utilities(commands.Cog):
     ):
         if target.value == 0:
             await i.response.send_message(
-                f"{temperature}°F = **{round((temperature - 32) / 1.8, 2)}°C**"
+                f"{temperature}°F = **{((temperature - 32) / 1.8):.2f}°C**"
             )
         else:
             await i.response.send_message(
-                f"{temperature}°C = **{round((temperature * 9 / 5) + 32, 2)}°F**"
+                f"{temperature}°C = **{((temperature * 9 / 5) + 32):.2f}°F**"
             )
 
     # convert distance
@@ -119,11 +119,11 @@ class Utilities(commands.Cog):
     ):
         if target.value == 0:
             await i.response.send_message(
-                f"{distance} km = **{round(distance / 1.609344, 3)} mi**"
+                f"{distance} km = **{(distance / 1.609344):.3f} mi**"
             )
         else:
             await i.response.send_message(
-                f"{distance} mi = **{round(distance * 1.609344, 3)} km**"
+                f"{distance} mi = **{(distance * 1.609344):.3f} km**"
             )
 
     # convert length
@@ -147,13 +147,9 @@ class Utilities(commands.Cog):
         target: app_commands.Choice[int],
     ):
         if target.value == 0:
-            await i.response.send_message(
-                f"{length} cm = **{round(length / 2.54, 2)} in**"
-            )
+            await i.response.send_message(f"{length} cm = **{(length / 2.54):.2f} in**")
         else:
-            await i.response.send_message(
-                f"{length} in = **{round(length * 2.54, 2)} cm**"
-            )
+            await i.response.send_message(f"{length} in = **{(length * 2.54):.2f} cm**")
 
     # convert weight
     @convert.command(
@@ -177,11 +173,11 @@ class Utilities(commands.Cog):
     ):
         if target.value == 0:
             await i.response.send_message(
-                f"{weight} kg = **{round(weight * 2.20462, 2)} lbs**"
+                f"{weight} kg = **{(weight * 2.20462):.2f} lbs**"
             )
         else:
             await i.response.send_message(
-                f"{weight} lbs = **{round(weight / 2.20462, 2)} kg**"
+                f"{weight} lbs = **{(weight / 2.20462):.2f} kg**"
             )
 
     # github

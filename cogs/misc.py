@@ -27,7 +27,7 @@ class Miscellaneous(commands.Cog):
             description=f"**Servers**: {len(self.bot.guilds)}\n"
             f"**User installs**: {user_installs}\n"
             f"**Uptime**: <t:{self.bot.launch_time}:R>\n"
-            f"**Websocket latency**: {round(self.bot.latency * 1000)} ms\n"
+            f"**Websocket latency**: {(self.bot.latency * 1000):.0f} ms\n"
             f"**Command count**: {len(self.bot.tree.get_commands())} (not including subcommands)\n",
         )
         if i.guild:
@@ -98,23 +98,20 @@ class Miscellaneous(commands.Cog):
             f"**Display name**: {user.global_name}\n",
         )
         embed.add_field(
-            name="Created at",
-            value=f"<t:{round(user.created_at.timestamp())}:F>\n"
-            f"(Timestamp: {round(user.created_at.timestamp())})",
+            name="Created at", value=f"<t:{user.created_at.timestamp():.0f}:F>\n"
         )
 
         if i.guild:
             if user.nick:
                 embed.description += f"**Nickname**: {user.nick}\n"
 
-            try:
+            if user.joined_at is not None:
                 embed.add_field(
                     name="Joined at",
-                    value=f"<t:{round(user.joined_at.timestamp())}:F>\n"
-                    f"(Timestamp: {round(user.created_at.timestamp())})",
+                    value=f"<t:{user.joined_at.timestamp():.0f}:F>",
                 )
-            except AttributeError:
-                embed.description += "**Joined at**: Could not determine\n"
+            else:
+                embed.add_field(name="Joined at", value="Unknown")
 
             if i.is_guild_integration():
                 embed.description += f"**Role count**: {len(user.roles)-1}\n"
@@ -151,8 +148,8 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title=guild.name,
             colour=self.bot.colour,
-            description=f"**Member count**: {guild.approximate_member_count} (approximate)\n"
-            f"**Created at**: <t:{round(guild.created_at.timestamp())}:F>\n"
+            description=f"**Member count**: {guild.approximate_member_count}\n"
+            f"**Created at**: <t:{guild.created_at.timestamp():.0f}:F>\n"
             f"**Verification**: {vl_strings[guild.verification_level]}\n"
             f"**Boost level**: {guild.premium_tier}\n"
             f"**Boosts**: {guild.premium_subscription_count}\n"

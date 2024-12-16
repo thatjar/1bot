@@ -132,7 +132,7 @@ class Errors(commands.Cog):
             )
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.CommandOnCooldown):
-            msg = f"This command is on cooldown, try again in {round(error.retry_after, 1)} seconds."
+            msg = f"This command is on cooldown, try again in {error.retry_after:.1f} seconds."
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.TransformerError):
             await self.send_error(i, error)

@@ -1,3 +1,4 @@
+import importlib
 import logging
 
 from discord.ext import commands, tasks
@@ -29,9 +30,9 @@ class Etc(commands.Cog):
         except Exception as e:
             logging.error(f"Failed to post guild count to top.gg:\n{e}")
 
-    @commands.command()
+    @commands.command(aliases=["re"])
     @commands.is_owner()
-    async def reload(self, ctx, *, cogs: str = None):
+    async def reload(self, ctx: commands.Context, *, cogs: str = None):
         try:
             if not cogs:
                 cogs_to_reload = [
@@ -45,6 +46,18 @@ class Etc(commands.Cog):
             await ctx.send("✅ Reloaded successfully.")
         except commands.ExtensionError as e:
             await ctx.send(f"❌ {e}")
+
+    @commands.command(aliases=["ri"])
+    @commands.is_owner()
+    async def reloadimport(self, ctx: commands.Context, module: str):
+        try:
+            module = importlib.import_module(module)
+        except ModuleNotFoundError:
+            await ctx.send(f"❌ Module {module} not found.")
+            return
+
+        importlib.reload(module)
+        await ctx.send("✅ Reloaded successfully.")
 
 
 async def setup(bot):

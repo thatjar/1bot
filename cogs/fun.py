@@ -69,12 +69,12 @@ class TicTacToeButton(discord.ui.Button):
 
 
 class TicTacToe(discord.ui.View):
+    X = -1
+    O = 1  # noqa: E741
+    Tie = 2
 
     def __init__(self, p1: discord.User, p2: discord.User):
         super().__init__(timeout=60)
-        self.X = -1
-        self.O = 1
-        self.Tie = 2
         self.p1 = p1.id
         self.p2 = p2.id
         self.current_player = self.X
@@ -217,13 +217,15 @@ class Fun(commands.Cog):
         )
         await view.wait()
         if view.accepted is False:
-            return await i.edit_original_response(
+            await i.edit_original_response(
                 content=f"The challenge was **rejected** by {user.mention}.", view=None
             )
+            return
         elif view.accepted is None:
-            return await i.edit_original_response(
+            await i.edit_original_response(
                 content=f"{user.mention} did not respond in time.", view=None
             )
+            return
 
         view = TicTacToe(i.user, user)
         await i.edit_original_response(
@@ -255,15 +257,17 @@ class Fun(commands.Cog):
         )
         await view.wait()
         if view.accepted is False:
-            return await i.edit_original_response(
+            await i.edit_original_response(
                 content=f"The challenge was **rejected** by {user.mention}.",
                 view=None,
             )
+            return
         elif view.accepted is None:
-            return await i.edit_original_response(
+            await i.edit_original_response(
                 content=f"{user.mention} did not respond in time.",
                 view=None,
             )
+            return
 
         view = RockPaperScissors(i.user, user)
         embed = discord.Embed(

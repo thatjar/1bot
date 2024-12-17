@@ -307,22 +307,11 @@ class Fun(commands.Cog):
     # quote (ctxmenu)
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
-        if not 0 < len(message.content) <= 100:
-            raise ValueError("The text must have 1-100 characters.")
-        await i.response.defer()
-        embed = discord.Embed(
-            colour=self.bot.colour,
-            title=f"a beautiful quote from {message.author.display_name}",
-        )
-        embed.set_image(
-            url=(
-                f"https://api.popcat.xyz/quote?image={quote_plus(message.author.display_avatar.url)}"
-                f"&text={quote_plus(message.content)}"
-                f"&name={quote_plus(message.author.display_name)}"
-            )
-        )
-
-        await i.followup.send(embed=embed)
+        if not message.content:
+            raise ValueError("The message has no text content.")
+        if len(message.content) > 100:
+            raise ValueError("The text must have no more than 100 characters.")
+        await self.quote.callback(self, i, message.content)
 
     # quote
     @app_commands.command(name="quote", description="Create a quote image")
@@ -331,12 +320,16 @@ class Fun(commands.Cog):
     )
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote(
-        self, i: discord.Interaction, quote: str, user: discord.Member = None
+        self,
+        i: discord.Interaction,
+        quote: str,
+        user: discord.Member | discord.User = None,
     ):
         if user is None:
             user = i.user
         if len(quote) > 100:
             raise ValueError("The text must have no more than 100 characters.")
+
         await i.response.defer()
         embed = discord.Embed(
             colour=self.bot.colour,

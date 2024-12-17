@@ -1,13 +1,16 @@
+import logging
 import random
+from io import BytesIO
 from urllib.parse import quote_plus
 
-from aiohttp import ClientSession
+import aiohttp
 import discord
+from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from views import Confirm
 from main import Bot
+from views import Confirm
 
 
 class TicTacToeButton(discord.ui.Button):
@@ -311,7 +314,7 @@ class Fun(commands.Cog):
             raise ValueError("The message has no text content.")
         if len(message.content) > 100:
             raise ValueError("The text must have no more than 100 characters.")
-        await self.quote.callback(self, i, message.content)
+        await self.quote.callback(self, i, message.content, message.author)
 
     # quote
     @app_commands.command(name="quote", description="Create a quote image")
@@ -331,20 +334,33 @@ class Fun(commands.Cog):
             raise ValueError("The text must have no more than 100 characters.")
 
         await i.response.defer()
+        url = (
+            "https://api.popcat.xyz/quote?image="
+            f"{quote_plus(user.display_avatar.url)}"
+            f"&text={quote_plus(quote)}"
+            f"&name={quote_plus(user.display_name)}"
+        )
+
+        try:
+            async with self.bot.session.get(url) as r:
+                if not r.ok:
+                    raise ValueError("Couldn't retrieve data. Try again later.")
+                image_bytes = await r.content.read()
+                with BytesIO(image_bytes) as fp:
+                    url = "attachment://quote.png"
+                    file = discord.File(fp, "quote.png")
+        except aiohttp.ClientError:
+            raise ValueError("Couldn't retrieve data. Try again later.")
+        except Exception as e:
+            logging.error(e)
+
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"a beautiful quote from {user.display_name}",
         )
-        embed.set_image(
-            url=(
-                "https://api.popcat.xyz/quote?image="
-                f"{quote_plus(user.display_avatar.url)}"
-                f"&text={quote_plus(quote)}"
-                f"&name={quote_plus(user.display_name)}"
-            )
-        )
+        embed.set_image(url=url)
 
-        await i.followup.send(embed=embed)
+        await i.followup.send(file=file, embed=embed)
 
     # pickupline
     @app_commands.command(name="pickupline", description="Get a pickup line")
@@ -512,12 +528,6 @@ class Fun(commands.Cog):
     async def megamind(self, i: discord.Interaction, text: str):
         if len(text) > 200:
             raise ValueError("The text must be no more than 200 characters.")
-
-        async with self.bot.session.get(
-            f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
-        ) as r:
-            if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
 
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(

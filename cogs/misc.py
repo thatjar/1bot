@@ -73,13 +73,17 @@ class Miscellaneous(commands.Cog):
     ):
         user = user or i.user
         embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
-        embed.set_image(url=user.avatar.url if type else user.display_avatar.url)
+        asset = user.avatar if type and user.avatar else user.display_avatar
+        embed.set_image(url=asset.url)
         # Download links for all formats
         links = []
-        for format in ("png", "jpg", "webp", "gif"):
-            if format == "gif" and not user.avatar.is_animated():
-                continue
-            links.append(f"[{format.upper()}]({user.avatar.with_format(format).url})")
+        if user.avatar is not None:
+            for format in ("png", "jpg", "webp", "gif"):
+                if format == "gif" and not asset.is_animated():
+                    continue
+                links.append(f"[{format.upper()}]({asset.with_format(format).url})")
+        else:
+            links.append(f"[PNG]({asset.url})")
         embed.description = "**Download Links**\n" + " | ".join(links)
         await i.response.send_message(embed=embed)
 

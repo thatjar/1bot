@@ -1,9 +1,6 @@
-import logging
 import random
-from io import BytesIO
 from urllib.parse import quote_plus
 
-import aiohttp
 import discord
 from aiohttp import ClientSession
 from discord import app_commands
@@ -341,26 +338,13 @@ class Fun(commands.Cog):
             f"&name={quote_plus(user.display_name)}"
         )
 
-        try:
-            async with self.bot.session.get(url) as r:
-                if not r.ok:
-                    raise ValueError("Couldn't retrieve data. Try again later.")
-                image_bytes = await r.content.read()
-                with BytesIO(image_bytes) as fp:
-                    url = "attachment://quote.png"
-                    file = discord.File(fp, "quote.png")
-        except aiohttp.ClientError:
-            raise ValueError("Couldn't retrieve data. Try again later.")
-        except Exception as e:
-            logging.error(e)
-
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"a beautiful quote from {user.display_name}",
         )
         embed.set_image(url=url)
 
-        await i.followup.send(file=file, embed=embed)
+        await i.followup.send(embed=embed)
 
     # pickupline
     @app_commands.command(name="pickupline", description="Get a pickup line")

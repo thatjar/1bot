@@ -10,8 +10,17 @@
   </p>
   <p>
     By using 1Bot, i.e., by using any of its features within Direct Messages or
-    any Discord server, you agree to be bound by these terms of service. The
-    terms apply to all users of 1Bot.
+    any Discord server, you agree to be bound by these Terms of Service. This
+    applies to all users of 1Bot.
+  </p>
+
+  <h2>These Terms are an extension of 1Bot's License.</h2>
+  <p>
+    1Bot is licensed under the <a
+      href="https://github.com/thatjar/1bot/blob/main/LICENSE"
+      target="_blank">GNU AGPL v3 License</a
+    >. Please read the license to understand your rights and obligations when
+    using 1Bot and its source code.
   </p>
 
   <h2>We may use your feedback and inputs to improve 1Bot.</h2>
@@ -22,19 +31,9 @@
     improve 1Bot without any payment to you.
   </p>
 
-  <h2>You are free to use, modify and redistribute 1Bot.</h2>
-  <p>
-    1Bot is licensed under the <a href="https://gnu.org/licenses/agpl-3.0.html"
-      >GNU AGPL v3 License</a
-    >. The License grants rights to users to make modifications to the original
-    source code of 1Bot, as long as it remains Free Software for all its users -
-    Free as in Freedom, not price. If you are creating a derivative work based
-    on 1Bot, please go through the License thoroughly.
-  </p>
-
   <h2>We make use of open-source software to develop 1Bot.</h2>
   <p>
-    1Bot itself is <a href="https://github.com/thatjar/1bot"
+    1Bot itself is <a href="https://github.com/thatjar/1bot" target="_blank"
       >open-source on GitHub</a
     >
     and is licensed under the GNU AGPL v3 License. We retain all intellectual property
@@ -50,44 +49,22 @@
     1Bot provides content from various third-party sources. We have no control
     over said sources and cannot guarantee that the content is accurate,
     up-to-date, complete, unharmful or appropriate. The list of third-party
-    sources is <a href="/third-parties">here</a>.
+    sources is <a href="/third-parties" target="_blank">here</a>.
   </p>
 
-  <h2>1Bot does not provide a warranty.</h2>
+  <h2>Limitation of Liability</h2>
   <p>
-    As stated in the <a
-      href="https://gnu.org/licenses/agpl-3.0.html"
-      target="_blank">License</a
-    >:
-  </p>
-  <p>
-    THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE
-    LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
-    OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND,
-    EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
-    ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.
-    SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY
-    SERVICING, REPAIR OR CORRECTION.
+    Please refer to <a
+      href="https://github.com/thatjar/1bot/blob/main/LICENSE#L598"
+      >Section 16 of the License</a
+    > for the details on the limitation of liability.
   </p>
 
-  <h2>We have limited liability for damages.</h2>
+  <h2>Governing Law</h2>
   <p>
-    As stated in the <a
-      href="https://gnu.org/licenses/agpl-3.0.html"
-      target="_blank">License</a
-    >:
-  </p>
-  <p>
-    IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL
-    ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE
-    PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
-    GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE
-    OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA
-    OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
-    PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
-    EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
-    SUCH DAMAGES.
+    These Terms shall be governed and construed in accordance with the laws of
+    the Republic of India and the State of Karnataka, without regard to its
+    conflict of law provisions.
   </p>
 
   <h2>These Terms are subject to change.</h2>
@@ -97,4 +74,4 @@
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2024-11-11</h4>
+<h4>Last updated: 2025-02-28</h4>

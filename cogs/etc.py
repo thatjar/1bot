@@ -1,10 +1,13 @@
 import importlib
 import logging
+from typing import TYPE_CHECKING
 
 from discord.ext import commands, tasks
 
 from config import config
-from main import Bot
+
+if TYPE_CHECKING:
+    from main import Bot
 
 
 class Etc(commands.Cog):

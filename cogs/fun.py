@@ -1,4 +1,5 @@
 import random
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 import discord
@@ -6,8 +7,10 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from main import Bot
 from views import Confirm
+
+if TYPE_CHECKING:
+    from main import Bot
 
 
 class TicTacToeButton(discord.ui.Button):

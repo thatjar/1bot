@@ -5,43 +5,6 @@ from discord import app_commands
 from discord.ext import commands
 
 
-class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
-    embed_title = discord.ui.TextInput(label="Title (Required)", max_length=256)
-    contents = discord.ui.TextInput(
-        label="Contents (Required)",
-        placeholder="Markdown supported",
-        max_length=4000,
-        style=discord.TextStyle.paragraph,
-    )
-    thumbnail = discord.ui.TextInput(
-        label="Thumbnail", placeholder="Image URL", required=False
-    )
-    image = discord.ui.TextInput(
-        label="Main Image", placeholder="Image URL", required=False
-    )
-    show_author = discord.ui.TextInput(
-        label="Show you as the author?",
-        placeholder="y/n (default: no)",
-        min_length=1,
-        max_length=1,
-        required=False,
-    )
-
-    async def on_submit(self, i: discord.Interaction):
-        embed = discord.Embed(
-            title=self.embed_title.value,
-            description=self.contents.value,
-        )
-        if self.thumbnail.value:
-            embed.set_thumbnail(url=self.thumbnail.value)
-        if self.image.value:
-            embed.set_image(url=self.image.value)
-        if self.show_author.value.lower() == "y":
-            embed.set_author(name=i.user.display_name, icon_url=i.user.avatar.url)
-        await i.channel.send(embed=embed)
-        await i.response.send_message("✅ Sent the embed.", ephemeral=True)
-
-
 class Moderator(commands.Cog):
     def __init__(self, bot):
         self.bot: commands.Bot = bot
@@ -60,6 +23,44 @@ class Moderator(commands.Cog):
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.checks.bot_has_permissions(send_messages=True)
     async def embed(self, i: discord.Interaction):
+        class EmbedSetup(discord.ui.Modal, title="Embed Setup"):
+            embed_title = discord.ui.TextInput(label="Title (Required)", max_length=256)
+            contents = discord.ui.TextInput(
+                label="Contents (Required)",
+                placeholder="Markdown supported",
+                max_length=4000,
+                style=discord.TextStyle.paragraph,
+            )
+            thumbnail = discord.ui.TextInput(
+                label="Thumbnail", placeholder="Image URL", required=False
+            )
+            image = discord.ui.TextInput(
+                label="Main Image", placeholder="Image URL", required=False
+            )
+            show_author = discord.ui.TextInput(
+                label="Show you as the author?",
+                placeholder="y/n (default: no)",
+                min_length=1,
+                max_length=1,
+                required=False,
+            )
+
+            async def on_submit(self, i: discord.Interaction):
+                embed = discord.Embed(
+                    title=self.embed_title.value,
+                    description=self.contents.value,
+                )
+                if self.thumbnail.value:
+                    embed.set_thumbnail(url=self.thumbnail.value)
+                if self.image.value:
+                    embed.set_image(url=self.image.value)
+                if self.show_author.value.lower() == "y":
+                    embed.set_author(
+                        name=i.user.display_name, icon_url=i.user.avatar.url
+                    )
+                await i.channel.send(embed=embed)
+                await i.response.send_message("✅ Sent the embed.", ephemeral=True)
+
         await i.response.send_modal(EmbedSetup())
 
     # group for /purge commands

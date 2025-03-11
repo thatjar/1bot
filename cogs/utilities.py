@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -5,12 +6,21 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from main import Bot
+from utils import lang_autocomplete, lang_dict, translator
+
+if TYPE_CHECKING:
+    from main import Bot
 
 
 class Utilities(commands.Cog):
     def __init__(self, bot):
         self.bot: Bot = bot
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(
+                name="Translate to English",
+                callback=self.translate_ctx,
+            )
+        )
 
     # weather
     @app_commands.command(name="weather", description="Get weather information")
@@ -57,7 +67,7 @@ class Utilities(commands.Cog):
         )
         embed.add_field(
             name="Alerts",
-            value=data["location"]["alert"] or "No alerts for this area",
+            value=data["location"].get("alert", "No alerts for this area"),
             inline=False,
         )
 
@@ -226,12 +236,12 @@ class Utilities(commands.Cog):
         embed.add_field(name="Author", value=json["info"]["author"])
 
         if json["info"]["license"]:
-            if len(json["info"]["license"]) <= 1024:
+            if len(json["info"]["license"]) <= 500:
                 embed.add_field(name="License", value=json["info"]["license"])
             else:
                 embed.add_field(
                     name="License",
-                    value=json["info"]["license"][:30] + "...",
+                    value=json["info"]["license"][:497] + "...",
                     inline=False,
                 )
 
@@ -356,6 +366,46 @@ class Utilities(commands.Cog):
             return
 
         await i.followup.send(f"✅ Created emoji {emoji}")
+
+    # translate
+    @app_commands.command(
+        name="translate", description="Translate text via Google Translate"
+    )
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    @app_commands.describe(
+        text="The text to translate",
+        destination="The language to translate to (default: English)",
+        source="The language to translate from (default: auto-detect)",
+    )
+    @app_commands.autocomplete(destination=lang_autocomplete, source=lang_autocomplete)
+    async def translate(
+        self,
+        i: discord.Interaction,
+        text: str,
+        destination: str = "en",
+        source: str = "auto",
+    ):
+        await i.response.defer()
+        translation = await translator.translate(text, dest=destination, src=source)
+        embed = (
+            discord.Embed(colour=self.bot.colour)
+            .add_field(
+                name=f"Original ({lang_dict[translation.src].title()})",
+                value=text,
+                inline=False,
+            )
+            .add_field(
+                name=f"Translation ({lang_dict[destination].title()})",
+                value=translation.text,
+                inline=False,
+            )
+        )
+        await i.followup.send(embed=embed)
+
+    # translate (ctxmenu)
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    async def translate_ctx(self, i: discord.Interaction, message: discord.Message):
+        await self.translate.callback(self, i, message.content)
 
 
 async def setup(bot):

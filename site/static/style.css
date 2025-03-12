@@ -6,7 +6,7 @@ body {
   height: 100%;
   font-family: Inter, sans-serif;
   color: white;
-  background-color: #252730;
+  background-color: #23242c;
   scroll-behavior: smooth;
   line-height: 1.5em;
 }
@@ -25,9 +25,9 @@ a {
 }
 
 h1 {
-  font-size: 2.25rem;
+  font-size: 3rem;
   font-family: Outfit, sans-serif;
-  line-height: 2.5rem;
+  line-height: 3rem;
 }
 
 h2 {
@@ -54,10 +54,10 @@ h2 {
 
 footer {
   position: sticky;
-  top: 80vh;
+  top: 100vh;
   padding: 1rem;
   margin: -8px;
-  margin-top: 150px;
+  margin-top: 125px;
   background-color: #000;
 }
 
@@ -80,6 +80,11 @@ footer h5 {
   color: #b8b8b8;
   margin-bottom: 0;
   margin-top: 15px;
+}
+
+footer h1 {
+  font-family: Outfit, sans-serif;
+  font-size: 2rem;
 }
 
 footer a {

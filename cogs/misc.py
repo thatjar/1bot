@@ -102,7 +102,8 @@ class Miscellaneous(commands.Cog):
             f"**Display name**: {user.global_name}\n",
         )
         embed.add_field(
-            name="Created at", value=f"<t:{user.created_at.timestamp():.0f}:F>\n"
+            name="Account created:",
+            value=f"<t:{user.created_at.timestamp():.0f}:F>\n",
         )
 
         if i.guild:
@@ -111,7 +112,7 @@ class Miscellaneous(commands.Cog):
 
             if user.joined_at is not None:
                 embed.add_field(
-                    name="Joined at",
+                    name="Joined this server:",
                     value=f"<t:{user.joined_at.timestamp():.0f}:F>",
                 )
             else:

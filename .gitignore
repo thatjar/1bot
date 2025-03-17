@@ -1,7 +1,9 @@
-# Global
 config.py
 __pycache__
 .vscode
+
+# Pterodactyl
+.local
 
 # Site
 site/.svelte-kit

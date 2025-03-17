@@ -2,8 +2,9 @@ config.py
 __pycache__
 .vscode
 
-# Pterodactyl
+# Pterodactyl server
 .local
+.cache
 
 # Site
 site/.svelte-kit

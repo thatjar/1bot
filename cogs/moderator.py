@@ -412,7 +412,7 @@ class Moderator(commands.Cog):
     # ban
     @app_commands.command(
         name="ban",
-        description="Ban a user, regardless of their presence in this server.",
+        description="Ban a user, regardless of their presence in this server",
     )
     @app_commands.default_permissions(ban_members=True)
     @app_commands.checks.has_permissions(ban_members=True)

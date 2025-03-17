@@ -318,12 +318,10 @@ class Utilities(commands.Cog):
 
     # create emoji
     @app_commands.command(name="emoji", description="Create an emoji from a link")
-    @app_commands.allowed_installs(guilds=True, users=False)
-    @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.default_permissions(create_expressions=True)
     @app_commands.checks.has_permissions(create_expressions=True)
     @app_commands.checks.bot_has_permissions(create_expressions=True)
-    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
     async def emoji(self, i: discord.Interaction, url: str, name: str):
         await i.response.defer(ephemeral=True)
@@ -354,6 +352,12 @@ class Utilities(commands.Cog):
                 )
             elif "Maximum number of emojis reached" in str(e):
                 await i.followup.send("❌ This server has reached its emoji limit.")
+            elif "Failed to resize asset below the maximum size" in str(e):
+                await i.followup.send(
+                    "❌ The image is too large to be resized to an emoji."
+                )
+            else:
+                raise e
 
             return
         except Exception as e:
@@ -362,6 +366,8 @@ class Utilities(commands.Cog):
                     await i.followup.send(
                         "❌ URL must directly point to a PNG, JPEG, GIF or WEBP."
                     )
+            else:
+                raise e
 
             return
 

@@ -367,7 +367,7 @@ class Fun(commands.Cog):
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")
     @app_commands.describe(question="The question to ask")
     @app_commands.checks.cooldown(1, 5, key=lambda i: i.channel)
-    async def _8ball(self, i: discord.Interaction, question: str):
+    async def eightball(self, i: discord.Interaction, question: str):
         responses = [
             # Affirmative
             "It is certain.",

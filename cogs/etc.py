@@ -1,5 +1,6 @@
 import importlib
 import logging
+import subprocess
 from typing import TYPE_CHECKING
 
 from discord.ext import commands, tasks
@@ -46,7 +47,10 @@ class Etc(commands.Cog):
 
             for cog in cogs_to_reload:
                 await self.bot.reload_extension(cog)
-            await ctx.send("✅ Reloaded successfully.")
+            await ctx.send(
+                "✅ Reloaded cogs:\n"
+                + "\n".join([f"`{cog}`" for cog in cogs_to_reload])
+            )
         except commands.ExtensionError as e:
             await ctx.send(f"❌ {e}")
 
@@ -61,6 +65,25 @@ class Etc(commands.Cog):
 
         importlib.reload(module)
         await ctx.send("✅ Reloaded successfully.")
+
+    @commands.command(aliases=["u"])
+    @commands.is_owner()
+    async def update(self, ctx: commands.Context):
+        await ctx.send("Pulling from `origin main`...")
+
+        try:
+            # Requires git to be configured on server
+            subprocess.run(
+                ["git", "pull", "origin", "main"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except subprocess.CalledProcessError as e:
+            await ctx.send(f"❌ {e}")
+            return
+
+        await ctx.invoke(self.bot.get_command("reload"))
 
 
 async def setup(bot):

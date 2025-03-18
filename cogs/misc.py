@@ -70,7 +70,7 @@ class Miscellaneous(commands.Cog):
     @app_commands.choices(
         type=[
             app_commands.Choice(name="Server", value=0),
-            app_commands.Choice(name="User", value=1),
+            app_commands.Choice(name="User (Global)", value=1),
         ]
     )
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
@@ -81,18 +81,31 @@ class Miscellaneous(commands.Cog):
         type: app_commands.Choice[int] = 0,
     ):
         user = user or i.user
-        embed = discord.Embed(colour=self.bot.colour, title=(f"{user.name}'s avatar"))
-        asset = user.avatar if type and user.avatar else user.display_avatar
+        embed = discord.Embed(colour=self.bot.colour)
+
+        if type == 1:
+            embed.title = f"{user.global_name or user.name}'s global avatar"
+        else:
+            embed.title = f"{user.display_name}'s avatar in this server"
+
+        asset: discord.Asset = (
+            user.avatar if type == 1 and user.avatar else user.display_avatar
+        )
         embed.set_image(url=asset.url)
+
         # Download links for all formats
         links = []
         if user.avatar is not None:
             for format in ("png", "jpg", "webp", "gif"):
+                # Skip GIF if the avatar is not animated
                 if format == "gif" and not asset.is_animated():
                     continue
+
                 links.append(f"[{format.upper()}]({asset.with_format(format).url})")
         else:
+            # If user has no avatar, only PNG is available
             links.append(f"[PNG]({asset.url})")
+
         embed.description = "**Download Links**\n" + " | ".join(links)
         await i.response.send_message(embed=embed)
 
@@ -107,7 +120,6 @@ class Miscellaneous(commands.Cog):
             title=user.name,
             colour=self.bot.colour,
             description=f"**ID**: {user.id}\n"
-            f"**Bot**: {user.bot}\n"
             f"**Display name**: {user.global_name}\n",
         )
         embed.add_field(
@@ -128,6 +140,7 @@ class Miscellaneous(commands.Cog):
                 embed.add_field(name="Joined at", value="Unknown")
 
             if i.is_guild_integration():
+                # -1 to exclude the @everyone role
                 embed.description += f"**Role count**: {len(user.roles)-1}\n"
 
         embed.set_thumbnail(url=user.avatar.url)

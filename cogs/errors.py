@@ -44,8 +44,10 @@ class Errors(commands.Cog):
         tree.on_error = self.tree_on_error
 
     @staticmethod
-    def create_error_embed(i: discord.Interaction, error) -> discord.Embed:
-        """Creates an error embed from an interaction and its error."""
+    def create_error_embed(
+        i: discord.Interaction, error: app_commands.AppCommandError
+    ) -> discord.Embed:
+        """Creates an error report embed from an interaction and its error."""
 
         embed = discord.Embed(
             title="Error",
@@ -68,18 +70,20 @@ class Errors(commands.Cog):
 
         return embed
 
-    async def report_unknown_exception(self, i: discord.Interaction, error) -> None:
+    async def report_unknown_exception(
+        self, i: discord.Interaction, error: app_commands.AppCommandError
+    ) -> None:
         """Reports an unknown exception to the error channel and send an error message to the user."""
 
-        error_embed = discord.Embed(
+        user_embed = discord.Embed(
             title="❌ Unhandled error",
-            description="Oops, looks like that command returned an unknown error. The error has been automatically reported.",
+            description="Oops, looks like that command caused an unknown error. The error has been automatically reported.",
             colour=0xFF0000,
         )
         if config.get("server_invite"):
-            error_embed.add_field(
-                name="Join our server to track this error",
-                value="If you would like to see more about this error and our progress on fixing it, join our server.",
+            user_embed.add_field(
+                name="Join the server to track this error",
+                value="If you would like to know more about this error and the progress on fixing it, join the server.",
             )
 
         if self.error_channel:
@@ -91,10 +95,10 @@ class Errors(commands.Cog):
 
         try:
             await i.response.send_message(
-                embed=error_embed, ephemeral=True, view=ErrorButton()
+                embed=user_embed, ephemeral=True, view=ErrorButton()
             )
         except discord.InteractionResponded:
-            await i.followup.send(embed=error_embed, ephemeral=True, view=ErrorButton())
+            await i.followup.send(embed=user_embed, ephemeral=True, view=ErrorButton())
 
     @staticmethod
     async def send_error(i: discord.Interaction, error: str) -> None:

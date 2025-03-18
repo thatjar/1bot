@@ -37,15 +37,15 @@ class Utilities(commands.Cog):
                 json = await r.json()
             except aiohttp.ContentTypeError:
                 raise ValueError("Invalid location")
+        if not json:  # handle empty response
+            raise ValueError("Invalid location")
 
         data = json[0]
 
         embed = discord.Embed(
-            colour=self.bot.colour, description=data["current"]["skytext"]
-        )
-        embed.set_author(
-            icon_url=data["current"]["imageUrl"],
-            name=f"Weather in {data['current']['observationpoint']}",
+            colour=self.bot.colour,
+            description=data["current"]["skytext"],
+            title=f"Weather in {data['current']['observationpoint']}",
         )
 
         embed.add_field(
@@ -67,7 +67,7 @@ class Utilities(commands.Cog):
         )
         embed.add_field(
             name="Alerts",
-            value=data["location"].get("alert", "No alerts for this area"),
+            value=data["location"].get("alert") or "No alerts for this area",
             inline=False,
         )
 
@@ -103,7 +103,7 @@ class Utilities(commands.Cog):
             )
         else:
             await i.response.send_message(
-                f"{temperature}°C = **{((temperature * 9 / 5) + 32):.2f}°F**"
+                f"{temperature}°C = **{((temperature * 1.8) + 32):.2f}°F**"
             )
 
     # convert distance
@@ -193,20 +193,22 @@ class Utilities(commands.Cog):
     # github
     @app_commands.command(name="github", description="Search GitHub repositories")
     @app_commands.describe(query="The query to search for")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def github(self, i: discord.Interaction, query: str):
+        await i.response.defer()
+
         async with self.bot.session.get(
             f"https://api.github.com/search/repositories?q={query}"
         ) as r:
             json = await r.json()
 
         if json["total_count"] == 0:
-            await i.response.send_message(
-                "❌ No matching repositories found.", ephemeral=True
-            )
+            await i.followup.send("❌ No matching repositories found.")
         else:
-            await i.response.send_message(
-                f'First result for your query:\n{json["items"][0]["html_url"]}'
+            await i.followup.send(
+                f"First result for your query:\n"
+                # Markdown hyperlink
+                f'[{json["items"][0]["full_name"]}]({json["items"][0]["html_url"]})'
             )
 
     # pypi

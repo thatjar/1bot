@@ -10,7 +10,6 @@ from config import config
 
 
 class Bot(commands.AutoShardedBot):
-    error_channel: discord.TextChannel
     session: ClientSession
     launch_time: int
     colour = 0xFF7000

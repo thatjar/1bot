@@ -329,7 +329,9 @@ class Utilities(commands.Cog):
             async with self.bot.session.get(url) as r:
                 if r.status != 200:
                     raise ValueError("Invalid/incomplete URL.")
+
                 emoji_bytes = await r.read()
+
         except aiohttp.ClientError:
             raise ValueError("Invalid/incomplete URL.")
 

@@ -38,7 +38,6 @@ class Bot(commands.AutoShardedBot):
             if cog.endswith(".py"):
                 await self.load_extension(f"cogs.{cog[:-3]}")
 
-        self.error_channel = await self.fetch_channel(config["error_channel"])
         self.session = ClientSession()
         self.launch_time = round(datetime.now(UTC).timestamp())
 

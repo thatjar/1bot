@@ -69,10 +69,10 @@ class Etc(commands.Cog):
     @commands.command(aliases=["u"])
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
+        # Requires git to be configured on server
         await ctx.send("Pulling from `origin main`...")
 
         try:
-            # Requires git to be configured on server
             subprocess.run(
                 ["git", "pull", "origin", "main"],
                 check=True,

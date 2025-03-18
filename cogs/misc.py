@@ -1,4 +1,5 @@
 from sys import version_info
+from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
@@ -7,12 +8,20 @@ from discord.ext import commands
 from config import config
 from views import InfoButtons
 
+if TYPE_CHECKING:
+    from main import Bot
+
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: Bot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="User Info", callback=self.userinfo_ctx)
+        )
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(
+                name="Delete Response", callback=self.deleteresponse
+            ),
         )
 
     # botinfo
@@ -155,16 +164,32 @@ class Miscellaneous(commands.Cog):
             colour=self.bot.colour,
             description=f"**Member count**: {guild.approximate_member_count}\n"
             f"**Created at**: <t:{guild.created_at.timestamp():.0f}:F>\n"
-            f"**Verification**: {vl_strings[guild.verification_level]}\n"
             f"**Boost level**: {guild.premium_tier}\n"
             f"**Boosts**: {guild.premium_subscription_count}\n"
             f"**Roles**: {len(guild.roles)}\n"
-            f"**Emojis**: {len(guild.emojis)}\n",
+            f"**Emojis**: {len(guild.emojis)}\n"
+            f"**Verification**: {vl_strings[guild.verification_level]}\n",
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
         embed.set_footer(text=f"Server ID: {guild.id} | Shard ID: {guild.shard_id}")
         await i.response.send_message(embed=embed)
+
+    # delete response
+    async def deleteresponse(self, i: discord.Interaction, message: discord.Message):
+        if not message.interaction_metadata or message.author.id != self.bot.user.id:
+            raise ValueError(f"Not a {self.bot.user.name} command response.")
+
+        if (
+            message.interaction_metadata.user.id == i.user.id
+            or i.channel.permissions_for(i.user).manage_messages
+        ):
+            await message.delete()
+            await i.response.send_message("✅ Response deleted.", ephemeral=True)
+        else:
+            raise ValueError(
+                "This response can only be deleted by its invoker or a moderator."
+            )
 
 
 async def setup(bot):

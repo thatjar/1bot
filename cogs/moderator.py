@@ -1,13 +1,17 @@
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+if TYPE_CHECKING:
+    from main import Bot
+
 
 class Moderator(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: Bot = bot
 
     def cog_load(self):
         for cmd in self.walk_app_commands():

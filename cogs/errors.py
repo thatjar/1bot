@@ -3,12 +3,16 @@
 
 import logging
 from contextlib import suppress
+from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from config import config
+
+if TYPE_CHECKING:
+    from main import Bot
 
 
 class ErrorButton(discord.ui.View):
@@ -28,7 +32,7 @@ class Errors(commands.Cog):
     """Cog to handle command errors. Does not contain any commands."""
 
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: Bot = bot
         self.error_channel = None
 
     async def cog_load(self):

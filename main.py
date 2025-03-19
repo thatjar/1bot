@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import UTC, datetime
 
 import discord
 from aiohttp import ClientSession
@@ -34,7 +33,7 @@ class Bot(commands.AutoShardedBot):
         )
 
     async def setup_hook(self) -> None:
-        # Load jishaku and all cogs in the ./cogs dir
+        # Load jishaku and all modules in the ./cogs dir
         await self.load_extension("jishaku")
         for cog in os.listdir("./cogs"):
             if cog.endswith(".py"):
@@ -42,9 +41,10 @@ class Bot(commands.AutoShardedBot):
 
         # aiohttp session for making requests
         self.session = ClientSession()
-        self.launch_time = round(datetime.now(UTC).timestamp())
+        self.launch_time = round(discord.utils.utcnow().timestamp())
 
     async def on_ready(self) -> None:
+        self.user: discord.ClientUser
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
     async def close(self) -> None:

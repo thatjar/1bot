@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import discord
@@ -90,7 +90,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(UTC) - timedelta(14),
+            after=discord.utils.utcnow() - timedelta(14),
             oldest_first=False,
             reason=f"Purged by {i.user.name}",
         )
@@ -111,7 +111,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(UTC) - timedelta(14),
+            after=discord.utils.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -135,7 +135,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(UTC) - timedelta(14),
+            after=discord.utils.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: not m.author.bot,
             reason=f"Purged by {i.user.name}",
@@ -159,7 +159,7 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         deleted = await i.channel.purge(
             limit=count,
-            after=datetime.now(UTC) - timedelta(14),
+            after=discord.utils.utcnow() - timedelta(14),
             oldest_first=False,
             check=lambda m: m.author == user,
             reason=f"Purged by {i.user.name}",

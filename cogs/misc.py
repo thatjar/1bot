@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
+from utils import VL_STRINGS
 from views import InfoButtons
 
 if TYPE_CHECKING:
@@ -77,7 +78,7 @@ class Miscellaneous(commands.Cog):
     async def avatar(
         self,
         i: discord.Interaction,
-        user: discord.Member | discord.User = None,
+        user: discord.Member | discord.User | None = None,
         type: app_commands.Choice[int] = 0,
     ):
         user = user or i.user
@@ -113,7 +114,7 @@ class Miscellaneous(commands.Cog):
     @app_commands.command(name="userinfo", description="Get information about a user")
     @app_commands.describe(user="The user to get information on (default: yourself)")
     async def userinfo(
-        self, i: discord.Interaction, user: discord.Member | discord.User = None
+        self, i: discord.Interaction, user: discord.Member | discord.User | None = None
     ):
         user = user or i.user
         embed = discord.Embed(
@@ -160,16 +161,6 @@ class Miscellaneous(commands.Cog):
     @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=False)
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def serverinfo(self, i: discord.Interaction):
-        vl = discord.VerificationLevel
-        vl_strings = {
-            vl.none: "None",
-            vl.low: "Members must have a verified email on their Discord account.",
-            vl.medium: "Members must have a verified email and be registered on Discord for more than five minutes.",
-            vl.high: "Members must have a verified email, be registered on Discord for more than five minutes,"
-            " and be a member of the server for more than ten minutes.",
-            vl.highest: "Members must have a verified phone number.",
-        }
-
         guild = await self.bot.fetch_guild(i.guild.id)
 
         embed = discord.Embed(
@@ -181,7 +172,7 @@ class Miscellaneous(commands.Cog):
             f"**Boosts**: {guild.premium_subscription_count}\n"
             f"**Roles**: {len(guild.roles)}\n"
             f"**Emojis**: {len(guild.emojis)}\n"
-            f"**Verification**: {vl_strings[guild.verification_level]}\n",
+            f"**Verification**: {VL_STRINGS[guild.verification_level]}\n",
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)

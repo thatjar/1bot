@@ -31,7 +31,7 @@ class Miscellaneous(commands.Cog):
         appinfo = await self.bot.application_info()
         user_installs = appinfo.approximate_user_install_count
         embed = discord.Embed(
-            title="1Bot Stats and Information",
+            title=f"{self.bot.user.name} Stats and Information",
             colour=self.bot.colour,
             description=f"**Servers**: {len(self.bot.guilds)}\n"
             f"**User installs**: {user_installs}\n"

@@ -3,6 +3,7 @@
 
 import logging
 from contextlib import suppress
+from traceback import format_exception
 from typing import TYPE_CHECKING
 
 import discord
@@ -49,10 +50,12 @@ class Errors(commands.Cog):
     ) -> discord.Embed:
         """Creates an error report embed from an interaction and its error."""
 
+        traceback_str = "```py\n" + "".join(format_exception(error)) + "```"
+
         embed = discord.Embed(
             title="Error",
             colour=0xFF0000,
-            description=f"Error while invoking command `{i.command.name}`:\n{error}",
+            description=f"Error while invoking command `{i.command.name}`:\n{traceback_str}",
         )
         embed.add_field(name="Via user install?", value=i.is_user_integration())
         embed.add_field(name="Used in guild?", value=i.guild is not None)
@@ -91,7 +94,9 @@ class Errors(commands.Cog):
             await self.error_channel.send(embed=report_embed)
 
         else:
-            logging.error(f"In command '{i.command.name}': {error}")
+            logging.error(
+                f"In command '{i.command.name}': {''.join(format_exception(error))}"
+            )
 
         try:
             await i.response.send_message(
@@ -109,7 +114,7 @@ class Errors(commands.Cog):
         except discord.InteractionResponded:
             await i.followup.send(f"❌ {error}", ephemeral=True)
 
-    # Error listeners
+    # Prefixed command error listener
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandNotFound):
@@ -119,8 +124,8 @@ class Errors(commands.Cog):
         else:
             await ctx.send(f"❌ {error}")
 
-    # Main application command error listener
-    async def tree_on_error(self, i: discord.Interaction, error):
+    # Main application command error handler
+    async def tree_on_error(self, i: discord.Interaction, error) -> None:
         if isinstance(
             error, app_commands.CommandNotFound
         ) or "Unknown interaction" in str(error):
@@ -130,7 +135,7 @@ class Errors(commands.Cog):
             msg = (
                 "I don't have enough permissions to run this command!\n"
                 f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
-                f"Please add these permissions to my role ('{self.bot.user.global_name}') in your server settings."
+                f"Please add these permissions to my role ('{self.bot.user.name}') in your server settings."
             )
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.MissingPermissions):

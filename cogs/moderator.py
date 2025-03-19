@@ -381,7 +381,7 @@ class Moderator(commands.Cog):
         if user == i.user:
             raise ValueError("You cannot time out yourself.")
         if user == i.guild.me:
-            raise ValueError("You cannot timeout 1Bot.")
+            raise ValueError("I cannot time out myself.")
 
         total_minutes = days * 1440 + hours * 60 + minutes
         if not 0 <= total_minutes <= 40320:
@@ -440,7 +440,7 @@ class Moderator(commands.Cog):
         if user == i.user:
             raise ValueError("You cannot ban yourself.")
         if user == i.guild.me:
-            raise ValueError("You cannot ban 1Bot.")
+            raise ValueError("I cannot ban myself.")
         if days * 86400 + hours * 3600 > 604800:
             raise ValueError("Total duration must be between 0 and 7 days.")
 

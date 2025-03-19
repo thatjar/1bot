@@ -50,7 +50,14 @@ class Errors(commands.Cog):
     ) -> discord.Embed:
         """Creates an error report embed from an interaction and its error."""
 
-        traceback_str = "```py\n" + "".join(format_exception(error)) + "```"
+        formatted_error = "".join(format_exception(error))
+        # Leave room for other parts of embed description
+        if len(formatted_error) > 4000:
+            # Truncate from the beginning to preserve the error message at the end
+            truncated = "...[truncated]...\n" + formatted_error[-4000:]
+            traceback_str = "```py\n" + truncated + "```"
+        else:
+            traceback_str = "```py\n" + formatted_error + "```"
 
         embed = discord.Embed(
             title="Error",

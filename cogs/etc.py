@@ -21,6 +21,9 @@ class Etc(commands.Cog):
     async def post_stats(self):
         """Post guild count to top.gg automatically."""
 
+        if config.get("topgg_token") is None:
+            return
+
         try:
             async with self.bot.session.post(
                 f"https://top.gg/api/bots/{self.bot.user.id}/stats",

@@ -27,7 +27,7 @@ class Utilities(commands.Cog):
     @app_commands.describe(
         location="The location to get weather information for",
     )
-    @app_commands.checks.cooldown(1, 20, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(3, 25, key=lambda i: i.channel)
     async def weather(self, i: discord.Interaction, location: str):
         await i.response.defer()
         async with self.bot.session.get(

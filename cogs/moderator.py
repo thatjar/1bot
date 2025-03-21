@@ -368,7 +368,7 @@ class Moderator(commands.Cog):
         hours="The number of hours to time out the user (default: 0)",
         days="The number of days to time out the user (default: 0)",
         reason="The reason for timing out the user (optional)",
-        silent="Keep the timeout message private (default: True)",
+        silent="Keep the timeout message private (default: False)",
     )
     async def timeout(
         self,
@@ -378,7 +378,7 @@ class Moderator(commands.Cog):
         hours: int = 0,
         days: int = 0,
         reason: str = None,
-        silent: bool = True,
+        silent: bool = False,
     ):
         if user == i.user:
             raise GenericError("You cannot time out yourself.")

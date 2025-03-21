@@ -11,6 +11,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
+from utils import GenericError
 
 if TYPE_CHECKING:
     from main import Bot
@@ -175,7 +176,7 @@ class Errors(commands.Cog):
                     )
 
         elif isinstance(error, app_commands.CommandInvokeError):
-            if isinstance(error.original, ValueError):
+            if isinstance(error.original, GenericError):
                 await self.send_error(i, error.original)
             else:
                 await self.report_unknown_exception(i, error.original)

@@ -1,12 +1,12 @@
 from sys import version_info
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from config import config
-from utils import VL_STRINGS
+from utils import VL_STRINGS, GenericError
 from views import InfoButtons
 
 if TYPE_CHECKING:
@@ -66,48 +66,43 @@ class Miscellaneous(commands.Cog):
     @app_commands.command(name="avatar", description="Get a user's avatar")
     @app_commands.describe(
         user="The user to get the avatar of (default: yourself)",
-        type="Server avatar or user avatar (default: server avatar)",
-    )
-    @app_commands.choices(
-        type=[
-            app_commands.Choice(name="Server", value=0),
-            app_commands.Choice(name="User (Global)", value=1),
-        ]
+        profile="Server avatar / User avatar (default: server)",
     )
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def avatar(
         self,
         i: discord.Interaction,
         user: discord.Member | discord.User | None = None,
-        type: app_commands.Choice[int] = 0,
+        profile: Literal["Server", "User"] = "Server",
     ):
         user = user or i.user
         embed = discord.Embed(colour=self.bot.colour)
 
-        if type == 1:
+        if profile == "User":
             embed.title = f"{user.global_name or user.name}'s global avatar"
+            asset = user.avatar or user.display_avatar
         else:
             embed.title = f"{user.display_name}'s avatar in this server"
+            asset = user.display_avatar
 
-        asset: discord.Asset = (
-            user.avatar if type == 1 and user.avatar else user.display_avatar
-        )
         embed.set_image(url=asset.url)
 
         # Download links for all formats
-        links = []
+        hyperlinks = []
         if user.avatar is not None:
             for format in ("png", "jpg", "webp", "gif"):
                 # Skip GIF if the avatar is not animated
                 if format == "gif" and not asset.is_animated():
                     continue
 
-                links.append(f"[{format.upper()}]({asset.with_format(format).url})")
+                hyperlinks.append(
+                    f"[{format.upper()}]({asset.with_format(format).url})"
+                )
         else:
             # If user has no avatar, only PNG is available
-            links.append(f"[PNG]({asset.url})")
+            hyperlinks.append(f"[PNG]({asset.url})")
 
-        embed.description = "**Download Links**\n" + " | ".join(links)
+        embed.description = "**Download Links**\n" + " | ".join(hyperlinks)
         await i.response.send_message(embed=embed)
 
     # userinfo
@@ -182,7 +177,7 @@ class Miscellaneous(commands.Cog):
     # delete response
     async def deleteresponse(self, i: discord.Interaction, message: discord.Message):
         if not message.interaction_metadata or message.author.id != self.bot.user.id:
-            raise ValueError(f"Not a {self.bot.user.name} command response.")
+            raise GenericError(f"Not a {self.bot.user.name} command response.")
 
         if (
             message.interaction_metadata.user.id == i.user.id
@@ -191,7 +186,7 @@ class Miscellaneous(commands.Cog):
             await message.delete()
             await i.response.send_message("✅ Response deleted.", ephemeral=True)
         else:
-            raise ValueError(
+            raise GenericError(
                 "This response can only be deleted by its invoker or a moderator."
             )
 

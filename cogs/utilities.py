@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import lang_autocomplete, lang_dict, translator
+from utils import GenericError, lang_autocomplete, lang_dict, translator
 
 if TYPE_CHECKING:
     from main import Bot
@@ -36,9 +36,9 @@ class Utilities(commands.Cog):
             try:
                 json = await r.json()
             except aiohttp.ContentTypeError:
-                raise ValueError("Invalid location")
+                raise GenericError("Invalid location")
         if not json:  # handle empty response
-            raise ValueError("Invalid location")
+            raise GenericError("Invalid location")
 
         data = json[0]
 
@@ -218,7 +218,7 @@ class Utilities(commands.Cog):
     async def pypi(self, i: discord.Interaction, package: str):
         async with self.bot.session.get(f"https://pypi.org/pypi/{package}/json") as r:
             if r.status == 404:
-                raise ValueError("Package does not exist. Check for spelling errors.")
+                raise GenericError("Package does not exist. Check for spelling errors.")
 
             json = await r.json()
 
@@ -330,12 +330,12 @@ class Utilities(commands.Cog):
         try:
             async with self.bot.session.get(url) as r:
                 if r.status != 200:
-                    raise ValueError("Invalid/incomplete URL.")
+                    raise GenericError("Invalid/incomplete URL.")
 
                 emoji_bytes = await r.read()
 
         except aiohttp.ClientError:
-            raise ValueError("Invalid/incomplete URL.")
+            raise GenericError("Invalid/incomplete URL.")
 
         try:
             emoji = await i.guild.create_custom_emoji(

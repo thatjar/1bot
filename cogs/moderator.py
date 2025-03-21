@@ -5,6 +5,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils import GenericError
+
 if TYPE_CHECKING:
     from main import Bot
 
@@ -223,7 +225,7 @@ class Moderator(commands.Cog):
         unit: app_commands.Choice[int] = 1,
     ):
         if not 0 <= amount <= 21600:
-            raise ValueError("Slowmode must be between 0 and 6 hours.")
+            raise GenericError("Slowmode must be between 0 and 6 hours.")
         await i.response.defer(ephemeral=True)
 
         seconds = amount if unit == 1 else amount * unit.value
@@ -379,13 +381,13 @@ class Moderator(commands.Cog):
         silent: bool = True,
     ):
         if user == i.user:
-            raise ValueError("You cannot time out yourself.")
+            raise GenericError("You cannot time out yourself.")
         if user == i.guild.me:
-            raise ValueError("I cannot time out myself.")
+            raise GenericError("I cannot time out myself.")
 
         total_minutes = days * 1440 + hours * 60 + minutes
         if not 0 <= total_minutes <= 40320:
-            raise ValueError("Timeout duration must be between 0 and 28 days.")
+            raise GenericError("Timeout duration must be between 0 and 28 days.")
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"
@@ -438,11 +440,11 @@ class Moderator(commands.Cog):
         silent: bool = False,
     ):
         if user == i.user:
-            raise ValueError("You cannot ban yourself.")
+            raise GenericError("You cannot ban yourself.")
         if user == i.guild.me:
-            raise ValueError("I cannot ban myself.")
+            raise GenericError("I cannot ban myself.")
         if days * 86400 + hours * 3600 > 604800:
-            raise ValueError("Total duration must be between 0 and 7 days.")
+            raise GenericError("Total duration must be between 0 and 7 days.")
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"

@@ -1,8 +1,20 @@
 import discord
 import googletrans
+from discord.ext.commands import errors
 
 translator = googletrans.Translator()
 lang_dict = googletrans.LANGUAGES
+
+
+class GenericError(errors.CommandInvokeError):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self) -> str:
+        return self.message
+
+    def __repr__(self) -> str:
+        return f"GenericError('{self.message}')"
 
 
 async def lang_autocomplete(

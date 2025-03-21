@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
+from utils import GenericError
 from views import Confirm
 
 if TYPE_CHECKING:
@@ -209,9 +210,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
         if i.user.id == user.id:
-            raise ValueError("You can't play with yourself!")
+            raise GenericError("You can't play with yourself!")
         if user.bot:
-            raise ValueError("You can't play with a bot!")
+            raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
         await i.response.send_message(
@@ -249,9 +250,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
     async def rps(self, i: discord.Interaction, user: discord.User):
         if i.user.id == user.id:
-            raise ValueError("You can't play with yourself!")
+            raise GenericError("You can't play with yourself!")
         elif user.bot:
-            raise ValueError("You can't play with a bot!")
+            raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
         await i.response.send_message(
@@ -311,9 +312,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
-            raise ValueError("The message has no text content.")
+            raise GenericError("The message has no text content.")
         if len(message.content) > 100:
-            raise ValueError("The text must have no more than 100 characters.")
+            raise GenericError("The text must have no more than 100 characters.")
         await self.quote.callback(self, i, message.content, message.author)
 
     # quote
@@ -331,7 +332,7 @@ class Fun(commands.Cog):
         if user is None:
             user = i.user
         if len(quote) > 100:
-            raise ValueError("The text must have no more than 100 characters.")
+            raise GenericError("The text must have no more than 100 characters.")
 
         await i.response.defer()
         url = (
@@ -361,7 +362,7 @@ class Fun(commands.Cog):
             pickupline = json["pickupline"]
             await i.followup.send(pickupline)
         else:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+            raise GenericError("Couldn't retrieve data. Try again later.")
 
     # 8ball
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")
@@ -420,7 +421,7 @@ class Fun(commands.Cog):
     )
     async def dice(self, i: discord.Interaction, number: int = 1):
         if not 1 <= number <= 6:
-            raise ValueError("The number of dice must be between 1 and 6.")
+            raise GenericError("The number of dice must be between 1 and 6.")
         rolls = random.sample(range(1, 7), number)
         await i.response.send_message(
             f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
@@ -430,7 +431,7 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
-            raise ValueError("The message has no text.")
+            raise GenericError("The message has no text.")
         await self.mock.callback(self, i, message.content)
 
     # mock
@@ -439,7 +440,7 @@ class Fun(commands.Cog):
     @app_commands.describe(text="The text to mock")
     async def mock(self, i: discord.Interaction, text: str):
         if len(text) > 2000:
-            raise ValueError("The text must be no more than 2000 characters.")
+            raise GenericError("The text must be no more than 2000 characters.")
         mock_text = "".join(
             [char.upper() if i % 2 else char.lower() for i, char in enumerate(text)]
         )
@@ -458,7 +459,7 @@ class Fun(commands.Cog):
             "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
         ) as r:
             if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
+                raise GenericError("Couldn't retrieve data. Try again later.")
             json = await r.json()
             await i.followup.send(json["joke"])
 
@@ -469,7 +470,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/dog") as r:
             if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
+                raise GenericError("Couldn't retrieve data. Try again later.")
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -484,7 +485,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/cat") as r:
             if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
+                raise GenericError("Couldn't retrieve data. Try again later.")
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -501,7 +502,7 @@ class Fun(commands.Cog):
             "https://some-random-api.com/animal/panda"
         ) as r:
             if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
+                raise GenericError("Couldn't retrieve data. Try again later.")
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -514,7 +515,7 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def megamind(self, i: discord.Interaction, text: str):
         if len(text) > 200:
-            raise ValueError("The text must be no more than 200 characters.")
+            raise GenericError("The text must be no more than 200 characters.")
 
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(
@@ -558,7 +559,7 @@ class Fun(commands.Cog):
     async def xkcd(self, i: discord.Interaction, mode: str = "random"):
         async with self.bot.session.get("https://xkcd.com/info.0.json") as r:
             if not r.ok:
-                raise ValueError("Couldn't retrieve data. Try again later.")
+                raise GenericError("Couldn't retrieve data. Try again later.")
             json = await r.json()
 
         if mode == "random":
@@ -568,7 +569,7 @@ class Fun(commands.Cog):
                 f"https://xkcd.com/{comic_num}/info.0.json"
             ) as r:
                 if not r.ok:
-                    raise ValueError("Couldn't retrieve data. Try again later.")
+                    raise GenericError("Couldn't retrieve data. Try again later.")
                 json = await r.json()
 
         embed = discord.Embed(
@@ -588,10 +589,10 @@ class Fun(commands.Cog):
         try:
             json = await self.get_reddit_post(self.bot.session)
         except Exception:
-            raise ValueError("Couldn't retrieve data. Try again later.")
+            raise GenericError("Couldn't retrieve data. Try again later.")
 
         if "message" in json:
-            raise ValueError(json["message"])
+            raise GenericError(json["message"])
 
         embed = (
             discord.Embed(

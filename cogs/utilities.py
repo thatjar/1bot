@@ -361,7 +361,7 @@ class Utilities(commands.Cog):
                     "❌ The image is too large to be resized to an emoji."
                 )
             else:
-                raise e
+                raise
 
             return
         except Exception as e:
@@ -371,7 +371,7 @@ class Utilities(commands.Cog):
                         "❌ URL must directly point to a PNG, JPEG, GIF or WEBP."
                     )
             else:
-                raise e
+                raise
 
             return
 
@@ -395,21 +395,51 @@ class Utilities(commands.Cog):
         destination: str = "en",
         source: str = "auto",
     ):
+        if destination == source:
+            raise GenericError("Source and destination languages cannot be the same")
+
         await i.response.defer()
         translation = await translator.translate(text, dest=destination, src=source)
         embed = (
             discord.Embed(colour=self.bot.colour)
             .add_field(
                 name=f"Original ({lang_dict[translation.src].title()})",
-                value=text,
+                value=text[:1024],
                 inline=False,
             )
             .add_field(
-                name=f"Translation ({lang_dict[destination].title()})",
-                value=translation.text,
+                name=f"Translation ({lang_dict[translation.dest].title()})",
+                value=(
+                    translation.text
+                    if len(translation.text) <= 1024
+                    else translation.text[:1021] + "..."
+                ),
                 inline=False,
             )
         )
+
+        # Add pronunciations if one of the languages is not English
+        if translation.src != "en":
+            embed.add_field(
+                name="Original Pronunciation",
+                value=(
+                    translation.pronunciation
+                    if len(translation.pronunciation) <= 1024
+                    else translation.pronunciation[:1021] + "..."
+                ),
+                inline=False,
+            )
+        if translation.dest != "en":
+            embed.add_field(
+                name="Translation Pronunciation",
+                value=(
+                    translation.pronunciation
+                    if len(translation.pronunciation) <= 1024
+                    else translation.pronunciation[:1021] + "..."
+                ),
+                inline=False,
+            )
+
         await i.followup.send(embed=embed)
 
     # translate (ctxmenu)

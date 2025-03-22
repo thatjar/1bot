@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import UTC, datetime
 
 import discord
 from aiohttp import ClientSession
@@ -41,7 +42,7 @@ class Bot(commands.AutoShardedBot):
 
         # aiohttp session for making requests
         self.session = ClientSession()
-        self.launch_time = round(discord.utils.utcnow().timestamp())
+        self.launch_time = round(datetime.now(UTC).timestamp())
 
     async def on_ready(self) -> None:
         self.user: discord.ClientUser

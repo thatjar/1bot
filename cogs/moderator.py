@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import discord
@@ -87,16 +87,33 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(
         manage_messages=True, read_message_history=True
     )
-    @app_commands.describe(count="The number of messages to delete")
+    @app_commands.describe(
+        count="The number of messages to delete (1-100, up to two weeks old)"
+    )
     async def purge(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(
-            limit=count,
-            after=discord.utils.utcnow() - timedelta(14),
-            oldest_first=False,
+        cutoff = datetime.now(UTC) - timedelta(days=14)
+        messages_to_delete = []
+
+        async for message in i.channel.history(
+            limit=100, oldest_first=False, after=cutoff
+        ):
+            messages_to_delete.append(message)
+            if len(messages_to_delete) >= count:
+                break
+
+        if not messages_to_delete:
+            raise GenericError(
+                "No messages found to purge (up to 100, up to two weeks old)."
+            )
+
+        await i.channel.delete_messages(
+            messages_to_delete,
             reason=f"Purged by {i.user.name}",
         )
-        await i.followup.send(f"✅ Found and deleted {len(deleted)} messages.")
+        await i.followup.send(
+            f"✅ Found and deleted {len(messages_to_delete)} messages."
+        )
 
     # /purge bots
     @purge_group.command(
@@ -108,23 +125,40 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(
         manage_messages=True, read_message_history=True
     )
-    @app_commands.describe(count="The number of messages to search through")
+    @app_commands.describe(
+        count="The number of messages to delete (1-100, up to two weeks old)"
+    )
     async def purgebots(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(
-            limit=count,
-            after=discord.utils.utcnow() - timedelta(14),
+        cutoff = datetime.now(UTC) - timedelta(days=14)
+        messages_to_delete = []
+
+        async for message in i.channel.history(
+            limit=100,
             oldest_first=False,
-            check=lambda m: m.author.bot,
+            after=cutoff,
+        ):
+            if message.author.bot:
+                messages_to_delete.append(message)
+            if len(messages_to_delete) >= count:
+                break
+
+        if not messages_to_delete:
+            raise GenericError(
+                "No bot messages found to purge (up to 100, up to two weeks old)."
+            )
+
+        await i.channel.delete_messages(
+            messages_to_delete,
             reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(
-            f" ✅ Found and deleted {len(deleted)} messages from bots."
+            f"✅ Found and deleted {len(messages_to_delete)} messages."
         )
 
     # /purge humans
     @purge_group.command(
-        name="humans", description="Bulk delete messages sent by humans only"
+        name="humans", description="Bulk delete messages sent by non-bots only"
     )
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
@@ -132,18 +166,35 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(
         manage_messages=True, read_message_history=True
     )
-    @app_commands.describe(count="The number of messages to search through")
+    @app_commands.describe(
+        count="The number of messages to delete (1-100, up to two weeks old)"
+    )
     async def purgehumans(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(
-            limit=count,
-            after=discord.utils.utcnow() - timedelta(14),
+        cutoff = datetime.now(UTC) - timedelta(days=14)
+        messages_to_delete = []
+
+        async for message in i.channel.history(
+            limit=100,
             oldest_first=False,
-            check=lambda m: not m.author.bot,
+            after=cutoff,
+        ):
+            if not message.author.bot:
+                messages_to_delete.append(message)
+            if len(messages_to_delete) >= count:
+                break
+
+        if not messages_to_delete:
+            raise GenericError(
+                "No human messages found to purge (up to 100, up to two weeks old)."
+            )
+
+        await i.channel.delete_messages(
+            messages_to_delete,
             reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(
-            f"✅ Found and deleted {len(deleted)} messages from humans."
+            f"✅ Found and deleted {len(messages_to_delete)} messages."
         )
 
     # /purge user
@@ -155,19 +206,35 @@ class Moderator(commands.Cog):
         manage_messages=True, read_message_history=True
     )
     @app_commands.describe(
-        user="The user to search for", count="The number of messages to search through"
+        user="The user to search for",
+        count="The number of messages to delete (1-100, up to two weeks old)",
     )
-    async def purgeuser(self, i: discord.Interaction, user: discord.User, count: int):
+    async def purgeuser(self, i: discord.Interaction, user: discord.Member, count: int):
         await i.response.defer(ephemeral=True)
-        deleted = await i.channel.purge(
-            limit=count,
-            after=discord.utils.utcnow() - timedelta(14),
+        cutoff = datetime.now(UTC) - timedelta(days=14)
+        messages_to_delete = []
+
+        async for message in i.channel.history(
+            limit=100,
             oldest_first=False,
-            check=lambda m: m.author == user,
+            after=cutoff,
+        ):
+            if message.author == user:
+                messages_to_delete.append(message)
+            if len(messages_to_delete) >= count:
+                break
+
+        if not messages_to_delete:
+            raise GenericError(
+                "No messages found from that user (up to 100, up to two weeks old)."
+            )
+
+        await i.channel.delete_messages(
+            messages_to_delete,
             reason=f"Purged by {i.user.name}",
         )
         await i.followup.send(
-            f"✅ Found and deleted {len(deleted)} messages from {user}."
+            f"✅ Found and deleted {len(messages_to_delete)} messages.",
         )
 
     # disable threads

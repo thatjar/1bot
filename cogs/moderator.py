@@ -130,14 +130,13 @@ class Moderator(commands.Cog):
     )
     async def purgebots(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
+        if not 1 <= count <= 100:
+            raise GenericError("Count must be between 1 and 100.")
+
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(
-            limit=100,
-            oldest_first=False,
-            after=cutoff,
-        ):
+        async for message in i.channel.history(oldest_first=False, after=cutoff):
             if message.author.bot:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -171,14 +170,13 @@ class Moderator(commands.Cog):
     )
     async def purgehumans(self, i: discord.Interaction, count: int):
         await i.response.defer(ephemeral=True)
+        if not 1 <= count <= 100:
+            raise GenericError("Count must be between 1 and 100.")
+
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(
-            limit=100,
-            oldest_first=False,
-            after=cutoff,
-        ):
+        async for message in i.channel.history(oldest_first=False, after=cutoff):
             if not message.author.bot:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -206,19 +204,18 @@ class Moderator(commands.Cog):
         manage_messages=True, read_message_history=True
     )
     @app_commands.describe(
-        user="The user to search for",
+        user="The user whose messages to delete",
         count="The number of messages to delete (1-100, up to two weeks old)",
     )
     async def purgeuser(self, i: discord.Interaction, user: discord.Member, count: int):
         await i.response.defer(ephemeral=True)
+        if not 1 <= count <= 100:
+            raise GenericError("Count must be between 1 and 100.")
+
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(
-            limit=100,
-            oldest_first=False,
-            after=cutoff,
-        ):
+        async for message in i.channel.history(oldest_first=False, after=cutoff):
             if message.author == user:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:

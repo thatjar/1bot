@@ -44,11 +44,15 @@ class Bot(commands.AutoShardedBot):
         self.session = ClientSession()
         self.launch_time = round(datetime.now(UTC).timestamp())
 
-    async def on_ready(self) -> None:
+    async def on_connect(self) -> None:
         self.user: discord.ClientUser
-        print(f"Logged in as {self.user} (ID: {self.user.id})")
+        logging.info(f"Connected: {self.user} ({self.user.id})")
+
+    async def on_ready(self) -> None:
+        logging.info("Ready: Client successfully initialised.")
 
     async def close(self) -> None:
+        logging.info("Disconnecting.")
         # Close the aiohttp session before closing the bot's connection
         if hasattr(self, "session"):
             await self.session.close()
@@ -58,6 +62,10 @@ class Bot(commands.AutoShardedBot):
 bot = Bot()
 
 if __name__ == "__main__":
-    logging_level = logging.DEBUG if config.get("debug") else logging.WARNING
+    # Set discord logging level
+    logging.getLogger("discord").setLevel(
+        logging.DEBUG if config.get("debug") else logging.WARNING
+    )
 
-    bot.run(config["token"], log_level=logging_level, root_logger=True)
+    logging.info("Starting up...")
+    bot.run(config["token"], root_logger=True)

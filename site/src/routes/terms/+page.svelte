@@ -14,7 +14,7 @@
     applies to all users of 1Bot.
   </p>
 
-  <h2>These Terms are an extension of 1Bot's License.</h2>
+  <h2>These Terms are an extension of 1Bot's License</h2>
   <p>
     1Bot is licensed under the <a
       href="https://github.com/thatjar/1bot/blob/main/LICENSE"
@@ -23,7 +23,7 @@
     using 1Bot and its source code.
   </p>
 
-  <h2>We may use your feedback and inputs to improve 1Bot.</h2>
+  <h2>We may use your feedback and inputs to improve 1Bot</h2>
   <p>
     If you choose to provide us with feedback about 1Bot in any form (including
     but not limited to posting a suggestion on our Discord server, opening pull
@@ -31,7 +31,7 @@
     improve 1Bot without any payment to you.
   </p>
 
-  <h2>We make use of open-source software to develop 1Bot.</h2>
+  <h2>We make use of open-source software to develop 1Bot</h2>
   <p>
     1Bot itself is <a href="https://github.com/thatjar/1bot" target="_blank"
       >open-source on GitHub</a
@@ -43,7 +43,7 @@
 
   <h2>
     We are not responsible for content that comes from or is created by third
-    parties.
+    parties
   </h2>
   <p>
     1Bot provides content from various third-party sources. We have no control
@@ -67,7 +67,7 @@
     conflict of law provisions.
   </p>
 
-  <h2>These Terms are subject to change.</h2>
+  <h2>These Terms are subject to change</h2>
   <p>We reserve the right to change these Terms without notice.</p>
 </main>
 

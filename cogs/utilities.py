@@ -399,16 +399,20 @@ class Utilities(commands.Cog):
             raise GenericError("Source and destination languages cannot be the same")
 
         await i.response.defer()
+
         translation = await translator.translate(text, dest=destination, src=source)
+        detected_lang_name = lang_dict[translation.src.lower()].title()
+        output_lang_name = lang_dict[translation.dest.lower()].title()
+
         embed = (
             discord.Embed(colour=self.bot.colour)
             .add_field(
-                name=f"Original ({lang_dict[translation.src].title()})",
+                name=f"Original ({detected_lang_name.title()})",
                 value=text[:1024],
                 inline=False,
             )
             .add_field(
-                name=f"Translation ({lang_dict[translation.dest].title()})",
+                name=f"Translation ({output_lang_name})",
                 value=(
                     translation.text
                     if len(translation.text) <= 1024
@@ -420,25 +424,33 @@ class Utilities(commands.Cog):
 
         # Add pronunciations if one of the languages is not English
         if translation.src != "en":
-            embed.add_field(
-                name="Original Pronunciation",
-                value=(
-                    translation.pronunciation
-                    if len(translation.pronunciation) <= 1024
-                    else translation.pronunciation[:1021] + "..."
-                ),
-                inline=False,
+            # Translate text into itself to get pronunciation
+            pronunciation = await translator.translate(
+                text, dest=translation.src, src=translation.src
             )
+            pronunciation = pronunciation.pronunciation
+
+            if (
+                type(pronunciation) is str
+                and pronunciation
+                and pronunciation.lower() != text.lower()
+            ):
+                embed.add_field(
+                    name="Original Pronunciation",
+                    value=pronunciation,
+                    inline=False,
+                )
         if translation.dest != "en":
-            embed.add_field(
-                name="Translation Pronunciation",
-                value=(
-                    translation.pronunciation
-                    if len(translation.pronunciation) <= 1024
-                    else translation.pronunciation[:1021] + "..."
-                ),
-                inline=False,
-            )
+            if type(translation.pronunciation) is str and translation.pronunciation:
+                embed.add_field(
+                    name="Translation Pronunciation",
+                    value=(
+                        translation.pronunciation
+                        if len(translation.pronunciation) <= 1024
+                        else translation.pronunciation[:1021] + "..."
+                    ),
+                    inline=False,
+                )
 
         await i.followup.send(embed=embed)
 

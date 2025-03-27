@@ -7,6 +7,8 @@ lang_dict = googletrans.LANGUAGES
 
 
 class GenericError(errors.CommandInvokeError):
+    """A generic error that can be raised to provide a custom error message to the end user."""
+
     def __init__(self, message):
         self.message = message
 

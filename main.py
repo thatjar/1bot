@@ -62,10 +62,12 @@ class Bot(commands.AutoShardedBot):
 bot = Bot()
 
 if __name__ == "__main__":
-    # Set discord logging level
-    logging.getLogger("discord").setLevel(
-        logging.DEBUG if config.get("debug") else logging.WARNING
-    )
+    # Set logging levels
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    for logger in loggers:
+        if logger.name == "discord":
+            logger.setLevel(logging.DEBUG if config.get("debug") else logging.WARNING)
+        else:
+            logger.setLevel(logging.WARNING)
 
-    logging.info("Starting up...")
     bot.run(config["token"], root_logger=True)

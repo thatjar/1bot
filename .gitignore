@@ -1,6 +1,5 @@
 config.py
 __pycache__
-.vscode
 
 # Pterodactyl server
 .local

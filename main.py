@@ -34,6 +34,7 @@ class Bot(commands.AutoShardedBot):
         )
 
     async def setup_hook(self) -> None:
+        logging.info("Starting up...")
         # Load jishaku and all modules in the ./cogs dir
         await self.load_extension("jishaku")
         for cog in os.listdir("./cogs"):
@@ -68,6 +69,6 @@ if __name__ == "__main__":
         if logger.name == "discord":
             logger.setLevel(logging.DEBUG if config.get("debug") else logging.WARNING)
         else:
-            logger.setLevel(logging.WARNING)
+            logger.setLevel(logging.CRITICAL)
 
     bot.run(config["token"], root_logger=True)

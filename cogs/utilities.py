@@ -190,105 +190,6 @@ class Utilities(commands.Cog):
                 f"{weight} lbs = **{(weight / 2.20462):.2f} kg**"
             )
 
-    # github
-    @app_commands.command(name="github", description="Search GitHub repositories")
-    @app_commands.describe(query="The query to search for")
-    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
-    async def github(self, i: discord.Interaction, query: str):
-        await i.response.defer()
-
-        async with self.bot.session.get(
-            f"https://api.github.com/search/repositories?q={query}"
-        ) as r:
-            json = await r.json()
-
-        if json["total_count"] == 0:
-            await i.followup.send("❌ No matching repositories found.")
-        else:
-            await i.followup.send(
-                f"First result for your query:\n"
-                # Markdown hyperlink
-                f'[{json["items"][0]["full_name"]}]({json["items"][0]["html_url"]})'
-            )
-
-    # pypi
-    @app_commands.command(name="pypi", description="Get info for a PyPI package")
-    @app_commands.describe(package="The package to look for")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def pypi(self, i: discord.Interaction, package: str):
-        async with self.bot.session.get(f"https://pypi.org/pypi/{package}/json") as r:
-            if r.status == 404:
-                raise GenericError("Package does not exist. Check for spelling errors.")
-
-            json = await r.json()
-
-        embed = discord.Embed(
-            title=json["info"]["name"],
-            colour=0x0073B7,
-            url=json["info"]["package_url"],
-        )
-
-        if json["info"]["summary"] != "UNKNOWN":
-            embed.description = json["info"]["summary"]
-
-        if json["info"]["home_page"]:
-            embed.add_field(name="Homepage", value=json["info"]["home_page"])
-
-        embed.add_field(name="Version", value=json["info"]["version"])
-        embed.add_field(name="Author", value=json["info"]["author"])
-
-        if json["info"]["license"]:
-            if len(json["info"]["license"]) <= 500:
-                embed.add_field(name="License", value=json["info"]["license"])
-            else:
-                embed.add_field(
-                    name="License",
-                    value=json["info"]["license"][:497] + "...",
-                    inline=False,
-                )
-
-        await i.response.send_message(embed=embed)
-
-    # npm
-    @app_commands.command(name="npm", description="Get info for a NPM package")
-    @app_commands.describe(package="The package to look for")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def npm(self, i: discord.Interaction, package: str):
-        async with self.bot.session.get(f"https://registry.npmjs.org/{package}") as r:
-            json = await r.json()
-
-        if "error" in json:
-            await i.response.send_message("❌ " + json["error"], ephemeral=True)
-            return
-
-        embed = discord.Embed(
-            title=json["name"],
-            colour=0xCA3836,
-            url="https://www.npmjs.com/package/" + package,
-        )
-
-        if "description" in json:
-            embed.description = json["description"]
-        if "version" in json:
-            embed.add_field(name="Homepage", value=json["homepage"], inline=False)
-        if "author" in json:
-            embed.add_field(name="Author", value=json["author"]["name"])
-        if "repository" in json:
-            embed.add_field(
-                name="Repository",
-                value=json["repository"]["url"],
-                inline=False,
-            )
-        embed.add_field(
-            name="Repository maintainers",
-            value=", ".join(maintainer["name"] for maintainer in json["maintainers"]),
-            inline=False,
-        )
-        if "license" in json:
-            embed.add_field(name="License", value=json["license"], inline=False)
-
-        await i.response.send_message(embed=embed)
-
     # lyrics
     @app_commands.command(name="lyrics", description="Get lyrics for a song")
     @app_commands.describe(query="The query to search for")
@@ -342,11 +243,7 @@ class Utilities(commands.Cog):
                 name=name, image=emoji_bytes, reason=f"Uploaded by {i.user}"
             )
         except discord.HTTPException as e:
-            if "File cannot be larger than 256" in str(e):
-                await i.followup.send(
-                    "❌ That image is too big for an emoji. Use an image/gif that is smaller than 256 KB."
-                )
-            elif "String value did not match validation regex" in str(e):
+            if "String value did not match validation regex" in str(e):
                 await i.followup.send(
                     "❌ Invalid emoji name; you have unsupported characters in the emoji name."
                 )
@@ -356,7 +253,9 @@ class Utilities(commands.Cog):
                 )
             elif "Maximum number of emojis reached" in str(e):
                 await i.followup.send("❌ This server has reached its emoji limit.")
-            elif "Failed to resize asset below the maximum size" in str(e):
+            elif "Failed to resize asset below the maximum size" in str(
+                e
+            ) or "File cannot be larger than" in str(e):
                 await i.followup.send(
                     "❌ The image is too large to be resized to an emoji."
                 )

@@ -10,6 +10,8 @@ from config import config
 
 
 class Bot(commands.AutoShardedBot):
+    """1Bot's AutoShardedBot subclass"""
+
     session: ClientSession
     launch_time: int
     # Global embed colour
@@ -66,7 +68,7 @@ if __name__ == "__main__":
     # Set logging levels
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     for logger in loggers:
-        if logger.name == "discord":
+        if logger.name.startswith("discord"):
             logger.setLevel(logging.DEBUG if config.get("debug") else logging.WARNING)
         else:
             logger.setLevel(logging.CRITICAL)

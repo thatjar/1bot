@@ -46,7 +46,7 @@ class Etc(commands.Cog):
                     ext for ext in self.bot.extensions if ext.startswith("cogs.")
                 ]
             else:
-                cogs_to_reload = [f"cogs.{cog}" for cog in cogs.split()]
+                cogs_to_reload = (f"cogs.{cog}" for cog in cogs.split())
 
             for cog in cogs_to_reload:
                 await self.bot.reload_extension(cog)

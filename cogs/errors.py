@@ -87,15 +87,12 @@ class Errors(commands.Cog):
         """Reports an unknown exception to the error channel and send an error message to the user."""
 
         user_embed = discord.Embed(
-            title="❌ Unhandled error",
-            description="Oops, looks like that command caused an unknown error. The error has been automatically reported.",
+            title="⚠️ Unexpected error",
+            description="An unknown error was encountered. It has been automatically reported.",
             colour=0xFF0000,
         )
         if config.get("server_invite"):
-            user_embed.add_field(
-                name="Join the server to track this error",
-                value="If you would like to know more about this error and the progress on fixing it, join the server.",
-            )
+            user_embed.description += "\nIf you would like to know more about this error and the progress on addressing it, join the server."
 
         if self.error_channel:
             report_embed = self.create_error_embed(i, error)
@@ -114,17 +111,17 @@ class Errors(commands.Cog):
             await i.followup.send(embed=user_embed, ephemeral=True, view=ErrorButton())
 
     @staticmethod
-    async def send_error(i: discord.Interaction, error: str) -> None:
+    async def send_error(i: discord.Interaction, error_message: str) -> None:
         """Send an error message to the user."""
 
         try:
-            await i.response.send_message(f"❌ {error}", ephemeral=True)
+            await i.response.send_message(f"❌ {error_message}", ephemeral=True)
         except discord.InteractionResponded:
-            await i.followup.send(f"❌ {error}", ephemeral=True)
+            await i.followup.send(f"❌ {error_message}", ephemeral=True)
 
     # Prefixed command error listener
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
+    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
         if isinstance(error, commands.CommandNotFound):
             return
         elif isinstance(error, commands.NotOwner):
@@ -133,7 +130,12 @@ class Errors(commands.Cog):
             await ctx.send(f"❌ {error}")
 
     # Main application command error handler
-    async def tree_on_error(self, i: discord.Interaction, error) -> None:
+    async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
+        # Check if the error is already handled
+        if hasattr(error, "__notes__"):
+            if "handled" in error.__notes__:
+                return
+
         if isinstance(
             error, app_commands.CommandNotFound
         ) or "Unknown interaction" in str(error):
@@ -161,11 +163,6 @@ class Errors(commands.Cog):
             msg = "**No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
             with suppress(discord.Forbidden):
                 await self.send_error(i, msg)
-        elif "cannot identify image file" in str(
-            error
-        ) or "Unsupported image type" in str(error):
-            msg = "Image may be malformed."
-            await self.send_error(i, msg)
         elif isinstance(error, discord.HTTPException):
             if error.status == 429:
                 if error.response.content.get("global"):

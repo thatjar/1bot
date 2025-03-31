@@ -26,9 +26,9 @@
   <h2>We may use your feedback and inputs to improve 1Bot</h2>
   <p>
     If you choose to provide us with feedback about 1Bot in any form (including
-    but not limited to posting a suggestion on our Discord server, opening pull
-    requests or issues on GitHub), you grant us permission to use your input to
-    improve 1Bot without any payment to you.
+    but not limited to sending a suggestion via Discord, opening pull requests
+    or issues on GitHub), you grant us permission to use your input to improve
+    1Bot without any payment to you.
   </p>
 
   <h2>We make use of open-source software to develop 1Bot</h2>
@@ -52,15 +52,15 @@
     sources is <a href="/third-parties" target="_blank">here</a>.
   </p>
 
-  <h2>Limitation of Liability</h2>
+  <h2>We have limited liability</h2>
   <p>
     Please refer to <a
       href="https://github.com/thatjar/1bot/blob/main/LICENSE#L598"
-      >Section 16 of the License</a
+      target="_blank">Section 16 of the License</a
     > for the details on the limitation of liability.
   </p>
 
-  <h2>Governing Law</h2>
+  <h2>Governing law</h2>
   <p>
     These Terms shall be governed and construed in accordance with the laws of
     the Republic of India and the State of Karnataka, without regard to its

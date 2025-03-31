@@ -219,63 +219,6 @@ class Utilities(commands.Cog):
 
         await i.followup.send(embed=embed)
 
-    # create emoji
-    @app_commands.command(name="emoji", description="Create an emoji from a link")
-    @app_commands.default_permissions(create_expressions=True)
-    @app_commands.checks.has_permissions(create_expressions=True)
-    @app_commands.checks.bot_has_permissions(create_expressions=True)
-    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
-    @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
-    async def emoji(self, i: discord.Interaction, url: str, name: str):
-        await i.response.defer(ephemeral=True)
-        try:
-            async with self.bot.session.get(url) as r:
-                if r.status != 200:
-                    raise GenericError("Invalid/incomplete URL.")
-
-                emoji_bytes = await r.read()
-
-        except aiohttp.ClientError:
-            raise GenericError("Invalid/incomplete URL.")
-
-        try:
-            emoji = await i.guild.create_custom_emoji(
-                name=name, image=emoji_bytes, reason=f"Uploaded by {i.user}"
-            )
-        except discord.HTTPException as e:
-            if "String value did not match validation regex" in str(e):
-                await i.followup.send(
-                    "❌ Invalid emoji name; you have unsupported characters in the emoji name."
-                )
-            elif "Must be between 2 and 32 in length" in str(e):
-                await i.followup.send(
-                    "❌ The emoji name must be 2 to 32 characters long."
-                )
-            elif "Maximum number of emojis reached" in str(e):
-                await i.followup.send("❌ This server has reached its emoji limit.")
-            elif "Failed to resize asset below the maximum size" in str(
-                e
-            ) or "File cannot be larger than" in str(e):
-                await i.followup.send(
-                    "❌ The image is too large to be resized to an emoji."
-                )
-            else:
-                raise
-
-            return
-        except Exception as e:
-            if isinstance(e, ValueError):
-                if "Unsupported image type given" in str(e):
-                    await i.followup.send(
-                        "❌ URL must directly point to a PNG, JPEG, GIF or WEBP."
-                    )
-            else:
-                raise
-
-            return
-
-        await i.followup.send(f"✅ Created emoji {emoji}")
-
     # translate
     @app_commands.command(
         name="translate", description="Translate text via Google Translate"

@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
+import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -545,6 +546,63 @@ class Moderator(commands.Cog):
             embed.add_field(name="Messages Deleted", value=f"{days} days", inline=False)
 
         await i.response.send_message(embed=embed, ephemeral=silent)
+
+    # create emoji
+    @app_commands.command(name="emoji", description="Create an emoji from a link")
+    @app_commands.default_permissions(create_expressions=True)
+    @app_commands.checks.has_permissions(create_expressions=True)
+    @app_commands.checks.bot_has_permissions(create_expressions=True)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
+    @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
+    async def emoji(self, i: discord.Interaction, url: str, name: str):
+        await i.response.defer(ephemeral=True)
+        try:
+            async with self.bot.session.get(url) as r:
+                if r.status != 200:
+                    raise GenericError("Invalid/incomplete URL.")
+
+                emoji_bytes = await r.read()
+
+        except aiohttp.ClientError:
+            raise GenericError("Invalid/incomplete URL.")
+
+        emoji = await i.guild.create_custom_emoji(
+            name=name, image=emoji_bytes, reason=f"Uploaded by {i.user}"
+        )
+
+        await i.followup.send(f"✅ Created emoji {emoji}")
+
+    @emoji.error
+    async def emoji_error(
+        self, i: discord.Interaction, e: app_commands.AppCommandError
+    ):
+        if "String value did not match validation regex" in str(e):
+            await i.followup.send(
+                "❌ Invalid emoji name; you have unsupported characters in the emoji name."
+            )
+        elif "Must be between 2 and 32 in length" in str(e):
+            await i.followup.send("❌ The emoji name must be 2 to 32 characters long.")
+        elif "Maximum number of emojis reached" in str(e):
+            await i.followup.send("❌ This server has reached its emoji limit.")
+        elif "Failed to resize asset below the maximum size" in str(
+            e
+        ) or "File cannot be larger than" in str(e):
+            await i.followup.send(
+                "❌ The image is too large to be resized to an emoji."
+            )
+        elif "Unsupported image type given" in str(e):
+            await i.followup.send(
+                "❌ URL must directly point to a PNG, JPEG, GIF or WEBP."
+            )
+        elif "cannot identify image file" in str(e):
+            await i.followup.send(
+                "❌ Invalid image type. Supported types are PNG, JPEG, GIF and WEBP."
+            )
+        else:
+            return
+
+        # if we reach here, the error was handled
+        e.add_note("handled")
 
 
 async def setup(bot):

@@ -9,32 +9,13 @@
 </p>
 <ul>
   <li>
-    <a href="https://pypi.org">PyPI</a> <br />
-    <b>Data sent:</b> package name (explicitly provided by user with the
-    <code>pypi</code> command)
+    <a href="https://genius.com">Genius</a> - original source of lyrics, obtained
+    via Some Random Api
   </li>
   <br />
 
   <li>
-    <a href="https://www.npmjs.org">NPM</a> <br />
-    <b>Data sent:</b> package name (explicitly provided by user with the
-    <code>npm</code> command)
-  </li>
-  <br />
-
-  <li>
-    <a href="https://github.com">GitHub</a> <br />
-    <b>Data sent:</b> search query (explicitly provided by user with the
-    <code>github</code> command)
-  </li>
-  <br />
-
-  <li><a href="https://genius.com">Genius</a> - original source of lyrics</li>
-  <br />
-
-  <li>
-    <a href="https://some-random-api.com">Some Random Api</a> - obtains lyrics
-    from Genius <br />
+    <a href="https://some-random-api.com">Some Random Api</a>:<br />
     <b>Explicitly provided data sent with the commands:</b>
     <ul>
       <li><code>lyrics</code></li>
@@ -50,12 +31,15 @@
   <br />
 
   <li>
-    <a href="https://popcat.xyz/api">Pop Cat API</a> <br />
+    <a href="https://popcat.xyz/api">Pop Cat API</a>:<br />
     <b>Explicitly provided data sent with the commands:</b>
     <ul>
       <li><code>weather</code></li>
     </ul>
-    <b>User avatar and message content sent with the commands:</b>
+    <b
+      >User avatar and message content (or explicitly provided text) sent with
+      the commands:</b
+    >
     <ul>
       <li><code>quote</code></li>
     </ul>
@@ -77,9 +61,16 @@
     <a href="https://explainxkcd.com">explain xkcd</a> - for the
     <code>xkcd</code> command. No data sent.
   </li>
+  <br />
+
+  <li>
+    <a href="https://translate.google.com">Google Translate</a> - for the
+    <code>translate</code> command. Sends message content (or explicitly provided
+    text) to Google Translate.
+  </li>
 </ul>
 
 <div style="height: 50px;"></div>
 
 <hr />
-<h4>List last updated: 2024-12-13</h4>
+<h4>List last updated: 2025-03-31</h4>

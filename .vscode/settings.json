@@ -4,5 +4,6 @@
     "editor.formatOnType": true,
     "editor.wordBasedSuggestions": "off",
     "editor.tabSize": 4
-  }
+  },
+  "python.analysis.typeCheckingMode": "off"
 }

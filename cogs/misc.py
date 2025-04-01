@@ -90,7 +90,7 @@ class Miscellaneous(commands.Cog):
         # Download links for all formats
         hyperlinks = []
         if user.avatar is not None:
-            for format in ("png", "jpg", "webp", "gif"):
+            for format in ("gif", "png", "jpg", "webp"):
                 # Skip GIF if the avatar is not animated
                 if format == "gif" and not asset.is_animated():
                     continue
@@ -103,7 +103,55 @@ class Miscellaneous(commands.Cog):
             hyperlinks.append(f"[PNG]({asset.url})")
 
         embed.description = "**Download Links**\n" + " | ".join(hyperlinks)
+
         await i.response.send_message(embed=embed)
+
+    # banner
+    @app_commands.command(name="banner", description="Get a user's banner")
+    @app_commands.describe(
+        user="The user to get the banner of (default: yourself)",
+        profile="Server banner / User banner (default: server)",
+    )
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
+    async def banner(
+        self,
+        i: discord.Interaction,
+        user: discord.Member | discord.User | None = None,
+        profile: Literal["Server", "User"] = "Server",
+    ):
+        await i.response.defer()
+
+        if profile == "User":
+            user: discord.User = await self.bot.fetch_user(
+                user.id if user else i.user.id
+            )
+            asset = user.banner
+        else:
+            user: discord.Member = user or i.user
+            asset = user.display_banner
+
+        embed = discord.Embed(
+            colour=self.bot.colour,
+            title=f"{user.global_name or user.name}'s banner",
+        )
+
+        if asset is None:
+            raise GenericError(f"This user has no {profile.lower()} banner.")
+
+        embed.set_image(url=asset.url)
+
+        # Download links for all formats
+        hyperlinks = []
+        for format in ("gif", "png", "jpg", "webp"):
+            # Skip GIF if the avatar is not animated
+            if format == "gif" and not asset.is_animated():
+                continue
+
+            hyperlinks.append(f"[{format.upper()}]({asset.with_format(format).url})")
+
+        embed.description = "**Download Links**\n" + " | ".join(hyperlinks)
+
+        await i.followup.send(embed=embed)
 
     # userinfo
     @app_commands.command(name="userinfo", description="Get information about a user")
@@ -111,10 +159,14 @@ class Miscellaneous(commands.Cog):
     async def userinfo(
         self, i: discord.Interaction, user: discord.Member | discord.User | None = None
     ):
+        await i.response.defer()
+
         user = user or i.user
+        fetched = await self.bot.fetch_user(user.id)
+        colour = fetched.accent_colour
         embed = discord.Embed(
             title=user.name,
-            colour=self.bot.colour,
+            colour=colour,
             description=f"**ID**: {user.id}\n"
             f"**Display name**: {user.global_name}\n",
         )
@@ -123,7 +175,7 @@ class Miscellaneous(commands.Cog):
             value=f"<t:{user.created_at.timestamp():.0f}:F>\n",
         )
 
-        if i.guild:
+        if isinstance(user, discord.Member):
             if user.nick:
                 embed.description += f"**Nickname**: {user.nick}\n"
 
@@ -140,7 +192,7 @@ class Miscellaneous(commands.Cog):
                 embed.description += f"**Role count**: {len(user.roles)-1}\n"
 
         embed.set_thumbnail(url=user.avatar.url)
-        await i.response.send_message(embed=embed)
+        await i.followup.send(embed=embed)
 
     # userinfo (ctxmenu)
     async def userinfo_ctx(

@@ -3,6 +3,7 @@ import logging
 import subprocess
 from typing import TYPE_CHECKING
 
+import discord
 from discord.ext import commands, tasks
 
 from config import config
@@ -87,6 +88,12 @@ class Etc(commands.Cog):
             return
 
         await ctx.invoke(self.bot.get_command("reload"))
+
+    @commands.command()
+    @commands.is_owner()
+    async def activity(self, ctx: commands.Context, *, status: str = None):
+        await self.bot.change_presence(activity=discord.CustomActivity(status))
+        await ctx.send(f"✅ Activity set to `{status}`.")
 
 
 async def setup(bot):

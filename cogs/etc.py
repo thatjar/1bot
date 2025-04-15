@@ -17,6 +17,7 @@ class Etc(commands.Cog):
 
     def __init__(self, bot):
         self.bot: Bot = bot
+        self.post_stats.start()
 
     @tasks.loop(hours=6)
     async def post_stats(self):

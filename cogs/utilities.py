@@ -1,5 +1,6 @@
+import unicodedata
 from typing import TYPE_CHECKING
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 import aiohttp
 import discord
@@ -250,7 +251,7 @@ class Utilities(commands.Cog):
             discord.Embed(colour=self.bot.colour)
             .add_field(
                 name=f"Original ({detected_lang_name.title()})",
-                value=text[:1024],
+                value=text if len(text) <= 1024 else text[:1021] + "...",
                 inline=False,
             )
             .add_field(
@@ -279,7 +280,11 @@ class Utilities(commands.Cog):
             ):
                 embed.add_field(
                     name="Original Pronunciation",
-                    value=pronunciation,
+                    value=(
+                        pronunciation
+                        if len(pronunciation) <= 1024
+                        else pronunciation[:1021] + "..."
+                    ),
                     inline=False,
                 )
         if translation.dest != "en":
@@ -300,6 +305,73 @@ class Utilities(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def translate_ctx(self, i: discord.Interaction, message: discord.Message):
         await self.translate.callback(self, i, message.content)
+
+    # define
+    @app_commands.command(
+        name="define", description="Get the definition of a word/term"
+    )
+    @app_commands.describe(
+        word="The word/term to define",
+    )
+    @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
+    @app_commands.guilds(885487141755432990)
+    async def define(self, i: discord.Interaction, word: str):
+        await i.response.defer()
+        async with self.bot.session.get(
+            f"https://api.dictionaryapi.dev/api/v2/entries/en/{quote(word)}"
+        ) as r:
+            try:
+                json = await r.json()
+            except aiohttp.ContentTypeError:
+                raise GenericError("Something went wrong. Please try again later.")
+        if not json:  # handle empty response
+            raise GenericError("Something went wrong. Please try again later.")
+        if isinstance(json, dict) and "title" in json:
+            if json["title"] == "No Definitions Found":
+                raise GenericError("No definitions found for that word")
+            else:
+                raise GenericError("Something went wrong. Please try again later.")
+
+        data = json[0]
+
+        embed = discord.Embed(
+            colour=self.bot.colour,
+            title=f"Definition of {data['word']}",
+            url=data["sourceUrls"][0],
+        )
+
+        for meaning in data["meanings"]:
+            defs = "\n".join([f"- {i['definition']}" for i in meaning["definitions"]])
+            if len(defs) > 1024:
+                defs = (
+                    defs[: 1010 - len(data["sourceUrls"][0])]
+                    + f" [...(more)]({data['sourceUrls'][0]})"
+                )
+            embed.add_field(
+                name=meaning["partOfSpeech"].title(),
+                value=defs,
+                inline=False,
+            )
+
+        await i.followup.send(embed=embed)
+
+    # charinfo
+    @app_commands.command(
+        name="charinfo", description="Get information about a character (unicode)"
+    )
+    @app_commands.describe(
+        character="The character to get information about",
+    )
+    @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
+    @app_commands.guilds(885487141755432990)
+    async def charinfo(self, i: discord.Interaction, character: str):
+        # code semi-stolen from rapptz/robodanny :3
+        digit = f"{ord(character):x}"
+        name = unicodedata.name(character, "Name not found.")
+        character = "\\`" if character == "`" else character
+        msg = f"[`U+{digit:>04}`](http://www.fileformat.info/info/unicode/char/{digit}): {name} **\N{EM DASH}** {character}"
+
+        await i.response.send_message(msg, suppress_embeds=True)
 
 
 async def setup(bot):

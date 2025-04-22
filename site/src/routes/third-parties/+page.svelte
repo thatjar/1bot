@@ -65,12 +65,25 @@
 
   <li>
     <a href="https://translate.google.com">Google Translate</a> - for the
-    <code>translate</code> command. Sends message content (or explicitly provided
-    text) to Google Translate.
+    <code>translate</code> command. Content of a message selected by the user (or
+    explicitly provided text) sent.
+  </li>
+  <br />
+
+  <li>
+    <a href="https://en.wiktionary.org">Wiktionary</a> - for the
+    <code>define</code> command. No data sent.
+  </li>
+  <br />
+
+  <li>
+    <a href="https://dictionaryapi.dev">Dictionary API</a> - for the
+    <code>define</code> command. Explicitly provided text sent to the API to retrieve
+    definitions from Wiktionary.
   </li>
 </ul>
 
 <div style="height: 50px;"></div>
 
 <hr />
-<h4>List last updated: 2025-03-31</h4>
+<h4>List last updated: 2025-04-22</h4>

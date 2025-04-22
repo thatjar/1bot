@@ -314,7 +314,6 @@ class Utilities(commands.Cog):
         word="The word/term to define",
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
-    @app_commands.guilds(885487141755432990)
     async def define(self, i: discord.Interaction, word: str):
         await i.response.defer()
         async with self.bot.session.get(
@@ -363,7 +362,6 @@ class Utilities(commands.Cog):
         character="The character to get information about",
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
-    @app_commands.guilds(885487141755432990)
     async def charinfo(self, i: discord.Interaction, character: str):
         # code semi-stolen from rapptz/robodanny :3
         digit = f"{ord(character):x}"

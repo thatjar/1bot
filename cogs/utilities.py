@@ -1,5 +1,5 @@
 import unicodedata
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote, quote_plus
 
 import aiohttp
@@ -80,55 +80,43 @@ class Utilities(commands.Cog):
     # convert temperature
     @convert.command(
         name="temperature",
-        description="Convert temperatures between Fahrenheit and Celsius",
+        description="Convert temperatures between Celsius and Fahrenheit",
     )
     @app_commands.describe(
         temperature="The temperature to convert",
         target="Convert to Fahrenheit or Celsius?",
     )
-    @app_commands.choices(
-        target=[
-            app_commands.Choice(name="Celsius", value=0),
-            app_commands.Choice(name="Fahrenheit", value=1),
-        ]
-    )
     async def convert_temp(
         self,
         i: discord.Interaction,
         temperature: float,
-        target: app_commands.Choice[int],
+        target: Literal["Fahrenheit", "Celsius"],
     ):
-        if target.value == 0:
+        if target == "Fahrenheit":
             await i.response.send_message(
-                f"{temperature}°F = **{((temperature - 32) / 1.8):.2f}°C**"
+                f"{temperature}°C = **{((temperature * 1.8) + 32):.2f}°F**"
             )
         else:
             await i.response.send_message(
-                f"{temperature}°C = **{((temperature * 1.8) + 32):.2f}°F**"
+                f"{temperature}°F = **{((temperature - 32) / 1.8):.2f}°C**"
             )
 
     # convert distance
     @convert.command(
         name="distance",
-        description="Convert distances between Kilometres and Miles",
+        description="Convert distances between kilometres and miles",
     )
     @app_commands.describe(
         distance="The distance to convert",
-        target="Convert to Miles or Kilometres?",
-    )
-    @app_commands.choices(
-        target=[
-            app_commands.Choice(name="Miles", value=0),
-            app_commands.Choice(name="Kilometres", value=1),
-        ]
+        target="Convert to miles or kilometres?",
     )
     async def convert_distance(
         self,
         i: discord.Interaction,
         distance: float,
-        target: app_commands.Choice[int],
+        target: Literal["Miles", "Kilometres"],
     ):
-        if target.value == 0:
+        if target == "Miles":
             await i.response.send_message(
                 f"{distance} km = **{(distance / 1.609344):.3f} mi**"
             )
@@ -139,52 +127,40 @@ class Utilities(commands.Cog):
 
     # convert length
     @convert.command(
-        name="length", description="Convert lengths between Centimetres and Inches"
+        name="length", description="Convert lengths between centimetres and inches"
     )
     @app_commands.describe(
         length="The length to convert",
-        target="Convert to Centimetres or Inches?",
-    )
-    @app_commands.choices(
-        target=[
-            app_commands.Choice(name="Inches", value=0),
-            app_commands.Choice(name="Centimetres", value=1),
-        ]
+        target="Convert to inches or centimetres?",
     )
     async def convert_length(
         self,
         i: discord.Interaction,
         length: float,
-        target: app_commands.Choice[int],
+        target: Literal["Inches", "Centimetres"],
     ):
-        if target.value == 0:
+        if target == "Inches":
             await i.response.send_message(f"{length} cm = **{(length / 2.54):.2f} in**")
         else:
             await i.response.send_message(f"{length} in = **{(length * 2.54):.2f} cm**")
 
     # convert weight
     @convert.command(
-        name="weight", description="Convert weights between Kilograms and Pounds"
+        name="weight", description="Convert weights between kilograms and pounds"
     )
     @app_commands.describe(
         weight="The weight to convert",
-        target="Convert to Pounds or Kilograms?",
-    )
-    @app_commands.choices(
-        target=[
-            app_commands.Choice(name="Pounds", value=0),
-            app_commands.Choice(name="Kilograms", value=1),
-        ]
+        target="Convert to pounds or kilograms?",
     )
     async def convert_weight(
         self,
         i: discord.Interaction,
         weight: float,
-        target: app_commands.Choice[int],
+        target: Literal["Pounds", "Kilograms"],
     ):
-        if target.value == 0:
+        if target == "Pounds":
             await i.response.send_message(
-                f"{weight} kg = **{(weight * 2.20462):.2f} lbs**"
+                f"{weight} kg = **{(weight * 2.20462):.2f} lb**"
             )
         else:
             await i.response.send_message(

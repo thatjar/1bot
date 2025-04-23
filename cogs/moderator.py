@@ -129,10 +129,10 @@ class Moderator(commands.Cog):
     @app_commands.describe(
         count="The number of messages to delete (1-100, up to two weeks old)"
     )
-    async def purgebots(self, i: discord.Interaction, count: int):
+    async def purgebots(
+        self, i: discord.Interaction, count: app_commands.Range[int, 1, 100]
+    ):
         await i.response.defer(ephemeral=True)
-        if not 1 <= count <= 100:
-            raise GenericError("Count must be between 1 and 100.")
 
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
@@ -169,10 +169,10 @@ class Moderator(commands.Cog):
     @app_commands.describe(
         count="The number of messages to delete (1-100, up to two weeks old)"
     )
-    async def purgehumans(self, i: discord.Interaction, count: int):
+    async def purgehumans(
+        self, i: discord.Interaction, count: app_commands.Range[int, 1, 100]
+    ):
         await i.response.defer(ephemeral=True)
-        if not 1 <= count <= 100:
-            raise GenericError("Count must be between 1 and 100.")
 
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
@@ -208,10 +208,13 @@ class Moderator(commands.Cog):
         user="The user whose messages to delete",
         count="The number of messages to delete (1-100, up to two weeks old)",
     )
-    async def purgeuser(self, i: discord.Interaction, user: discord.Member, count: int):
+    async def purgeuser(
+        self,
+        i: discord.Interaction,
+        user: discord.Member,
+        count: app_commands.Range[int, 1, 100],
+    ):
         await i.response.defer(ephemeral=True)
-        if not 1 <= count <= 100:
-            raise GenericError("Count must be between 1 and 100.")
 
         cutoff = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
@@ -267,13 +270,15 @@ class Moderator(commands.Cog):
         )
 
     # slowmode
-    @app_commands.command(name="slowmode", description="Set slowmode")
+    @app_commands.command(
+        name="slowmode", description="Set slowmode for the current channel"
+    )
     @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
     @app_commands.describe(
-        amount="The amount of seconds to slowmode (default: 0)",
+        amount="The amount of units to set slowmode to (default: 0)",
         unit="The unit of time (default: seconds)",
     )
     @app_commands.choices(
@@ -289,11 +294,11 @@ class Moderator(commands.Cog):
         amount: float = 0.0,
         unit: app_commands.Choice[int] = 1,
     ):
-        if not 0 <= amount <= 21600:
+        seconds = amount if unit == 1 else amount * unit.value
+
+        if not 0 <= seconds <= 21600:
             raise GenericError("Slowmode must be between 0 and 6 hours.")
         await i.response.defer(ephemeral=True)
-
-        seconds = amount if unit == 1 else amount * unit.value
 
         await i.channel.edit(
             slowmode_delay=seconds, reason=f"{i.user.name} set slowmode"

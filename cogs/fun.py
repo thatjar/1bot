@@ -1,5 +1,5 @@
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote_plus
 
 import discord
@@ -308,15 +308,6 @@ class Fun(commands.Cog):
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
 
-    # quote (ctxmenu)
-    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
-    async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
-        if not message.content:
-            raise GenericError("The message has no text content.")
-        if len(message.content) > 100:
-            raise GenericError("The text must have no more than 100 characters.")
-        await self.quote.callback(self, i, message.content, message.author)
-
     # quote
     @app_commands.command(name="quote", description="Create a quote image")
     @app_commands.describe(
@@ -326,13 +317,11 @@ class Fun(commands.Cog):
     async def quote(
         self,
         i: discord.Interaction,
-        quote: str,
+        quote: app_commands.Range[str, 1, 100],
         user: discord.Member | discord.User = None,
     ):
         if user is None:
             user = i.user
-        if len(quote) > 100:
-            raise GenericError("The text must have no more than 100 characters.")
 
         await i.response.defer()
         url = (
@@ -349,6 +338,15 @@ class Fun(commands.Cog):
         embed.set_image(url=url)
 
         await i.followup.send(embed=embed)
+
+    # quote (ctxmenu)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
+    async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
+        if not message.content:
+            raise GenericError("The message has no text content.")
+        if len(message.content) > 100:
+            raise GenericError("The text must have no more than 100 characters.")
+        await self.quote.callback(self, i, message.content, message.author)
 
     # pickupline
     @app_commands.command(name="pickupline", description="Get a pickup line")
@@ -419,28 +417,21 @@ class Fun(commands.Cog):
     @app_commands.describe(
         number="The number of dice to roll",
     )
-    async def dice(self, i: discord.Interaction, number: int = 1):
-        if not 1 <= number <= 6:
-            raise GenericError("The number of dice must be between 1 and 6.")
+    async def dice(
+        self, i: discord.Interaction, number: app_commands.Range[int, 1, 6] = 1
+    ):
         rolls = random.sample(range(1, 7), number)
         await i.response.send_message(
-            f"🎲 Rolled {number} dice: {', '.join([str(r) for r in rolls])}"
+            f"🎲 Rolled {number} die/dice:\n **{', '.join([str(r) for r in rolls])}**"
         )
-
-    # mock (ctxmenu)
-    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
-    async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
-        if not message.content:
-            raise GenericError("The message has no text.")
-        await self.mock.callback(self, i, message.content)
 
     # mock
     @app_commands.command(name="mock", description="Mock text")
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     @app_commands.describe(text="The text to mock")
-    async def mock(self, i: discord.Interaction, text: str):
-        if len(text) > 2000:
-            raise GenericError("The text must be no more than 2000 characters.")
+    async def mock(
+        self, i: discord.Interaction, text: app_commands.Range[str, 1, 2000]
+    ):
         mock_text = "".join(
             [char.upper() if i % 2 else char.lower() for i, char in enumerate(text)]
         )
@@ -449,6 +440,15 @@ class Fun(commands.Cog):
             mock_text,
             allowed_mentions=discord.AllowedMentions(users=False, roles=False),
         )
+
+    # mock (ctxmenu)
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
+    async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
+        if not message.content:
+            raise GenericError("The message has no text.")
+        if len(message.content) > 2000:
+            raise GenericError("The text must be no more than 2000 characters.")
+        await self.mock.callback(self, i, message.content)
 
     # dadjoke
     @app_commands.command(name="dadjoke", description="Get a dad joke")
@@ -513,10 +513,9 @@ class Fun(commands.Cog):
     # megamind
     @app_commands.command(name="megamind", description="Generate a megamind meme")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def megamind(self, i: discord.Interaction, text: str):
-        if len(text) > 200:
-            raise GenericError("The text must be no more than 200 characters.")
-
+    async def megamind(
+        self, i: discord.Interaction, text: app_commands.Range[str, 1, 200]
+    ):
         embed = discord.Embed(colour=self.bot.colour)
         embed.set_image(
             url=f"https://some-random-api.com/canvas/misc/nobitches?no={quote_plus(text)}"
@@ -549,14 +548,10 @@ class Fun(commands.Cog):
     # xkcd
     @app_commands.command(name="xkcd", description="Get xkcd comics")
     @app_commands.describe(mode="Random or latest comic (default: random)")
-    @app_commands.choices(
-        mode=[
-            app_commands.Choice(name="random", value="random"),
-            app_commands.Choice(name="latest", value="latest"),
-        ]
-    )
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def xkcd(self, i: discord.Interaction, mode: str = "random"):
+    async def xkcd(
+        self, i: discord.Interaction, mode: Literal["random", "latest"] = "random"
+    ):
         async with self.bot.session.get("https://xkcd.com/info.0.json") as r:
             if not r.ok:
                 raise GenericError("Couldn't retrieve data. Try again later.")

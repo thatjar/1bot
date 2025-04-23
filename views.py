@@ -4,8 +4,15 @@ from config import config
 
 
 class Confirm(discord.ui.View):
-    def __init__(self, target: discord.User, *args, **kwargs):
-        super().__init__(*args, **kwargs, timeout=60)
+    """Creates Accept and Reject buttons
+
+    :param target: the User to confirm with
+    :type target: discord.User
+    :param timeout: View timeout
+    :type timeout: float"""
+
+    def __init__(self, target: discord.User, timeout=60, *args, **kwargs):
+        super().__init__(*args, **kwargs, timeout=timeout)
         self.target = target
         self.accepted = None
 
@@ -29,6 +36,8 @@ class Confirm(discord.ui.View):
 
 
 class InfoButtons(discord.ui.View):
+    """Link buttons for the bot's website, support server, and invite link as configured in config.py"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -56,10 +56,9 @@ class Bot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         logging.info("Disconnecting.")
-        # Close the aiohttp session before closing the bot's connection
+        await super().close()
         if hasattr(self, "session"):
             await self.session.close()
-        await super().close()
 
 
 bot = Bot()

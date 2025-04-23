@@ -1,4 +1,5 @@
 import random
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote_plus
 
@@ -215,8 +216,9 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
+        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
         await i.response.send_message(
-            content=f"{user.mention}, you have been challenged to **Tic Tac Toe** by {i.user.mention}! Respond within 60 seconds.",
+            content=f"{user.mention}, you have been challenged to **Tic Tac Toe** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,
         )
         await view.wait()
@@ -255,8 +257,9 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
+        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
         await i.response.send_message(
-            f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Respond within 60 seconds.",
+            f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,
         )
         await view.wait()

@@ -245,9 +245,9 @@ class Moderator(commands.Cog):
         name="disablethreads",
         description="Remove permissions to create threads in this channel",
     )
-    @app_commands.default_permissions(manage_channels=True)
-    @app_commands.checks.has_permissions(manage_channels=True)
-    @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.default_permissions(manage_roles=True)
+    @app_commands.checks.has_permissions(manage_roles=True)
+    @app_commands.checks.bot_has_permissions(manage_roles=True)
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     @app_commands.describe(
         role="The role to remove permissions from (default: @everyone)",
@@ -273,14 +273,14 @@ class Moderator(commands.Cog):
 
     # slowmode
     @app_commands.command(
-        name="slowmode", description="Set slowmode for the current channel"
+        name="slowmode", description="View or set slowmode for the current channel"
     )
     @app_commands.default_permissions(manage_channels=True)
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
     @app_commands.describe(
-        amount="The amount of units to set slowmode to (default: 0)",
+        amount="The amount of units to set slowmode to",
         unit="The unit of time (default: seconds)",
     )
     @app_commands.choices(
@@ -293,9 +293,17 @@ class Moderator(commands.Cog):
     async def slowmode(
         self,
         i: discord.Interaction,
-        amount: float = 0.0,
+        amount: float | None = None,
         unit: app_commands.Choice[int] = 1,
     ):
+        if amount is None:
+            # if no amount is given, show the current slowmode
+            if i.channel.slowmode_delay == 0:
+                raise GenericError("This channel has no slowmode.")
+            seconds = i.channel.slowmode_delay
+            await i.response.send_message(f"Current slowmode: **{seconds} seconds**")
+            return
+
         seconds = amount if unit == 1 else amount * unit.value
 
         if not 0 <= seconds <= 21600:
@@ -306,15 +314,15 @@ class Moderator(commands.Cog):
             slowmode_delay=seconds, reason=f"{i.user.name} set slowmode"
         )
         await i.followup.send(
-            f"✅ Slowmode set to {amount} {'seconds' if unit == 1 else unit.name}.",
+            f"✅ Slowmode set to {int(seconds)} seconds.",
             ephemeral=True,
         )
 
     # lock
     @app_commands.command(name="lock", description="Make a channel read-only")
-    @app_commands.default_permissions(manage_channels=True)
-    @app_commands.checks.has_permissions(manage_channels=True)
-    @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.default_permissions(manage_roles=True)
+    @app_commands.checks.has_permissions(manage_roles=True)
+    @app_commands.checks.bot_has_permissions(manage_roles=True)
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     @app_commands.describe(
         role="The role to remove permissions from (default: @everyone)",
@@ -328,6 +336,7 @@ class Moderator(commands.Cog):
         reason: str = None,
         silent: bool = False,
     ):
+        await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
 
         overwrite = i.channel.overwrites_for(role)
@@ -345,7 +354,6 @@ class Moderator(commands.Cog):
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"
-        await i.response.defer(ephemeral=True)
 
         # allow bot to send messages
         await i.channel.set_permissions(
@@ -375,9 +383,9 @@ class Moderator(commands.Cog):
     @app_commands.command(
         name="unlock", description="Undo the lock command (allow users to message)"
     )
-    @app_commands.default_permissions(manage_channels=True)
-    @app_commands.checks.has_permissions(manage_channels=True)
-    @app_commands.checks.bot_has_permissions(manage_channels=True)
+    @app_commands.default_permissions(manage_roles=True)
+    @app_commands.checks.has_permissions(manage_roles=True)
+    @app_commands.checks.bot_has_permissions(manage_roles=True)
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     @app_commands.describe(
         role="The role to reset permissions for (default: @everyone)",
@@ -391,6 +399,7 @@ class Moderator(commands.Cog):
         reason: str = None,
         silent: bool = False,
     ):
+        await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
 
         overwrite = i.channel.overwrites_for(role)
@@ -408,7 +417,6 @@ class Moderator(commands.Cog):
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"
-        await i.response.defer(ephemeral=True)
 
         # allow bot to send messages
         await i.channel.set_permissions(
@@ -436,7 +444,7 @@ class Moderator(commands.Cog):
         if not silent:
             await i.channel.send(embed=embed)
         await i.followup.send(
-            f"✅ Reset permissions for `{role.name}` to send messages and create threads in {i.channel.mention}."
+            f"✅ Reset permissions for `{role.name}` to send messages and create threads in this channel."
         )
 
     # timeout

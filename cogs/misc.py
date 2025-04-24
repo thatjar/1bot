@@ -63,7 +63,7 @@ class Miscellaneous(commands.Cog):
         await i.response.send_message(embed=embed, view=InfoButtons())
 
     # avatar
-    @app_commands.command(name="avatar", description="Get a user's avatar")
+    @app_commands.command(name="avatar", description="Get any user's avatar")
     @app_commands.describe(
         user="The user to get the avatar of (default: yourself)",
         profile="Server avatar / User avatar (default: server)",
@@ -107,7 +107,7 @@ class Miscellaneous(commands.Cog):
         await i.response.send_message(embed=embed)
 
     # banner
-    @app_commands.command(name="banner", description="Get a user's banner")
+    @app_commands.command(name="banner", description="Get any user's banner")
     @app_commands.describe(
         user="The user to get the banner of (default: yourself)",
         profile="Server banner / User banner (default: server)",
@@ -154,7 +154,7 @@ class Miscellaneous(commands.Cog):
         await i.followup.send(embed=embed)
 
     # userinfo
-    @app_commands.command(name="userinfo", description="Get information about a user")
+    @app_commands.command(name="userinfo", description="Get information about any user")
     @app_commands.describe(user="The user to get information on (default: yourself)")
     async def userinfo(
         self, i: discord.Interaction, user: discord.Member | discord.User | None = None

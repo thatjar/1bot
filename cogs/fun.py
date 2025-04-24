@@ -418,14 +418,14 @@ class Fun(commands.Cog):
     @app_commands.command(name="dice", description="Roll dice")
     @app_commands.checks.cooldown(3, 15, key=lambda i: i.channel)
     @app_commands.describe(
-        number="The number of dice to roll",
+        number="The number of dice to roll (default: 1)",
     )
     async def dice(
         self, i: discord.Interaction, number: app_commands.Range[int, 1, 6] = 1
     ):
         rolls = random.sample(range(1, 7), number)
         await i.response.send_message(
-            f"🎲 Rolled {number} die/dice:\n **{', '.join([str(r) for r in rolls])}**"
+            f"🎲 Rolled {number} {'die' if number == 1 else 'dice'}:\n **{', '.join([str(r) for r in rolls])}**"
         )
 
     # mock

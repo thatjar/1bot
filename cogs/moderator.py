@@ -197,7 +197,9 @@ class Moderator(commands.Cog):
         )
 
     # /purge user
-    @purge_group.command(name="user", description="Bulk delete messages sent by a user")
+    @purge_group.command(
+        name="user", description="Bulk delete messages sent by any user"
+    )
     @app_commands.checks.has_permissions(
         manage_messages=True, read_message_history=True
     )
@@ -211,7 +213,7 @@ class Moderator(commands.Cog):
     async def purgeuser(
         self,
         i: discord.Interaction,
-        user: discord.Member,
+        user: discord.Member | discord.User,
         count: app_commands.Range[int, 1, 100],
     ):
         await i.response.defer(ephemeral=True)
@@ -329,6 +331,14 @@ class Moderator(commands.Cog):
         role = role or i.guild.default_role
 
         overwrite = i.channel.overwrites_for(role)
+        if (
+            overwrite.send_messages
+            is overwrite.create_public_threads
+            is overwrite.create_private_threads
+            is False
+        ):
+            raise GenericError(f"This channel is already locked for `{role.name}`.")
+
         overwrite.send_messages = False
         overwrite.create_public_threads = False
         overwrite.create_private_threads = False
@@ -354,9 +364,7 @@ class Moderator(commands.Cog):
                 reason = reason[:1021] + "..."
             embed.description = "**Reason:** " + reason
         else:
-            embed.description = (
-                f"🔒 This channel was locked for `{role.name}` by a moderator."
-            )
+            embed.description = f"🔒 This channel has been locked for `{role.name}`."
         if not silent:
             await i.channel.send(embed=embed)
         await i.followup.send(
@@ -386,6 +394,14 @@ class Moderator(commands.Cog):
         role = role or i.guild.default_role
 
         overwrite = i.channel.overwrites_for(role)
+        if (
+            overwrite.send_messages
+            is overwrite.create_public_threads
+            is overwrite.create_private_threads
+            in (None, True)
+        ):
+            raise GenericError(f"This channel is already unlocked for `{role.name}`.")
+
         overwrite.send_messages = None
         overwrite.create_public_threads = None
         overwrite.create_private_threads = None
@@ -416,9 +432,7 @@ class Moderator(commands.Cog):
                 reason = reason[:1021] + "..."
             embed.description = "**Reason:** " + reason
         else:
-            embed.description = (
-                f"🔓 This channel was unlocked for `{role.name}` by a moderator."
-            )
+            embed.description = f"🔓 This channel has been unlocked for `{role.name}`."
         if not silent:
             await i.channel.send(embed=embed)
         await i.followup.send(
@@ -488,7 +502,7 @@ class Moderator(commands.Cog):
     # ban
     @app_commands.command(
         name="ban",
-        description="Ban a user, regardless of their presence in this server",
+        description="Ban any member or non-member from this server",
     )
     @app_commands.default_permissions(ban_members=True)
     @app_commands.checks.has_permissions(ban_members=True)

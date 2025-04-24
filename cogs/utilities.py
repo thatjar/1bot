@@ -184,11 +184,11 @@ class Utilities(commands.Cog):
 
         embed = discord.Embed(
             title=json["title"],
-            url=json["links"]["genius"],
+            url=json["url"],
             colour=self.bot.colour,
         )
-        if "thumbnail" in json and "genius" in json["thumbnail"]:
-            embed.set_thumbnail(url=json["thumbnail"]["genius"])
+        if "thumbnail" in json:
+            embed.set_thumbnail(url=json["thumbnail"])
         if len(json["lyrics"]) > 4096:
             embed.description = json["lyrics"][:4093] + "..."
         else:

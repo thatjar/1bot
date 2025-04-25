@@ -256,14 +256,21 @@ class Moderator(commands.Cog):
     async def disablethreads(
         self, i: discord.Interaction, role: discord.Role = None, reason: str = None
     ):
+        await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
+
+        overwrite = i.channel.overwrites_for(role)
+        if overwrite.create_public_threads is overwrite.create_private_threads is False:
+            raise GenericError(
+                f"This channel already has disabled threads for `{role.name}`."
+            )
+
+        overwrite.create_public_threads = False
+        overwrite.create_private_threads = False
+
+        # reason string that appears in audit log
         reason = reason or "disabled threads"
 
-        await i.response.defer(ephemeral=True)
-        overwrite = discord.PermissionOverwrite(
-            create_public_threads=False,
-            create_private_threads=False,
-        )
         await i.channel.set_permissions(
             role, overwrite=overwrite, reason=f"{i.user.name}: {reason}"
         )

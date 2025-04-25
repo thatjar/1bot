@@ -78,6 +78,13 @@ class Etc(commands.Cog):
         await ctx.send("Pulling from `origin main`...")
 
         try:
+            # git restore all files to avoid merge conflicts
+            subprocess.run(
+                ["git", "restore", "."],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             subprocess.run(
                 ["git", "pull", "origin", "main"],
                 check=True,

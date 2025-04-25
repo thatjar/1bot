@@ -145,7 +145,7 @@ class Errors(commands.Cog):
             msg = (
                 "I don't have enough permissions to run this command!\n"
                 f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
-                f"Please add these permissions to my role ('{self.bot.user.name}') in your server settings."
+                f"Please add these permissions to my role ('{self.bot.user.name}') in your server/channel settings."
             )
             await self.send_error(i, msg)
         elif isinstance(error, app_commands.MissingPermissions):

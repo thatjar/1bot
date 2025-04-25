@@ -338,7 +338,9 @@ class Utilities(commands.Cog):
         character="The character to get information about",
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
-    async def charinfo(self, i: discord.Interaction, character: str):
+    async def charinfo(
+        self, i: discord.Interaction, character: app_commands.Range[str, 1, 1]
+    ):
         # code semi-stolen from rapptz/robodanny :3
         digit = f"{ord(character):x}"
         name = unicodedata.name(character, "Name not found.")

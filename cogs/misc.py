@@ -120,23 +120,32 @@ class Miscellaneous(commands.Cog):
         profile: Literal["Server", "User"] = "Server",
     ):
         await i.response.defer()
+        colour = None
 
         if profile == "User":
             user: discord.User = await self.bot.fetch_user(
                 user.id if user else i.user.id
             )
             asset = user.banner
+            if asset is None:
+                colour = user.accent_colour.value
         else:
-            user: discord.Member = user or i.user
-            asset = user.display_banner
+            user = user or i.user
+            asset = getattr(user, "display_banner", None)
+            if asset is None:
+                fetched = await self.bot.fetch_user(user.id)
+                colour = fetched.accent_colour.value
+
+        if asset is None:
+            err_msg = f"This user has no {profile.lower()} banner image."
+            if colour is not None:
+                err_msg += f" Their banner colour is `#{colour:x}`."
+            raise GenericError(err_msg)
 
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"{user.global_name or user.name}'s banner",
         )
-
-        if asset is None:
-            raise GenericError(f"This user has no {profile.lower()} banner.")
 
         embed.set_image(url=asset.url)
 

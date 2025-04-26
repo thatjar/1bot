@@ -41,7 +41,7 @@ class Etc(commands.Cog):
 
     @commands.command(aliases=["re"])
     @commands.is_owner()
-    async def reload(self, ctx: commands.Context, *, cogs: str = None):
+    async def reload(self, ctx: commands.Context, *, cogs: str | None = None):
         try:
             if not cogs:
                 cogs_to_reload = [
@@ -99,7 +99,7 @@ class Etc(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def activity(self, ctx: commands.Context, *, status: str = None):
+    async def activity(self, ctx: commands.Context, *, status: str | None = None):
         await self.bot.change_presence(activity=discord.CustomActivity(status))
         await ctx.send(f"✅ Activity set to `{status}`.")
 

@@ -174,7 +174,7 @@ class Utilities(commands.Cog):
     async def lyrics(self, i: discord.Interaction, query: str):
         await i.response.defer()
         async with self.bot.session.get(
-            f"https://some-random-api.com/lyrics?title={quote_plus(query)}"
+            "https://some-random-api.com/lyrics", params=f"title={quote_plus(query)}"
         ) as r:
             json = await r.json()
 
@@ -301,7 +301,7 @@ class Utilities(commands.Cog):
                 raise GenericError("Something went wrong. Please try again later.")
         if not json:  # handle empty response
             raise GenericError("Something went wrong. Please try again later.")
-        if isinstance(json, dict) and "title" in json:
+        if isinstance(json, dict) and json.get("title") == "No Definitions Found":
             if json["title"] == "No Definitions Found":
                 raise GenericError("No definitions found for that word")
             else:

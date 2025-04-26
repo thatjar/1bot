@@ -254,7 +254,10 @@ class Moderator(commands.Cog):
         reason="Reason (optional)",
     )
     async def disablethreads(
-        self, i: discord.Interaction, role: discord.Role = None, reason: str = None
+        self,
+        i: discord.Interaction,
+        role: discord.Role | None = None,
+        reason: str | None = None,
     ):
         await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
@@ -339,8 +342,8 @@ class Moderator(commands.Cog):
     async def lock(
         self,
         i: discord.Interaction,
-        role: discord.Role = None,
-        reason: str = None,
+        role: discord.Role | None = None,
+        reason: str | None = None,
         silent: bool = False,
     ):
         await i.response.defer(ephemeral=True)
@@ -402,8 +405,8 @@ class Moderator(commands.Cog):
     async def unlock(
         self,
         i: discord.Interaction,
-        role: discord.Role = None,
-        reason: str = None,
+        role: discord.Role | None = None,
+        reason: str | None = None,
         silent: bool = False,
     ):
         await i.response.defer(ephemeral=True)
@@ -476,7 +479,7 @@ class Moderator(commands.Cog):
         minutes: int = 0,
         hours: int = 0,
         days: int = 0,
-        reason: str = None,
+        reason: str | None = None,
         silent: bool = False,
     ):
         if user == i.user:
@@ -535,7 +538,7 @@ class Moderator(commands.Cog):
         user: discord.User,
         days: int = 1,
         hours: int = 0,
-        reason: str = None,
+        reason: str | None = None,
         silent: bool = False,
     ):
         if user == i.user:

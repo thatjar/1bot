@@ -321,7 +321,7 @@ class Fun(commands.Cog):
         self,
         i: discord.Interaction,
         quote: app_commands.Range[str, 1, 100],
-        user: discord.Member | discord.User = None,
+        user: discord.Member | discord.User | None = None,
     ):
         if user is None:
             user = i.user

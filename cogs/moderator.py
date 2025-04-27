@@ -527,8 +527,8 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(ban_members=True)
     @app_commands.describe(
         user="Member/User ID to ban",
-        days="The number of days of messages to delete (default: 1)",
-        hours="The number of hours of messages to delete (default: 1 day, 0 hours)",
+        delete_days="Number of days of messages to delete (default: 1)",
+        delete_hours="Number of hours of messages to delete (default: 1 day, 0 hours)",
         reason="The reason for banning the user (optional)",
         silent="Disable publicly sending the ban message & DMing the user (default: False)",
     )
@@ -536,8 +536,8 @@ class Moderator(commands.Cog):
         self,
         i: discord.Interaction,
         user: discord.User,
-        days: int = 1,
-        hours: int = 0,
+        delete_days: int = 1,
+        delete_hours: int = 0,
         reason: str | None = None,
         silent: bool = False,
     ):
@@ -545,7 +545,7 @@ class Moderator(commands.Cog):
             raise GenericError("You cannot ban yourself.")
         if user == i.guild.me:
             raise GenericError("I cannot ban myself.")
-        if days * 86400 + hours * 3600 > 604800:
+        if delete_days * 86400 + delete_hours * 3600 > 604800:
             raise GenericError("Total duration must be between 0 and 7 days.")
 
         # reason string that appears in audit log
@@ -569,7 +569,7 @@ class Moderator(commands.Cog):
         await i.guild.ban(
             user,
             reason=log_reason,
-            delete_message_seconds=days * 86400 + hours * 3600,
+            delete_message_seconds=delete_days * 86400 + delete_hours * 3600,
         )
 
         embed = discord.Embed(
@@ -579,8 +579,10 @@ class Moderator(commands.Cog):
         )
 
         embed.add_field(name="Reason", value=reason, inline=False)
-        if days:
-            embed.add_field(name="Messages Deleted", value=f"{days} days", inline=False)
+        if delete_days:
+            embed.add_field(
+                name="Messages Deleted", value=f"{delete_days} days", inline=False
+            )
 
         await i.response.send_message(embed=embed, ephemeral=silent)
 

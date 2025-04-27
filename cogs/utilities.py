@@ -37,9 +37,9 @@ class Utilities(commands.Cog):
             try:
                 json = await r.json()
             except aiohttp.ContentTypeError:
-                raise GenericError("Invalid location")
+                raise GenericError("Invalid location. Try with a more specific query.")
         if not json:  # handle empty response
-            raise GenericError("Invalid location")
+            raise GenericError("Invalid location. Try with a more specific query.")
 
         data = json[0]
 

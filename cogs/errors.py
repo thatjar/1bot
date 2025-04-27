@@ -140,6 +140,8 @@ class Errors(commands.Cog):
             error, app_commands.CommandNotFound
         ) or "Unknown interaction" in str(error):
             return
+        elif isinstance(error, discord.NotFound):
+            return
 
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (

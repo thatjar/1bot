@@ -210,6 +210,8 @@ class Fun(commands.Cog):
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
+        if i.permissions.use_external_apps is False:
+            raise GenericError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise GenericError("You can't play with yourself!")
         if user.bot:
@@ -251,9 +253,11 @@ class Fun(commands.Cog):
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
     async def rps(self, i: discord.Interaction, user: discord.User):
+        if i.permissions.use_external_apps is False:
+            raise GenericError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise GenericError("You can't play with yourself!")
-        elif user.bot:
+        if user.bot:
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)

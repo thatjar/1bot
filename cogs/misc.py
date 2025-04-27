@@ -65,7 +65,7 @@ class Miscellaneous(commands.Cog):
     # avatar
     @app_commands.command(name="avatar", description="Get any user's avatar")
     @app_commands.describe(
-        user="The user to get the avatar of (default: yourself)",
+        user="The user or user ID to get the avatar of (default: yourself)",
         profile="Server avatar / User avatar (default: server)",
     )
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
@@ -242,7 +242,7 @@ class Miscellaneous(commands.Cog):
 
         if (
             message.interaction_metadata.user.id == i.user.id
-            or i.channel.permissions_for(i.user).manage_messages
+            or i.permissions.manage_messages
         ):
             await message.delete()
             await i.response.send_message("✅ Response deleted.", ephemeral=True)

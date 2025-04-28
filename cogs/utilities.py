@@ -1,6 +1,6 @@
 import unicodedata
 from typing import TYPE_CHECKING, Literal
-from urllib.parse import quote, quote_plus
+from urllib.parse import quote
 
 import aiohttp
 import discord
@@ -32,7 +32,7 @@ class Utilities(commands.Cog):
     async def weather(self, i: discord.Interaction, location: str):
         await i.response.defer()
         async with self.bot.session.get(
-            f"https://api.popcat.xyz/weather?q={location}"
+            "https://api.popcat.xyz/weather", params={"q": location}
         ) as r:
             try:
                 json = await r.json()
@@ -174,7 +174,7 @@ class Utilities(commands.Cog):
     async def lyrics(self, i: discord.Interaction, query: str):
         await i.response.defer()
         async with self.bot.session.get(
-            "https://some-random-api.com/lyrics", params=f"title={quote_plus(query)}"
+            "https://some-random-api.com/lyrics", params={"title": query}
         ) as r:
             json = await r.json()
 

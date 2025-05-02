@@ -1,3 +1,4 @@
+from io import BytesIO
 import random
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Literal
@@ -332,20 +333,28 @@ class Fun(commands.Cog):
             user = i.user
 
         await i.response.defer()
-        url = (
-            "https://api.popcat.xyz/quote?image="
-            f"{quote_plus(user.display_avatar.url)}"
-            f"&text={quote_plus(quote)}"
-            f"&name={quote_plus(user.display_name)}"
-        )
+
+        async with self.bot.session.get(
+            "https://api.popcat.xyz/quote",
+            params={
+                "image": user.display_avatar.url,
+                "text": quote,
+                "name": user.display_name,
+            },
+        ) as r:
+            if not r.ok:
+                raise GenericError("Couldn't retrieve data. Try again later.")
+            image = await r.read()
+
+        attachment = discord.File(BytesIO(image), filename="quote.png")
 
         embed = discord.Embed(
             colour=self.bot.colour,
             title=f"a beautiful quote from {user.display_name}",
         )
-        embed.set_image(url=url)
+        embed.set_image(url="attachment://quote.png")
 
-        await i.followup.send(embed=embed)
+        await i.followup.send(embed=embed, file=attachment)
 
     # quote (ctxmenu)
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)

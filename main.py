@@ -65,6 +65,7 @@ bot = Bot()
 
 if __name__ == "__main__":
     # Set logging levels
+    logging.getLogger("httpx").setLevel(logging.CRITICAL)
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     for logger in loggers:
         if logger.name.startswith("discord"):

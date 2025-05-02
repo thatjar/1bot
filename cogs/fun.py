@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from main import Bot
 
 
+# based on rapptz/discord.py examples (improved to actually enforce turns)
 class TicTacToeButton(discord.ui.Button):
     def __init__(self, x: int, y: int):
         super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
@@ -142,7 +143,6 @@ class RPSButton(discord.ui.Button):
                 "❌ You are not part of this game.", ephemeral=True
             )
             return
-
         if view.choices.get(i.user.id):
             await i.response.send_message(
                 f"❌ You have already chosen {view.choices[i.user.id]}.", ephemeral=True
@@ -150,6 +150,7 @@ class RPSButton(discord.ui.Button):
             return
 
         await i.response.defer()
+
         view.choices[i.user.id] = self.label
         if len(view.choices) == 2:
             if view.choices[view.p1.id] == view.choices[view.p2.id]:

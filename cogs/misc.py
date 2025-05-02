@@ -177,7 +177,7 @@ class Miscellaneous(commands.Cog):
             title=user.name,
             colour=colour,
             description=f"**ID**: {user.id}\n"
-            f"**Display name**: {user.global_name}\n",
+            f"**Display name**: {user.global_name or user.name}\n",
         )
         embed.add_field(
             name="Account created:",

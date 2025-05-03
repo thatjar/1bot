@@ -245,6 +245,39 @@ class Utilities(commands.Cog):
             )
         )
 
+        # Add pronunciations if one of the languages is not English
+        if translation.src != "en":
+            # Translate text into itself to get pronunciation
+            pronunciation = await translator.translate(
+                text, dest=translation.src, src=translation.src
+            )
+            pronunciation = pronunciation.pronunciation
+            if (
+                type(pronunciation) is str
+                and pronunciation
+                and pronunciation.lower() != text.lower()
+            ):
+                embed.add_field(
+                    name="Original Pronunciation",
+                    value=(
+                        pronunciation
+                        if len(pronunciation) <= 1024
+                        else pronunciation[:1021] + "..."
+                    ),
+                    inline=False,
+                )
+        if translation.dest != "en":
+            if type(translation.pronunciation) is str and translation.pronunciation:
+                embed.add_field(
+                    name="Translation Pronunciation",
+                    value=(
+                        translation.pronunciation
+                        if len(translation.pronunciation) <= 1024
+                        else translation.pronunciation[:1021] + "..."
+                    ),
+                    inline=False,
+                )
+
         await i.followup.send(embed=embed)
 
     # translate (ctxmenu)

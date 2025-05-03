@@ -170,31 +170,35 @@ class Utilities(commands.Cog):
     # lyrics
     @app_commands.command(name="lyrics", description="Get lyrics for a song")
     @app_commands.describe(query="The query to search for")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def lyrics(self, i: discord.Interaction, query: str):
         await i.response.defer()
         async with self.bot.session.get(
-            "https://some-random-api.com/lyrics", params={"title": query}
+            "https://lrclib.net/api/search", params={"q": query}
         ) as r:
+            if not r.ok:
+                raise GenericError("Something went wrong. Please try again later.")
             json = await r.json()
+            if not json:  # handle empty response
+                raise GenericError("No results found for that query.")
 
-        if "error" in json:
-            await i.followup.send("❌ " + json["error"])
-            return
+        data = json[0]
+        if data["instrumental"]:
+            raise GenericError("This track is an instrumental.")
 
         embed = discord.Embed(
-            title=json["title"],
-            url=json["url"],
             colour=self.bot.colour,
+            title=f"{data['trackName']} - {data['artistName']}"[:256],
+            description=(
+                data["plainLyrics"]
+                if len(data["plainLyrics"]) <= 4096
+                else data["plainLyrics"][:4093] + "..."
+            ),
         )
-        if "thumbnail" in json:
-            embed.set_thumbnail(url=json["thumbnail"])
-        if len(json["lyrics"]) > 4096:
-            embed.description = json["lyrics"][:4093] + "..."
-        else:
-            embed.description = json["lyrics"]
 
-        await i.followup.send(embed=embed)
+        await i.followup.send(
+            embed=embed,
+        )
 
     # translate
     @app_commands.command(
@@ -253,13 +257,13 @@ class Utilities(commands.Cog):
         name="define", description="Get the definition of a word/term"
     )
     @app_commands.describe(
-        word="The word/term to define",
+        term="The term/word to define",
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
-    async def define(self, i: discord.Interaction, word: str):
+    async def define(self, i: discord.Interaction, term: str):
         await i.response.defer()
         async with self.bot.session.get(
-            f"https://api.dictionaryapi.dev/api/v2/entries/en/{quote(word)}"
+            f"https://api.dictionaryapi.dev/api/v2/entries/en/{quote(term)}"
         ) as r:
             try:
                 json = await r.json()

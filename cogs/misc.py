@@ -164,7 +164,7 @@ class Miscellaneous(commands.Cog):
 
     # userinfo
     @app_commands.command(name="userinfo", description="Get information about any user")
-    @app_commands.describe(user="The user to get information on (default: yourself)")
+    @app_commands.describe(user="User/User ID (default: yourself)")
     async def userinfo(
         self, i: discord.Interaction, user: discord.Member | discord.User | None = None
     ):

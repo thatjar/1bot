@@ -594,7 +594,7 @@ class Moderator(commands.Cog):
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
     async def emoji(self, i: discord.Interaction, url: str, name: str):
-        await i.response.defer(ephemeral=True)
+        await i.response.defer()
         try:
             async with self.bot.session.get(url) as r:
                 if r.status != 200:

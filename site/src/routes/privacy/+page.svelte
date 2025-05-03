@@ -9,8 +9,8 @@
   As for 1Bot itself, it does not have any Privileged Gateway Intents (which include
   the Message Content intent) and is technically incapable of reading any messages
   in any Discord server unless it @mentions 1Bot. It is technically capable of reading
-  direct messages to it, but it does not do so. However, it does collect a minimal
-  amount of data in specific cases - read the next section for more.
+  direct messages to it, but it does not do so. Only a minimal amount of data is
+  collected in specific cases to keep 1Bot reliable - read the next section for more.
 </p>
 
 <h2>The only data we collect</h2>
@@ -37,10 +37,8 @@
 
 <p>
   For some commands that connect to third parties, the data you include in the
-  command parameters will be sent to the third party. A list of third parties
-  that 1Bot connects to, along with what data is sent to them, can be found <a
-    href="/third-parties">here</a
-  >. We are not responsible for how these third parties handle your data.
+  command parameters may be sent to the third party. We are not responsible for
+  how these third parties handle your data.
 </p>
 
 <p>
@@ -51,4 +49,4 @@
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2024-12-10</h4>
+<h4>Last updated: 2025-05-02</h4>

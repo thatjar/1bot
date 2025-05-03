@@ -9,9 +9,9 @@
     Discord or any other company.
   </p>
   <p>
-    By using 1Bot, i.e., by using any of its features within Direct Messages or
-    any Discord server, you agree to be bound by these Terms of Service. This
-    applies to all users of 1Bot.
+    By using 1Bot, i.e., by using any of its commands or features via Discord,
+    you agree to be bound by these Terms of Service. This applies to all users
+    of 1Bot.
   </p>
 
   <h2>These Terms are an extension of 1Bot's License</h2>
@@ -48,8 +48,8 @@
   <p>
     1Bot provides content from various third-party sources. We have no control
     over said sources and cannot guarantee that the content is accurate,
-    up-to-date, complete, unharmful or appropriate. The list of third-party
-    sources is <a href="/third-parties" target="_blank">here</a>.
+    up-to-date, complete, unharmful or appropriate. We also cannot guarantee how
+    any data that may be sent to a third party is used by them.
   </p>
 
   <h2>We have limited liability</h2>
@@ -60,13 +60,6 @@
     > for the details on the limitation of liability.
   </p>
 
-  <h2>Governing law</h2>
-  <p>
-    These Terms shall be governed and construed in accordance with the laws of
-    the Republic of India and the State of Karnataka, without regard to its
-    conflict of law provisions.
-  </p>
-
   <h2>These Terms are subject to change</h2>
   <p>We reserve the right to change these Terms without notice.</p>
 </main>
@@ -74,4 +67,4 @@
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2025-02-28</h4>
+<h4>Last updated: 2025-05-02</h4>

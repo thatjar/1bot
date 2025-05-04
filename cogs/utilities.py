@@ -7,15 +7,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import GenericError, lang_autocomplete, lang_dict, translator
+from utils import Embed, GenericError, lang_autocomplete, lang_dict, translator
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 class Utilities(commands.Cog):
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(
                 name="Translate to English",
@@ -43,7 +43,7 @@ class Utilities(commands.Cog):
 
         data = json[0]
 
-        embed = discord.Embed(
+        embed = Embed(
             colour=self.bot.colour,
             description=data["current"]["skytext"],
             title=f"Weather in {data['current']['observationpoint']}",
@@ -186,19 +186,14 @@ class Utilities(commands.Cog):
         if data["instrumental"]:
             raise GenericError("This track is an instrumental.")
 
-        embed = discord.Embed(
+        embed = Embed(
             colour=self.bot.colour,
-            title=f"{data['trackName']} - {data['artistName']}"[:256],
-            description=(
-                data["plainLyrics"]
-                if len(data["plainLyrics"]) <= 4096
-                else data["plainLyrics"][:4093] + "..."
-            ),
+            title=f"{data['trackName']} - {data['artistName']}",
+            description=data["plainLyrics"],
         )
+        embed.set_author(name="Lyrics from LRCLIB", url="https://lrclib.net/")
 
-        await i.followup.send(
-            embed=embed,
-        )
+        await i.followup.send(embed=embed)
 
     # translate
     @app_commands.command(
@@ -228,19 +223,15 @@ class Utilities(commands.Cog):
         output_lang_name = lang_dict[translation.dest.lower()].title()
 
         embed = (
-            discord.Embed(colour=self.bot.colour)
+            Embed(colour=self.bot.colour)
             .add_field(
                 name=f"Original ({detected_lang_name.title()})",
-                value=text if len(text) <= 1024 else text[:1021] + "...",
+                value=text,
                 inline=False,
             )
             .add_field(
                 name=f"Translation ({output_lang_name})",
-                value=(
-                    translation.text
-                    if len(translation.text) <= 1024
-                    else translation.text[:1021] + "..."
-                ),
+                value=translation.text,
                 inline=False,
             )
         )
@@ -248,10 +239,11 @@ class Utilities(commands.Cog):
         # Add pronunciations if one of the languages is not English
         if translation.src != "en":
             # Translate text into itself to get pronunciation
-            pronunciation = await translator.translate(
-                text, dest=translation.src, src=translation.src
-            )
-            pronunciation = pronunciation.pronunciation
+            pronunciation = (
+                await translator.translate(
+                    text, dest=translation.src, src=translation.src
+                )
+            ).pronunciation
             if (
                 type(pronunciation) is str
                 and pronunciation
@@ -342,14 +334,16 @@ class Utilities(commands.Cog):
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
     async def charinfo(
-        self, i: discord.Interaction, character: app_commands.Range[str, 1, 1]
+        self, i: discord.Interaction, character: app_commands.Range[str, 1, 3]
     ):
-        # code semi-stolen from rapptz/robodanny :3
-        digit = f"{ord(character):x}"
-        name = unicodedata.name(character, "Name not found.")
-        character = "\\`" if character == "`" else character
-        msg = f"[`U+{digit:>04}`](http://www.fileformat.info/info/unicode/char/{digit}): {name} **\N{EM DASH}** {character}"
+        # code stolen from rapptz/robodanny :3
+        def to_string(c):
+            digit = f"{ord(c):x}"
+            name = unicodedata.name(c, "Name not found.")
+            c = "\\`" if c == "`" else c
+            return f"[`\\U{digit:>08}`](http://www.fileformat.info/info/unicode/char/{digit}): {name} **\N{EM DASH}** {c}"
 
+        msg = "\n".join(map(to_string, character.strip()))
         await i.response.send_message(msg, suppress_embeds=True)
 
 

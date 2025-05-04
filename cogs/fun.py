@@ -1,6 +1,6 @@
-from io import BytesIO
 import random
 from datetime import UTC, datetime, timedelta
+from io import BytesIO
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote_plus
 
@@ -9,11 +9,11 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from utils import GenericError
+from utils import Embed, GenericError
 from views import Confirm
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 # based on rapptz/discord.py examples (improved to actually enforce turns)
@@ -185,7 +185,7 @@ class RockPaperScissors(discord.ui.View):
 # Cog containing the actual commands
 class Fun(commands.Cog):
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Quote", callback=self.quote_ctx)
         )
@@ -410,13 +410,10 @@ class Fun(commands.Cog):
             "Very doubtful.",
         ]
         fortune = random.choice(responses)
-        embed = discord.Embed(
+        embed = Embed(
             colour=self.bot.colour,
+            title=f'"{question}"',
         )
-        if len(question) > 256:
-            embed.title = f'"{question[:251]}..."'
-        else:
-            embed.title = f'"{question}"'
         embed.add_field(name="🎱 The Magic 8Ball says:", value=f"||{fortune}||")
         await i.response.send_message(embed=embed)
 
@@ -557,10 +554,8 @@ class Fun(commands.Cog):
 
     # woosh (ctxmenu)
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def woosh_ctx(
-        self, i: discord.Interaction, user: discord.Member | discord.User
-    ):
-        await self.woosh.callback(self, i, user)
+    async def woosh_ctx(self, i: discord.Interaction, message: discord.Message):
+        await self.woosh.callback(self, i, message.author)
 
     # xkcd
     @app_commands.command(name="xkcd", description="Get xkcd comics")

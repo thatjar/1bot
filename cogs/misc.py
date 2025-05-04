@@ -10,12 +10,12 @@ from utils import VL_STRINGS, GenericError
 from views import InfoButtons
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="User Info", callback=self.userinfo_ctx)
         )

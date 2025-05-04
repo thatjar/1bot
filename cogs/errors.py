@@ -14,7 +14,7 @@ from config import config
 from utils import GenericError
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 class ErrorButton(discord.ui.View):
@@ -34,7 +34,7 @@ class Errors(commands.Cog):
     """Cog to handle command errors. Does not contain any commands."""
 
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
         self.error_channel = None
 
     async def cog_load(self):

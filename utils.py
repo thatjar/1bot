@@ -19,6 +19,48 @@ class GenericError(errors.CommandInvokeError):
         return f"GenericError('{self.message}')"
 
 
+class Embed(discord.Embed):
+    """Embed with automatic truncating."""
+
+    def __init__(self, *args, **kwargs):
+        # Truncate the description to 4096 characters
+        if "description" in kwargs:
+            description = kwargs["description"]
+            if len(description) > 4096:
+                kwargs["description"] = description[:4093] + "..."
+        # Truncate the title to 256 characters
+        if "title" in kwargs:
+            title = kwargs["title"]
+            if len(title) > 256:
+                kwargs["title"] = title[:253] + "..."
+        super().__init__(*args, **kwargs)
+
+    def add_field(self, *, name, value, inline=True):
+        # Truncate the field name to 256 characters
+        if len(name) > 256:
+            name = name[:253] + "..."
+        # Truncate the field value to 1024 characters
+        if len(value) > 1024:
+            value = value[:1021] + "..."
+        return super().add_field(name=name, value=value, inline=inline)
+
+    def set_footer(self, *, text=None, icon_url=None, proxy_icon_url=None):
+        # Truncate the footer text to 2048 characters
+        if text and len(text) > 2048:
+            text = text[:2045] + "..."
+        return super().set_footer(
+            text=text, icon_url=icon_url, proxy_icon_url=proxy_icon_url
+        )
+
+    def set_author(self, *, name=None, icon_url=None, url=None, proxy_icon_url=None):
+        # Truncate the author name to 256 characters
+        if name and len(name) > 256:
+            name = name[:253] + "..."
+        return super().set_author(
+            name=name, icon_url=icon_url, url=url, proxy_icon_url=proxy_icon_url
+        )
+
+
 async def lang_autocomplete(
     _: discord.Interaction, current: str
 ) -> list[discord.app_commands.Choice[str]]:

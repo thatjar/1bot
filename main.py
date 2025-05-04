@@ -9,7 +9,7 @@ from discord.ext import commands
 from config import config
 
 
-class Bot(commands.AutoShardedBot):
+class OneBot(commands.AutoShardedBot):
     """1Bot's AutoShardedBot subclass"""
 
     session: ClientSession
@@ -61,7 +61,7 @@ class Bot(commands.AutoShardedBot):
             await self.session.close()
 
 
-bot = Bot()
+bot = OneBot()
 
 if __name__ == "__main__":
     # Set logging levels

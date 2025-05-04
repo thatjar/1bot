@@ -6,15 +6,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import GenericError
+from utils import Embed, GenericError
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 class Moderator(commands.Cog):
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
 
     def cog_load(self):
         for cmd in self.walk_app_commands():
@@ -373,14 +373,12 @@ class Moderator(commands.Cog):
             send_messages=True,
         )
         await i.channel.set_permissions(role, reason=log_reason, overwrite=overwrite)
-        embed = discord.Embed(
+        embed = Embed(
             title="Channel Locked",
             color=0xFF0000,
         )
         if reason:
-            if len(reason) > 1024:
-                reason = reason[:1021] + "..."
-            embed.description = "**Reason:** " + reason
+            embed.add_field(name="Reason", value=reason, inline=False)
         else:
             embed.description = f"🔒 This channel has been locked for `{role.name}`."
         if not silent:
@@ -441,14 +439,12 @@ class Moderator(commands.Cog):
             reason=log_reason,
             overwrite=overwrite,
         )
-        embed = discord.Embed(
+        embed = Embed(
             title="Channel Unlocked",
             color=self.bot.colour,
         )
         if reason:
-            if len(reason) > 1024:
-                reason = reason[:1021] + "..."
-            embed.description = "**Reason:** " + reason
+            embed.add_field(name="Reason", value=reason, inline=False)
         else:
             embed.description = f"🔓 This channel has been unlocked for `{role.name}`."
         if not silent:
@@ -499,14 +495,12 @@ class Moderator(commands.Cog):
             reason=log_reason,
         )
 
-        embed = discord.Embed(
+        embed = Embed(
             title="User Timed Out",
             description=f"🕒 {user.mention} has been timed out for {days} days, {hours} hours and {minutes} minutes.",
             color=self.bot.colour,
         )
         if reason:
-            if len(reason) > 1024:
-                reason = reason[:1021] + "..."
             embed.add_field(name="Reason", value=reason, inline=False)
         if total_minutes == 0:
             embed.title = "User Removed from Timeout"
@@ -553,13 +547,11 @@ class Moderator(commands.Cog):
 
         try:
             if not silent:
-                dm_embed = discord.Embed(
+                dm_embed = Embed(
                     description=f"You have been banned from {i.guild.name}.",
                     color=0xFF0000,
                 )
                 if reason:
-                    if len(reason) > 1024:
-                        reason = reason[:1021] + "..."
                     dm_embed.add_field(name="Reason", value=reason, inline=False)
 
                 await user.send(embed=dm_embed)
@@ -572,12 +564,11 @@ class Moderator(commands.Cog):
             delete_message_seconds=delete_days * 86400 + delete_hours * 3600,
         )
 
-        embed = discord.Embed(
+        embed = Embed(
             title="User Banned",
             description=f"🔨 {user.mention} has been banned.",
             color=self.bot.colour,
         )
-
         embed.add_field(name="Reason", value=reason, inline=False)
         if delete_days:
             embed.add_field(

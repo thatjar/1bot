@@ -9,14 +9,14 @@ from discord.ext import commands, tasks
 from config import config
 
 if TYPE_CHECKING:
-    from main import Bot
+    from main import OneBot
 
 
 class Etc(commands.Cog):
     """Cog for owner commands, background tasks, and other things not related to the end user."""
 
     def __init__(self, bot):
-        self.bot: Bot = bot
+        self.bot: OneBot = bot
         self.post_stats.start()
 
     @tasks.loop(hours=6)

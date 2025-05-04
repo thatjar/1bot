@@ -44,21 +44,17 @@ class Embed(discord.Embed):
             value = value[:1021] + "..."
         return super().add_field(name=name, value=value, inline=inline)
 
-    def set_footer(self, *, text=None, icon_url=None, proxy_icon_url=None):
+    def set_footer(self, *, text=None, icon_url=None):
         # Truncate the footer text to 2048 characters
         if text and len(text) > 2048:
             text = text[:2045] + "..."
-        return super().set_footer(
-            text=text, icon_url=icon_url, proxy_icon_url=proxy_icon_url
-        )
+        return super().set_footer(text=text, icon_url=icon_url)
 
-    def set_author(self, *, name=None, icon_url=None, url=None, proxy_icon_url=None):
+    def set_author(self, *, name=None, icon_url=None, url=None):
         # Truncate the author name to 256 characters
         if name and len(name) > 256:
             name = name[:253] + "..."
-        return super().set_author(
-            name=name, icon_url=icon_url, url=url, proxy_icon_url=proxy_icon_url
-        )
+        return super().set_author(name=name, icon_url=icon_url, url=url)
 
 
 async def lang_autocomplete(

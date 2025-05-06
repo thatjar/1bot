@@ -40,6 +40,7 @@
     <a href="/">Home</a>
     <a href="https://top.gg/bot/884080176416309288/vote">Upvote</a>
     <a href="https://discord.gg/JGcnKxEPsW">Support Server</a>
+    <a href="https://github.com/thatjar/1bot/wiki">Wiki</a>
     <a
       href="https://discord.com/oauth2/authorize?client_id=884080176416309288"
       class="add">Add 1Bot</a

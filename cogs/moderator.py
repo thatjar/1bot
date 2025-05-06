@@ -63,7 +63,7 @@ class Moderator(commands.Cog):
                     embed.set_image(url=self.image.value)
                 if self.show_author.value.lower() == "y":
                     embed.set_author(
-                        name=i.user.display_name, icon_url=i.user.avatar.url
+                        name="@" + i.user.name, icon_url=i.user.display_avatar.url
                     )
                 await i.channel.send(embed=embed)
                 await i.response.send_message("✅ Sent the embed.", ephemeral=True)
@@ -91,13 +91,15 @@ class Moderator(commands.Cog):
     @app_commands.describe(
         count="The number of messages to delete (1-100, up to two weeks old)"
     )
-    async def purge(self, i: discord.Interaction, count: int):
+    async def purge(
+        self, i: discord.Interaction, count: app_commands.Range[int, 1, 100]
+    ):
         await i.response.defer(ephemeral=True)
-        cutoff = datetime.now(UTC) - timedelta(days=14)
+        oldest = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
         async for message in i.channel.history(
-            limit=100, oldest_first=False, after=cutoff
+            limit=100, oldest_first=False, after=oldest
         ):
             messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -134,10 +136,10 @@ class Moderator(commands.Cog):
     ):
         await i.response.defer(ephemeral=True)
 
-        cutoff = datetime.now(UTC) - timedelta(days=14)
+        oldest = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(oldest_first=False, after=cutoff):
+        async for message in i.channel.history(oldest_first=False, after=oldest):
             if message.author.bot:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -174,10 +176,10 @@ class Moderator(commands.Cog):
     ):
         await i.response.defer(ephemeral=True)
 
-        cutoff = datetime.now(UTC) - timedelta(days=14)
+        oldest = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(oldest_first=False, after=cutoff):
+        async for message in i.channel.history(oldest_first=False, after=oldest):
             if not message.author.bot:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -213,15 +215,15 @@ class Moderator(commands.Cog):
     async def purgeuser(
         self,
         i: discord.Interaction,
-        user: discord.Member | discord.User,
+        user: discord.Member,
         count: app_commands.Range[int, 1, 100],
     ):
         await i.response.defer(ephemeral=True)
 
-        cutoff = datetime.now(UTC) - timedelta(days=14)
+        oldest = datetime.now(UTC) - timedelta(days=14)
         messages_to_delete = []
 
-        async for message in i.channel.history(oldest_first=False, after=cutoff):
+        async for message in i.channel.history(oldest_first=False, after=oldest):
             if message.author == user:
                 messages_to_delete.append(message)
             if len(messages_to_delete) >= count:
@@ -329,7 +331,7 @@ class Moderator(commands.Cog):
         )
 
     # lock
-    @app_commands.command(name="lock", description="Make a channel read-only")
+    @app_commands.command(name="lock", description="Make the channel read-only")
     @app_commands.default_permissions(manage_roles=True)
     @app_commands.checks.has_permissions(manage_roles=True)
     @app_commands.checks.bot_has_permissions(manage_roles=True)
@@ -530,8 +532,8 @@ class Moderator(commands.Cog):
         self,
         i: discord.Interaction,
         user: discord.User,
-        delete_days: int = 1,
-        delete_hours: int = 0,
+        delete_days: int = 0,
+        delete_hours: int = 1,
         reason: str | None = None,
         silent: bool = False,
     ):
@@ -584,7 +586,9 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(create_expressions=True)
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     @app_commands.describe(url="The link to the emoji", name="The name of the emoji")
-    async def emoji(self, i: discord.Interaction, url: str, name: str):
+    async def emoji(
+        self, i: discord.Interaction, url: str, name: app_commands.Range[str, 2, 32]
+    ):
         await i.response.defer()
         try:
             async with self.bot.session.get(url) as r:

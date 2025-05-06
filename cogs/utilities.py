@@ -32,16 +32,16 @@ class Utilities(commands.Cog):
     async def weather(self, i: discord.Interaction, location: str):
         await i.response.defer()
         async with self.bot.session.get(
-            "https://api.popcat.xyz/weather", params={"q": location}
+            "https://api.popcat.xyz/v2/weather", params={"q": location}
         ) as r:
             try:
                 json = await r.json()
             except aiohttp.ContentTypeError:
                 raise GenericError("Invalid location. Try with a more specific query.")
-        if not json:  # handle empty response
+        if not json or not json.get("message"):  # handle empty response
             raise GenericError("Invalid location. Try with a more specific query.")
 
-        data = json[0]
+        data = json["message"][0]
 
         embed = Embed(
             colour=self.bot.colour,

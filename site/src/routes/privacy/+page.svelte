@@ -21,7 +21,7 @@
 </p>
 <ul>
   <li>The command name</li>
-  <li>Any parameters you include in it</li>
+  <li>Any options you include in it</li>
   <li>
     Whether the command was invoked via user integration or server integration
   </li>
@@ -37,8 +37,8 @@
 
 <p>
   For some commands that connect to third parties, the data you include in the
-  command parameters may be sent to the third party. We are not responsible for
-  how these third parties handle your data.
+  command options may be sent to the third party. We are not responsible for how
+  these third parties handle your data.
 </p>
 
 <p>
@@ -49,4 +49,4 @@
 <div style="height: 50px"></div>
 
 <hr />
-<h4>Last updated: 2025-05-02</h4>
+<h4>Last updated: 2025-05-06</h4>

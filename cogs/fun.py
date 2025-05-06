@@ -210,9 +210,9 @@ class Fun(commands.Cog):
     # tic tac toe
     @app_commands.command(name="tictactoe", description="Play Tic Tac Toe")
     @app_commands.describe(user="The user to play with")
-    @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
-        if i.permissions.use_external_apps is False:
+        if i.guild and i.permissions.use_external_apps is False:
             raise GenericError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise GenericError("You can't play with yourself!")
@@ -253,9 +253,9 @@ class Fun(commands.Cog):
         description="Play Rock Paper Scissors with another user",
     )
     @app_commands.describe(user="The user to play with")
-    @app_commands.checks.cooldown(2, 30, key=lambda i: i.user)
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def rps(self, i: discord.Interaction, user: discord.User):
-        if i.permissions.use_external_apps is False:
+        if i.guild and i.permissions.use_external_apps is False:
             raise GenericError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise GenericError("You can't play with yourself!")
@@ -335,7 +335,7 @@ class Fun(commands.Cog):
         await i.response.defer()
 
         async with self.bot.session.get(
-            "https://api.popcat.xyz/quote",
+            "https://api.popcat.xyz/v2/quote",
             params={
                 "image": user.display_avatar.url,
                 "text": quote,
@@ -364,20 +364,6 @@ class Fun(commands.Cog):
         if len(message.content) > 100:
             raise GenericError("The text must have no more than 100 characters.")
         await self.quote.callback(self, i, message.content, message.author)
-
-    # pickupline
-    @app_commands.command(name="pickupline", description="Get a pickup line")
-    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
-    async def pickupline(self, i: discord.Interaction):
-        await i.response.defer()
-        async with self.bot.session.get("https://api.popcat.xyz/pickuplines") as r:
-            json = await r.json()
-
-        if "pickupline" in json:
-            pickupline = json["pickupline"]
-            await i.followup.send(pickupline)
-        else:
-            raise GenericError("Couldn't retrieve data. Try again later.")
 
     # 8ball
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")
@@ -549,7 +535,7 @@ class Fun(commands.Cog):
             colour=self.bot.colour,
             description=f"Woosh... that's the sound of a joke going over {user.display_name}'s head",
         )
-        embed.set_image(url=f"https://api.popcat.xyz/jokeoverhead?image={avatar}")
+        embed.set_image(url=f"https://api.popcat.xyz/v2/jokeoverhead?image={avatar}")
         await i.response.send_message(embed=embed)
 
     # woosh (ctxmenu)

@@ -200,7 +200,9 @@ class Miscellaneous(commands.Cog):
                 # -1 to exclude the @everyone role
                 embed.description += f"**Role count**: {len(user.roles)-1}\n"
 
-        embed.set_thumbnail(url=user.avatar.url)
+        embed.set_thumbnail(
+            url=user.avatar.url if user.avatar else user.display_avatar.url
+        )
         await i.followup.send(embed=embed)
 
     # userinfo (ctxmenu)

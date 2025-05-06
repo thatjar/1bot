@@ -188,7 +188,7 @@ class Utilities(commands.Cog):
 
         embed = Embed(
             colour=self.bot.colour,
-            title=f"{data['trackName']} - {data['artistName']}",
+            title=f"{data['trackName']} \N{EM DASH} {data['artistName']}",
             description=data["plainLyrics"],
         )
         embed.set_author(name="Lyrics from LRCLIB", url="https://lrclib.net/")
@@ -279,7 +279,7 @@ class Utilities(commands.Cog):
 
     # define
     @app_commands.command(
-        name="define", description="Get the definition of a word/term"
+        name="define", description="Get the definition of a term/word"
     )
     @app_commands.describe(
         term="The term/word to define",
@@ -327,23 +327,27 @@ class Utilities(commands.Cog):
 
     # charinfo
     @app_commands.command(
-        name="charinfo", description="Get information about a character (unicode)"
+        name="charinfo", description="Get information about characters (unicode)"
     )
     @app_commands.describe(
-        character="The character to get information about",
+        characters="The characters to get information about",
     )
     @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
     async def charinfo(
-        self, i: discord.Interaction, character: app_commands.Range[str, 1, 3]
+        self, i: discord.Interaction, characters: app_commands.Range[str, 1, 20]
     ):
         # code stolen from rapptz/robodanny :3
         def to_string(c):
-            digit = f"{ord(c):x}"
+            digit = f"{ord(c):X}"
             name = unicodedata.name(c, "Name not found.")
             c = "\\`" if c == "`" else c
-            return f"[`\\U{digit:>08}`](http://www.fileformat.info/info/unicode/char/{digit}): {name} **\N{EM DASH}** {c}"
+            return f"[`U+{digit:>04}`](http://www.fileformat.info/info/unicode/char/{digit}): {name} \N{EM DASH} {c}"
 
-        msg = "\n".join(map(to_string, character.strip()))
+        msg = "\n".join(map(to_string, characters.strip()))
+        if len(msg) > 2000:
+            raise GenericError(
+                "Result too long to send. Please try again with fewer characters."
+            )
         await i.response.send_message(msg, suppress_embeds=True)
 
 

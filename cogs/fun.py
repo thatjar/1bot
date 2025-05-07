@@ -343,7 +343,7 @@ class Fun(commands.Cog):
             },
         ) as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             image = await r.read()
 
         attachment = discord.File(BytesIO(image), filename="quote.png")
@@ -459,7 +459,7 @@ class Fun(commands.Cog):
             "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
         ) as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             json = await r.json()
             await i.followup.send(json["joke"])
 
@@ -470,7 +470,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/dog") as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -485,7 +485,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/cat") as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -502,7 +502,7 @@ class Fun(commands.Cog):
             "https://some-random-api.com/animal/panda"
         ) as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -552,7 +552,7 @@ class Fun(commands.Cog):
     ):
         async with self.bot.session.get("https://xkcd.com/info.0.json") as r:
             if not r.ok:
-                raise GenericError("Couldn't retrieve data. Try again later.")
+                raise GenericError()
             json = await r.json()
 
         if mode == "random":
@@ -562,7 +562,7 @@ class Fun(commands.Cog):
                 f"https://xkcd.com/{comic_num}/info.0.json"
             ) as r:
                 if not r.ok:
-                    raise GenericError("Couldn't retrieve data. Try again later.")
+                    raise GenericError()
                 json = await r.json()
 
         embed = discord.Embed(
@@ -582,7 +582,7 @@ class Fun(commands.Cog):
         try:
             json = await self.get_reddit_post(self.bot.session)
         except Exception:
-            raise GenericError("Couldn't retrieve data. Try again later.")
+            raise GenericError()
 
         if "message" in json:
             raise GenericError(json["message"])

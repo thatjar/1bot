@@ -78,7 +78,7 @@ class Miscellaneous(commands.Cog):
         user = user or i.user
         embed = discord.Embed(colour=self.bot.colour)
 
-        if profile == "User":
+        if profile == "User" or not i.guild:
             embed.title = f"{user.global_name or user.name}'s global avatar"
             asset = user.avatar or user.display_avatar
         else:
@@ -117,24 +117,24 @@ class Miscellaneous(commands.Cog):
         self,
         i: discord.Interaction,
         user: discord.Member | discord.User | None = None,
-        profile: Literal["Server", "User"] = "Server",
+        profile: Literal["Server", "User"] = "User",
     ):
         await i.response.defer()
         colour = None
 
-        if profile == "User":
+        if profile == "User" or not i.guild:
             user: discord.User = await self.bot.fetch_user(
                 user.id if user else i.user.id
             )
             asset = user.banner
             if asset is None:
-                colour = user.accent_colour.value
+                colour = user.accent_colour.value if user.accent_colour else None
         else:
             user = user or i.user
             asset = getattr(user, "display_banner", None)
             if asset is None:
                 fetched = await self.bot.fetch_user(user.id)
-                colour = fetched.accent_colour.value
+                colour = fetched.accent_colour.value if fetched.accent_colour else None
 
         if asset is None:
             err_msg = f"This user has no {profile.lower()} banner image."

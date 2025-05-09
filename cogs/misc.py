@@ -110,7 +110,7 @@ class Miscellaneous(commands.Cog):
     @app_commands.command(name="banner", description="Get any user's banner")
     @app_commands.describe(
         user="The user to get the banner of (default: yourself)",
-        profile="Server banner / User banner (default: server)",
+        profile="Server banner / User banner (default: user)",
     )
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def banner(

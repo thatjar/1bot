@@ -65,12 +65,11 @@ bot = OneBot()
 
 if __name__ == "__main__":
     # Set logging levels
-    logging.getLogger("httpx").setLevel(logging.CRITICAL)
+    level = logging.DEBUG if config.get("debug") else logging.WARNING
+
+    logging.getLogger("httpx").setLevel(level)
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     for logger in loggers:
-        if logger.name.startswith("discord"):
-            logger.setLevel(logging.DEBUG if config.get("debug") else logging.WARNING)
-        else:
-            logger.setLevel(logging.CRITICAL)
+        logger.setLevel(level)
 
     bot.run(config["token"], root_logger=True)

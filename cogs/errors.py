@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.utils import MISSING
 
 from config import config
 from utils import GenericError
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 
 
 class ErrorButton(discord.ui.View):
+    """A view with a button to join the support server, if its url is configured."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if config.get("server_invite"):
@@ -111,13 +114,19 @@ class Errors(commands.Cog):
             await i.followup.send(embed=user_embed, ephemeral=True, view=ErrorButton())
 
     @staticmethod
-    async def send_error(i: discord.Interaction, error_message: str) -> None:
+    async def send_error(
+        i: discord.Interaction,
+        error_message: str,
+        view: discord.ui.View = MISSING,
+    ) -> None:
         """Send an error message to the user."""
 
         try:
-            await i.response.send_message(f"❌ {error_message}", ephemeral=True)
+            await i.response.send_message(
+                f"❌ {error_message}", ephemeral=True, view=view
+            )
         except discord.InteractionResponded:
-            await i.followup.send(f"❌ {error_message}", ephemeral=True)
+            await i.followup.send(f"❌ {error_message}", ephemeral=True, view=view)
 
     # Prefixed command error listener
     @commands.Cog.listener()
@@ -132,9 +141,8 @@ class Errors(commands.Cog):
     # Main application command error handler
     async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
         # Check if the error is already handled
-        if hasattr(error, "__notes__"):
-            if "handled" in error.__notes__:
-                return
+        if "handled" in getattr(error, "__notes__", []):
+            return
 
         if isinstance(
             error, app_commands.CommandNotFound
@@ -143,6 +151,12 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.NotFound):
             return
 
+        elif isinstance(error, app_commands.CommandSignatureMismatch):
+            await self.send_error(
+                i,
+                "Command signature mismatch. Please report this to the developers.",
+                view=ErrorButton(),
+            )
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
                 "I don't have enough permissions to run this command!\n"

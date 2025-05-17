@@ -150,6 +150,8 @@ class Errors(commands.Cog):
             return
         elif isinstance(error, discord.NotFound):
             return
+        elif "You are being rate limited" in str(error):
+            return logging.warning(f"Rate limited: Command {i.command.name}")
 
         elif isinstance(error, app_commands.CommandSignatureMismatch):
             await self.send_error(

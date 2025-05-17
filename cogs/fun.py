@@ -398,9 +398,9 @@ class Fun(commands.Cog):
         fortune = random.choice(responses)
         embed = Embed(
             colour=self.bot.colour,
-            title=f'"{question}"',
         )
-        embed.add_field(name="🎱 The Magic 8Ball says:", value=f"||{fortune}||")
+        embed.add_field(name="Your question:", value=f"{question}", inline=False)
+        embed.add_field(name="The Magic 8Ball says:", value=f"🎱 ||{fortune}||")
         await i.response.send_message(embed=embed)
 
     # coinflip

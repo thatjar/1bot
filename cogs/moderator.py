@@ -568,11 +568,14 @@ class Moderator(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             pass
 
-        await i.guild.ban(
-            user,
-            reason=log_reason,
-            delete_message_seconds=delete_days * 86400 + delete_hours * 3600,
-        )
+        try:
+            await i.guild.ban(
+                user,
+                reason=log_reason,
+                delete_message_seconds=delete_days * 86400 + delete_hours * 3600,
+            )
+        except discord.Forbidden:
+            raise GenericError("I do not have permission to ban that user.")
 
         embed = Embed(
             title="User Banned",

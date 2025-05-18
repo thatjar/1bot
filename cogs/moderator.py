@@ -483,6 +483,10 @@ class Moderator(commands.Cog):
             raise GenericError("You cannot time out yourself.")
         if user == i.guild.me:
             raise GenericError("I cannot time out myself.")
+        if user.top_role >= i.user.top_role:
+            raise GenericError(
+                "You cannot time out a user with a higher or equal role than you."
+            )
 
         total_minutes = days * 1440 + hours * 60 + minutes
         if not 0 <= total_minutes <= 40320:
@@ -530,7 +534,7 @@ class Moderator(commands.Cog):
     async def ban(
         self,
         i: discord.Interaction,
-        user: discord.User,
+        user: discord.Member | discord.User,
         delete_days: int = 0,
         delete_hours: int = 1,
         reason: str | None = None,
@@ -542,6 +546,11 @@ class Moderator(commands.Cog):
             raise GenericError("I cannot ban myself.")
         if delete_days * 86400 + delete_hours * 3600 > 604800:
             raise GenericError("Total duration must be between 0 and 7 days.")
+        if isinstance(user, discord.Member):
+            if user.top_role >= i.user.top_role:
+                raise GenericError(
+                    "You cannot ban a user with a higher or equal role than you."
+                )
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"

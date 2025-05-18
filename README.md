@@ -1,12 +1,3 @@
-<div align=right>
-  <a href="https://discord.gg/JGcnKxEPsW">
-    <img src="https://img.shields.io/discord/884078410010333235?label=server&logo=discord&logoColor=white">
-  </a>
-  <a href="https://www.codefactor.io/repository/github/thatjar/1bot">
-    <img src="https://www.codefactor.io/repository/github/thatjar/1bot/badge" alt="CodeFactor" />
-  </a>
-</div>
-
 # 1Bot - One bot, several uses.
 
 [![Banner](https://1bot.netlify.app/banner.png)](https://1bot.netlify.app/)

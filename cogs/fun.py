@@ -187,7 +187,7 @@ class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot: OneBot = bot
         self.bot.tree.add_command(
-            app_commands.ContextMenu(name="Quote", callback=self.quote_ctx)
+            app_commands.ContextMenu(name="Quote", callback=self.quote)
         )
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="Mock", callback=self.mock_ctx),
@@ -317,28 +317,39 @@ class Fun(commands.Cog):
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
 
-    # quote
-    @app_commands.command(name="quote", description="Create a quote image")
-    @app_commands.describe(
-        quote="The quote", user="The author of the quote (default: yourself)"
-    )
+    class DeleteQuote(discord.ui.View):
+        def __init__(self, author: discord.User):
+            super().__init__(timeout=None)
+            self.author_id = author.id
+
+        @discord.ui.button(label="Delete my quote", emoji="🗑️")
+        async def delete(self, i: discord.Interaction, _: discord.ui.Button):
+            if i.user.id != self.author_id:
+                await i.response.send_message(
+                    "❌ This is not your quote.", ephemeral=True
+                )
+                return
+            await i.response.defer(ephemeral=True)
+            await i.message.delete()
+            await i.followup.send("✅ Your quote has been deleted.", ephemeral=True)
+
+    # quote (ctxmenu)
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
-    async def quote(
-        self,
-        i: discord.Interaction,
-        quote: app_commands.Range[str, 1, 100],
-        user: discord.Member | discord.User | None = None,
-    ):
-        if user is None:
-            user = i.user
+    async def quote(self, i: discord.Interaction, message: discord.Message):
+        if not message.content:
+            raise GenericError("The message has no text content.")
+        if len(message.content) > 100:
+            raise GenericError("The text must have no more than 100 characters.")
 
         await i.response.defer()
+
+        user = message.author
 
         async with self.bot.session.get(
             "https://api.popcat.xyz/v2/quote",
             params={
                 "image": user.display_avatar.url,
-                "text": quote,
+                "text": message.content,
                 "name": user.display_name,
             },
         ) as r:
@@ -354,16 +365,7 @@ class Fun(commands.Cog):
         )
         embed.set_image(url="attachment://quote.png")
 
-        await i.followup.send(embed=embed, file=attachment)
-
-    # quote (ctxmenu)
-    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
-    async def quote_ctx(self, i: discord.Interaction, message: discord.Message):
-        if not message.content:
-            raise GenericError("The message has no text content.")
-        if len(message.content) > 100:
-            raise GenericError("The text must have no more than 100 characters.")
-        await self.quote.callback(self, i, message.content, message.author)
+        await i.followup.send(embed=embed, file=attachment, view=self.DeleteQuote(user))
 
     # 8ball
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")

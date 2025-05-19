@@ -44,11 +44,19 @@ class InfoButtons(discord.ui.View):
         if config.get("bot_invite"):
             self.add_item(
                 discord.ui.Button(
-                    label="Add to server",
+                    label="Add Me",
                     url=config["bot_invite"],
-                    emoji=f"<:_:{config.get('emojis', {}).get('add_to_server', 0)}>",
+                    emoji=f"<:_:{config.get('emojis', {}).get('add_bot', 0)}>",
                 )
             )
+
+        self.add_item(
+            discord.ui.Button(
+                label="Wiki",
+                url="https://github.com/thatjar/1bot/wiki",
+                emoji=f"<:_:{config.get('emojis', {}).get('wiki', 0)}>",
+            )
+        )
 
         if config.get("website"):
             self.add_item(

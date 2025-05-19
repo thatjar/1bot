@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class Etc(commands.Cog):
-    """Cog for owner commands, background tasks, and other things not related to the end user."""
+    """Cog for owner commands, background tasks, etc. Not for end-user commands/features."""
 
     def __init__(self, bot):
         self.bot: OneBot = bot
@@ -38,6 +38,18 @@ class Etc(commands.Cog):
                     )
         except Exception as e:
             logging.error(f"Failed to post guild count to top.gg:\n{e}")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """Reply to the bot mention with a help message."""
+
+        if message.content == self.bot.user.mention:
+            await message.reply(
+                f"{self.bot.user.name} uses Application Commands \N{EM DASH} "
+                "get started by opening your Apps menu or typing `/` in a channel that allows application commands.\n"
+                "-# Check out the [Wiki](https://github.com/thatjar/1bot/wiki) for full documentation.\n",
+                suppress_embeds=True,
+            )
 
     @commands.command(aliases=["re"])
     @commands.is_owner()

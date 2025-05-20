@@ -318,22 +318,31 @@ class Fun(commands.Cog):
             await i.edit_original_response(embed=embed, view=None)
 
     class DeleteQuote(discord.ui.View):
-        def __init__(self, author: discord.User):
+        def __init__(self, quote_author: discord.User, interaction_user: discord.User):
             super().__init__(timeout=None)
-            self.author_id = author.id
+            self.author_id = quote_author.id
+            self.interaction_user_id = interaction_user.id
 
-        @discord.ui.button(label="Delete my quote", emoji="🗑️")
+        @discord.ui.button(label="Delete Quote", emoji="🗑️")
         async def delete(self, i: discord.Interaction, _: discord.ui.Button):
-            if i.user.id != self.author_id:
+            if (
+                i.user.id in (self.author_id, self.interaction_user_id)
+                or i.permissions.manage_messages
+            ):
+                await i.response.defer(ephemeral=True)
+                await i.edit_original_response(
+                    content=f"-# *Quote deleted by {i.user.mention}*",
+                    view=None,
+                    embed=None,
+                    attachments=[],
+                )
+            else:
                 await i.response.send_message(
-                    "❌ This is not your quote.", ephemeral=True
+                    "❌ You cannot delete this quote.", ephemeral=True
                 )
                 return
-            await i.response.defer(ephemeral=True)
-            await i.message.delete()
-            await i.followup.send("✅ Your quote has been deleted.", ephemeral=True)
 
-    # quote (ctxmenu)
+    # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
@@ -365,7 +374,9 @@ class Fun(commands.Cog):
         )
         embed.set_image(url="attachment://quote.png")
 
-        await i.followup.send(embed=embed, file=attachment, view=self.DeleteQuote(user))
+        await i.followup.send(
+            embed=embed, file=attachment, view=self.DeleteQuote(user, i.user)
+        )
 
     # 8ball
     @app_commands.command(name="8ball", description="Ask the Magic 8Ball a question")

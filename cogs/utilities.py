@@ -217,9 +217,13 @@ class Utilities(commands.Cog):
     ):
         if destination == source:
             raise GenericError("Source and destination languages cannot be the same")
-        if destination not in lang_dict:
+        if destination not in lang_dict and destination not in lang_dict.values():
             raise GenericError("Invalid destination language")
-        if source not in lang_dict and source != "auto":
+        if (
+            source not in lang_dict
+            and source not in lang_dict.values()
+            and source != "auto"
+        ):
             raise GenericError("Invalid source language")
 
         await i.response.defer()
@@ -241,40 +245,6 @@ class Utilities(commands.Cog):
                 inline=False,
             )
         )
-
-        # Add pronunciations if one of the languages is not English
-        if translation.src != "en":
-            # Translate text into itself to get pronunciation
-            pronunciation = (
-                await translator.translate(
-                    text, dest=translation.src, src=translation.src
-                )
-            ).pronunciation
-            if (
-                type(pronunciation) is str
-                and pronunciation
-                and pronunciation.lower() != text.lower()
-            ):
-                embed.add_field(
-                    name="Original Pronunciation",
-                    value=(
-                        pronunciation
-                        if len(pronunciation) <= 1024
-                        else pronunciation[:1021] + "..."
-                    ),
-                    inline=False,
-                )
-        if translation.dest != "en":
-            if type(translation.pronunciation) is str and translation.pronunciation:
-                embed.add_field(
-                    name="Translation Pronunciation",
-                    value=(
-                        translation.pronunciation
-                        if len(translation.pronunciation) <= 1024
-                        else translation.pronunciation[:1021] + "..."
-                    ),
-                    inline=False,
-                )
 
         await i.followup.send(embed=embed)
 

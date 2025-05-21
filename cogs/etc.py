@@ -64,12 +64,12 @@ class Etc(commands.Cog):
 
             for cog in cogs_to_reload:
                 await self.bot.reload_extension(cog)
-            await ctx.send(
+            await ctx.reply(
                 "✅ Reloaded cogs:\n"
                 + "\n".join([f"`{cog}`" for cog in cogs_to_reload])
             )
         except commands.ExtensionError as e:
-            await ctx.send(f"❌ {e}")
+            await ctx.reply(f"❌ {e}")
 
     @commands.command(aliases=["ri"])
     @commands.is_owner()
@@ -77,17 +77,17 @@ class Etc(commands.Cog):
         try:
             module = importlib.import_module(module)
         except ModuleNotFoundError:
-            await ctx.send(f"❌ Module {module} not found.")
+            await ctx.reply(f"❌ Module {module} not found.")
             return
 
         importlib.reload(module)
-        await ctx.send("✅ Reloaded successfully.")
+        await ctx.reply("✅ Reloaded successfully.")
 
     @commands.command(aliases=["u"])
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
         # Requires git to be configured on server
-        await ctx.send("Pulling from `origin main`...")
+        await ctx.reply("Pulling from `origin main`...")
 
         try:
             # git restore all files to avoid merge conflicts
@@ -104,7 +104,7 @@ class Etc(commands.Cog):
                 stderr=subprocess.DEVNULL,
             )
         except subprocess.CalledProcessError as e:
-            await ctx.send(f"❌ {e}")
+            await ctx.reply(f"❌ {e}")
             return
 
         await ctx.invoke(self.bot.get_command("reload"))
@@ -113,7 +113,7 @@ class Etc(commands.Cog):
     @commands.is_owner()
     async def activity(self, ctx: commands.Context, *, status: str | None = None):
         await self.bot.change_presence(activity=discord.CustomActivity(status))
-        await ctx.send(f"✅ Activity set to `{status}`.")
+        await ctx.reply(f"✅ Activity set to `{status}`.")
 
 
 async def setup(bot):

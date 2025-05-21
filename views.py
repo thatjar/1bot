@@ -75,3 +75,29 @@ class InfoButtons(discord.ui.View):
                     emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
                 )
             )
+
+
+class DeleteButton(discord.ui.View):
+    def __init__(self, *allowed_users: discord.User):
+        """Button to delete a command response from 1Bot.
+
+        :param allowed_users: The users allowed to delete the message. Users with manage_messages permission can always delete the message.
+        :type allowed_users: discord.User"""
+
+        super().__init__(timeout=None)
+        self.allowed_users = [u.id for u in allowed_users]
+
+    @discord.ui.button(label="Delete", emoji="🗑️")
+    async def delete(self, i: discord.Interaction, _: discord.ui.Button):
+        if i.user.id in self.allowed_users or i.permissions.manage_messages:
+            await i.response.defer(ephemeral=True)
+            await i.edit_original_response(
+                content=f"-# *Removed by {i.user.mention}*",
+                view=None,
+                embed=None,
+                attachments=[],
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+        else:
+            await i.response.send_message("❌ You cannot delete this.", ephemeral=True)
+            return

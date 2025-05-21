@@ -1,3 +1,4 @@
+import re
 import unicodedata
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote
@@ -8,6 +9,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils import Embed, GenericError, lang_autocomplete, lang_dict, translator
+from views import DeleteButton
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -412,6 +414,53 @@ class Utilities(commands.Cog):
 
         # if we reach here, the error was handled
         e.add_note("handled")
+
+    # Function to replace [word] with markdown hyperlink
+    @staticmethod
+    def ud_hyperlink(text):
+        def replace(match):
+            word = match.group(1)
+            url = f"https://www.urbandictionary.com/define.php?term={quote(word)}"
+            return f"[{word}]({url})"
+
+        return re.sub(r"\[([^\]]+)\]", replace, text)
+
+    # urban
+    @app_commands.command(
+        name="urban",
+        description="Get the definition of a term/word from Urban Dictionary",
+    )
+    @app_commands.describe(
+        term="The term/word to define",
+    )
+    @app_commands.checks.cooldown(3, 20, key=lambda i: i.channel)
+    async def urban(self, i: discord.Interaction, term: str):
+        await i.response.defer()
+        async with self.bot.session.get(
+            "https://api.urbandictionary.com/v0/define", params={"term": term}
+        ) as r:
+            if not r.ok:
+                raise GenericError()
+            json = await r.json()
+            if not json or not json.get("list"):  # handle empty response
+                raise GenericError("No results found for that query.")
+
+        data = json["list"][0]
+
+        definition = self.ud_hyperlink(data["definition"])
+        example = self.ud_hyperlink(data["example"])
+
+        embed = Embed(
+            colour=self.bot.colour,
+            title=f"Definition of {data['word']}",
+            url=data["permalink"],
+        )
+
+        embed.add_field(name="Definition", value=definition, inline=False)
+        embed.add_field(name="Example", value=example, inline=False)
+        embed.set_footer(text=f"👍 {data['thumbs_up']} | 👎 {data['thumbs_down']}")
+
+        await i.followup.send(embed=embed, view=DeleteButton(i.user))
 
 
 async def setup(bot):

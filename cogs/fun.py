@@ -10,7 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils import Embed, GenericError
-from views import Confirm
+from views import Confirm, DeleteButton
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -317,31 +317,6 @@ class Fun(commands.Cog):
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
 
-    class DeleteQuote(discord.ui.View):
-        def __init__(self, quote_author: discord.User, interaction_user: discord.User):
-            super().__init__(timeout=None)
-            self.author_id = quote_author.id
-            self.interaction_user_id = interaction_user.id
-
-        @discord.ui.button(label="Delete Quote", emoji="🗑️")
-        async def delete(self, i: discord.Interaction, _: discord.ui.Button):
-            if (
-                i.user.id in (self.author_id, self.interaction_user_id)
-                or i.permissions.manage_messages
-            ):
-                await i.response.defer(ephemeral=True)
-                await i.edit_original_response(
-                    content=f"-# *Quote deleted by {i.user.mention}*",
-                    view=None,
-                    embed=None,
-                    attachments=[],
-                )
-            else:
-                await i.response.send_message(
-                    "❌ You cannot delete this quote.", ephemeral=True
-                )
-                return
-
     # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote(self, i: discord.Interaction, message: discord.Message):
@@ -358,7 +333,7 @@ class Fun(commands.Cog):
             "https://api.popcat.xyz/v2/quote",
             params={
                 "image": user.display_avatar.url,
-                "text": message.content,
+                "text": discord.utils.remove_markdown(message.clean_content).strip(),
                 "name": user.display_name,
             },
         ) as r:
@@ -375,7 +350,7 @@ class Fun(commands.Cog):
         embed.set_image(url="attachment://quote.png")
 
         await i.followup.send(
-            embed=embed, file=attachment, view=self.DeleteQuote(user, i.user)
+            embed=embed, file=attachment, view=DeleteButton(user, i.user)
         )
 
     # 8ball
@@ -451,7 +426,7 @@ class Fun(commands.Cog):
 
         await i.response.send_message(
             mock_text,
-            allowed_mentions=discord.AllowedMentions(users=False, roles=False),
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
     # mock (ctxmenu)

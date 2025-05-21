@@ -136,7 +136,7 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.NotOwner):
             return
         else:
-            await ctx.send(f"❌ {error}")
+            await ctx.reply(f"❌ {error}")
 
     # Main application command error handler
     async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:

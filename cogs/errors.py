@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.utils import MISSING
 
 from config import config
-from utils import GenericError
+from utils.utils import GenericError
 
 if TYPE_CHECKING:
     from main import OneBot

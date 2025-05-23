@@ -9,8 +9,8 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from utils import Embed, GenericError
-from views import Confirm, DeleteButton
+from utils.utils import Embed, GenericError
+from utils.views import Confirm, DeleteButton
 
 if TYPE_CHECKING:
     from main import OneBot

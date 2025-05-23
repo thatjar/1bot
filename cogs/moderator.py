@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import Embed, GenericError
+from utils.utils import Embed, GenericError
 
 if TYPE_CHECKING:
     from main import OneBot

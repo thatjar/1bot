@@ -27,7 +27,7 @@ class Paginator(View):
         if embed.footer.text:
             raise ValueError("Embed footer must not be set.")
         else:
-            embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
+            embed.set_footer(text=f"Result {self.current_page + 1}/{self.total_pages}")
 
         await self.interaction.followup.send(embed=embed, view=self)
         self.message = await self.interaction.original_response()

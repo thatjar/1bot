@@ -220,7 +220,7 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
-        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
+        expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
         await i.response.send_message(
             content=f"{user.mention}, you have been challenged to **Tic Tac Toe** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,
@@ -263,7 +263,7 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
-        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
+        expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
         await i.response.send_message(
             f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,

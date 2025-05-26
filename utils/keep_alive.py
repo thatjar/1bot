@@ -7,7 +7,7 @@ app = Flask("")
 
 @app.route("/")
 def index() -> str:
-    return "Running"
+    return "Bot is running."
 
 
 def run() -> None:

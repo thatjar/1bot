@@ -34,6 +34,10 @@ class Confirm(discord.ui.View):
         self.accepted = False
         self.stop()
 
+    async def on_error(self, interaction, error, item):
+        if isinstance(error, discord.NotFound):
+            return
+
 
 class InfoButtons(discord.ui.View):
     """Link buttons for the bot's website, support server, and invite link as configured in config.py"""

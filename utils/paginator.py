@@ -44,6 +44,10 @@ class Paginator(View):
         if self.message:
             await self.message.edit(view=None)
 
+    async def on_error(self, interaction, error, item):
+        if isinstance(error, discord.NotFound):
+            return
+
     @discord.ui.button(emoji="⬅️", style=discord.ButtonStyle.green)
     async def previous_button(self, i: Interaction, _: Button) -> None:
         self.current_page = (self.current_page - 1) % self.total_pages

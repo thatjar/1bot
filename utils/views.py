@@ -45,38 +45,47 @@ class InfoButtons(discord.ui.View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if config.get("bot_invite"):
-            self.add_item(
-                discord.ui.Button(
-                    label="Add Me",
-                    url=config["bot_invite"],
-                    emoji=f"<:_:{config.get('emojis', {}).get('add_bot', 0)}>",
-                )
-            )
+        emoji_id = config.get("emojis", {}).get("wiki")
+        if emoji_id:
+            emoji = f"<:_:{emoji_id}>"
+        else:
+            emoji = "📖"
 
         self.add_item(
             discord.ui.Button(
-                label="Wiki",
-                url="https://github.com/thatjar/1bot/wiki",
-                emoji=f"<:_:{config.get('emojis', {}).get('wiki', 0)}>",
+                label="Wiki", url="https://github.com/thatjar/1bot/wiki", emoji=emoji
             )
         )
 
-        if config.get("website"):
+        if config.get("bot_invite"):
+            emoji_id = config.get("emojis", {}).get("add_bot")
+            if emoji_id:
+                emoji = f"<:_:{emoji_id}>"
+            else:
+                emoji = "➕"
             self.add_item(
-                discord.ui.Button(
-                    label="Website",
-                    url=config["website"],
-                    emoji=f"<:_:{config.get('emojis', {}).get('website', 0)}>",
-                )
+                discord.ui.Button(label="Add Me", url=config["bot_invite"], emoji=emoji)
+            )
+
+        if config.get("website"):
+            emoji_id = config.get("emojis", {}).get("website")
+            if emoji_id:
+                emoji = f"<:_:{emoji_id}>"
+            else:
+                emoji = "🌐"
+            self.add_item(
+                discord.ui.Button(label="Website", url=config["website"], emoji=emoji)
             )
 
         if config.get("server_invite"):
+            emoji_id = config.get("emojis", {}).get("support")
+            if emoji_id:
+                emoji = f"<:_:{emoji_id}>"
+            else:
+                emoji = "💬"
             self.add_item(
                 discord.ui.Button(
-                    label="Server",
-                    url=config["server_invite"],
-                    emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
+                    label="Server", url=config["server_invite"], emoji=emoji
                 )
             )
 

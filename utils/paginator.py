@@ -21,6 +21,14 @@ class Paginator(View):
         self.total_pages: int = len(pages)
         self.message: discord.Message | None = None
 
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user != self.interaction.user:
+            await interaction.response.send_message(
+                "❌ This is not for you.", ephemeral=True
+            )
+            return False
+        return True
+
     async def start(self) -> None:
         # Add footer to the first page
         embed = self.pages[0]
@@ -29,16 +37,12 @@ class Paginator(View):
         else:
             embed.set_footer(text=f"Result {self.current_page + 1}/{self.total_pages}")
 
-        await self.interaction.followup.send(embed=embed, view=self)
-        self.message = await self.interaction.original_response()
+        try:
+            await self.interaction.response.send_message(embed=embed, view=self)
+        except discord.InteractionResponded:
+            await self.interaction.followup.send(embed=embed, view=self)
 
-    async def interaction_check(self, interaction: Interaction) -> bool:
-        if interaction.user != self.interaction.user:
-            await interaction.response.send_message(
-                "❌ This is not for you.", ephemeral=True
-            )
-            return False
-        return True
+        self.message = await self.interaction.original_response()
 
     async def on_timeout(self) -> None:
         if self.message:

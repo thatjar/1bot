@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils import Embed, GenericError
+from utils.utils import Embed, GenericError
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -526,8 +526,8 @@ class Moderator(commands.Cog):
     @app_commands.checks.bot_has_permissions(ban_members=True)
     @app_commands.describe(
         user="Member/User ID to ban",
-        delete_days="Number of days of messages to delete (default: 1)",
-        delete_hours="Number of hours of messages to delete (default: 1 day, 0 hours)",
+        delete_days="Number of days of messages to delete (default: 0 days, 1 hour)",
+        delete_hours="Number of hours of messages to delete (default: 1 hour)",
         reason="The reason for banning the user (optional)",
         silent="Disable publicly sending the ban message & DMing the user (default: False)",
     )

@@ -2,7 +2,10 @@
   <title>1Bot - One bot, several uses.</title>
 </svelte:head>
 
+
 <div class="intro">
+  <br>
+  <br>
   <h1>
     <span class="grey">Meet</span> 1Bot.
   </h1>
@@ -13,10 +16,15 @@
   </p>
   <a
     href="https://discord.com/oauth2/authorize?client_id=884080176416309288"
-    id="add-1bot">Add 1Bot</a
-  >
+    id="add-1bot">Add 1Bot</a>
+    <br>
+    <br>
 </div>
 
+
+<div class="header">
+  <h1 style="text-align:center"><span class="grey">Why</span> Choose Us?</h1>
+</div>
 <div class="features">
   <section class="card">
     <div>
@@ -83,35 +91,39 @@
   }
 
   .grey {
-    color: #d1d1d1;
+    color: #bebebe;
+  }
+
+  .header {
+    transform: translate(5.5px);
   }
 
   #add-1bot {
-    color: black;
+    color: rgb(73, 47, 1);
     display: block;
     width: 125px;
     padding: 10px 0;
     text-decoration: none;
-    font-size: 1.5em;
+    font-size: 1.2em;
     background-image: linear-gradient(to top right, #ff6600, #ff8800);
     border-radius: 5px;
-
+    box-shadow: 0 6px 11px #1c1d24;
     transition: 300ms;
   }
 
   #add-1bot:hover {
-    box-shadow: 0 5px 10px #d471007c;
+    color: linear-gradient(to top right, #ff8800, #ff6600);
+    box-shadow: 0 5px 10px #9f8b6578;
     transform: translateY(-2px);
   }
 
   #add-1bot:active {
     transform: translateY(2px);
     box-shadow: none;
+    color:rgb(217, 125, 45)
   }
 
   .features {
-    display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     align-items: stretch;
     margin: 30px auto;
@@ -121,17 +133,52 @@
     display: flex;
     flex-direction: column;
     line-height: 1.5em;
+    justify-content: center;
     text-align: center;
-    width: 250px;
-    margin: 10px;
+    width: 80%;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
     padding: 25px 30px;
     background-color: #2d2e36;
     border-radius: 15px;
-    border: 2px solid #4c4f60;
+    border: 2px solid #2d2e36;
     box-shadow: 0 6px 10px #1c1d24;
   }
 
   .card h2 {
     margin: 10px;
+    transform: translateY(30px);
+    transform: translateY(-4px);
+    transition: 300ms;
+    font-size: 150%;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: rgb(217, 125, 45);
+  }
+
+  .card p,a {
+    transition: 200ms;
+    color: #ffffff;
+    font-size: 120%;
+  }
+
+  .card:hover p {
+    color: rgb(255,255,255);
+    font-size: 120%;
+  }
+
+  .card:hover a {
+    color: #fd9d03e6;
+    font-size: 120%;
+  }
+
+  .card {
+    transition: 300ms;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 5px 10px #4f493d78;
+    background-color: rgba(35, 36, 42, 0.793);
   }
 </style>

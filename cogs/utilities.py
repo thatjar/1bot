@@ -8,8 +8,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.paginator import Paginator
-from utils.utils import Embed, GenericError, lang_autocomplete, lang_dict, translator
+from utils import Embed, GenericError, lang_autocomplete, lang_dict, translator
+from views import DeleteButton
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -43,41 +43,38 @@ class Utilities(commands.Cog):
         if not json or not json.get("message"):  # handle empty response
             raise GenericError("Invalid location. Try with a more specific query.")
 
-        pages = []
-        for entry in json["message"]:
-            embed = Embed(
-                colour=self.bot.colour,
-                description=entry["current"]["skytext"],
-                title=f"Weather in {entry['current']['observationpoint']}",
-            )
+        data = json["message"][0]
 
-            embed.add_field(
-                name="Temperature",
-                value=f'{entry["current"]["temperature"]}°{entry["location"]["degreetype"]}',
-            )
-            embed.add_field(
-                name="Feels like",
-                value=f"{entry['current']['feelslike']}°{entry['location']['degreetype']}",
-            )
-            embed.add_field(
-                name="Wind",
-                value=entry["current"]["winddisplay"],
-                inline=False,
-            )
-            embed.add_field(
-                name="Humidity",
-                value=f"{entry['current']['humidity']}%",
-            )
-            embed.add_field(
-                name="Alerts",
-                value=entry["location"].get("alert") or "No alerts for this area",
-                inline=False,
-            )
+        embed = Embed(
+            colour=self.bot.colour,
+            description=data["current"]["skytext"],
+            title=f"Weather in {data['current']['observationpoint']}",
+        )
 
-            pages.append(embed)
+        embed.add_field(
+            name="Temperature",
+            value=f'{data["current"]["temperature"]}°{data["location"]["degreetype"]}',
+        )
+        embed.add_field(
+            name="Feels like",
+            value=f"{data['current']['feelslike']}°{data['location']['degreetype']}",
+        )
+        embed.add_field(
+            name="Wind",
+            value=data["current"]["winddisplay"],
+            inline=False,
+        )
+        embed.add_field(
+            name="Humidity",
+            value=f"{data['current']['humidity']}%",
+        )
+        embed.add_field(
+            name="Alerts",
+            value=data["location"].get("alert") or "No alerts for this area",
+            inline=False,
+        )
 
-        paginator = Paginator(interaction=i, pages=pages)
-        await paginator.start()
+        await i.followup.send(embed=embed)
 
     # group for /convert
     convert = app_commands.Group(name="convert", description="Convert units")
@@ -187,25 +184,18 @@ class Utilities(commands.Cog):
             if not json:  # handle empty response
                 raise GenericError("No results found for that query.")
 
-        pages = []
-        for entry in json:
-            if not entry["plainLyrics"]:
-                continue
+        data = json[0]
+        if data["instrumental"]:
+            raise GenericError("This track is an instrumental.")
 
-            embed = Embed(
-                colour=self.bot.colour,
-                title=f"{entry['trackName']} \N{EM DASH} {entry['artistName']}",
-                description=entry["plainLyrics"],
-            )
-            embed.set_author(name="Lyrics from LRCLIB", url="https://lrclib.net/")
+        embed = Embed(
+            colour=self.bot.colour,
+            title=f"{data['trackName']} \N{EM DASH} {data['artistName']}",
+            description=data["plainLyrics"],
+        )
+        embed.set_author(name="Lyrics from LRCLIB", url="https://lrclib.net/")
 
-            pages.append(embed)
-
-        if not pages:
-            raise GenericError("No lyrics found for that query.")
-
-        paginator = Paginator(interaction=i, pages=pages)
-        await paginator.start()
+        await i.followup.send(embed=embed)
 
     # translate
     @app_commands.command(
@@ -425,27 +415,22 @@ class Utilities(commands.Cog):
             if not json or not json.get("list"):  # handle empty response
                 raise GenericError("No results found for that query.")
 
-        pages = []
-        for entry in json["list"]:
-            definition = self.ud_hyperlink(entry["definition"])
-            example = self.ud_hyperlink(entry["example"])
+        data = json["list"][0]
 
-            embed = Embed(
-                colour=self.bot.colour,
-                title=f"Definition of {entry['word']}",
-                url=entry["permalink"],
-            )
+        definition = self.ud_hyperlink(data["definition"])
+        example = self.ud_hyperlink(data["example"])
 
-            embed.add_field(name="Definition", value=definition, inline=False)
-            embed.add_field(name="Example", value=example, inline=False)
-            embed.set_author(
-                name=f"👍 {entry['thumbs_up']} | 👎 {entry['thumbs_down']}"
-            )
+        embed = Embed(
+            colour=self.bot.colour,
+            title=f"Definition of {data['word']}",
+            url=data["permalink"],
+        )
 
-            pages.append(embed)
+        embed.add_field(name="Definition", value=definition, inline=False)
+        embed.add_field(name="Example", value=example, inline=False)
+        embed.set_footer(text=f"👍 {data['thumbs_up']} | 👎 {data['thumbs_down']}")
 
-        paginator = Paginator(interaction=i, pages=pages)
-        await paginator.start()
+        await i.followup.send(embed=embed, view=DeleteButton(i.user))
 
 
 async def setup(bot):

@@ -26,7 +26,6 @@ class Etc(commands.Cog):
         if config.get("topgg_token") is None:
             return
 
-        await self.bot.wait_until_ready()
         try:
             async with self.bot.session.post(
                 f"https://top.gg/api/bots/{self.bot.user.id}/stats",

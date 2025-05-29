@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.utils import MISSING
 
 from config import config
-from utils.utils import GenericError
+from utils import GenericError
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -47,77 +47,6 @@ class Errors(commands.Cog):
         tree = self.bot.tree
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
-
-    # Prefixed command error listener
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        if isinstance(error, commands.CommandNotFound):
-            return
-        elif isinstance(error, commands.NotOwner):
-            return
-        else:
-            await ctx.reply(f"❌ {error}")
-
-    # Main application command error handler
-    async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
-        # Check if the error is already handled
-        if "handled" in getattr(error, "__notes__", []):
-            return
-
-        if isinstance(
-            error, app_commands.CommandNotFound
-        ) or "Unknown interaction" in str(error):
-            return
-        elif isinstance(error, discord.NotFound):
-            return
-        elif "You are being rate limited" in str(error):
-            return logging.warning(f"Rate limited: Command {i.command.name}")
-
-        elif isinstance(error, app_commands.CommandSignatureMismatch):
-            await self.send_error(
-                i,
-                "Command signature mismatch. Please report this to the developers.",
-                view=ErrorButton(),
-            )
-        elif isinstance(error, app_commands.BotMissingPermissions):
-            msg = (
-                "I don't have enough permissions to run this command!\n"
-                f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
-                f"Please add these permissions to my role ('{self.bot.user.name}') in your server/channel settings."
-            )
-            await self.send_error(i, msg)
-        elif isinstance(error, app_commands.MissingPermissions):
-            msg = (
-                "You don't have enough permissions to use this command.\n"
-                f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
-            )
-            await self.send_error(i, msg)
-        elif isinstance(error, app_commands.CommandOnCooldown):
-            msg = f"This command is on cooldown, try again in {error.retry_after:.1f} seconds."
-            await self.send_error(i, msg)
-        elif isinstance(error, app_commands.TransformerError):
-            await self.send_error(i, error)
-        elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
-            msg = "**No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
-            with suppress(discord.Forbidden):
-                await self.send_error(i, msg)
-        elif isinstance(error, discord.HTTPException):
-            if error.status == 429:
-                if error.response.content.get("global"):
-                    logging.warning(
-                        "GLOBAL RATELIMIT\n"
-                        f"Retry after:{error.response.content['retry_after']}\n"
-                        f"Caused by: {i.user.name} ({i.user.id})"
-                    )
-
-        elif isinstance(error, app_commands.CommandInvokeError):
-            if isinstance(error.original, GenericError):
-                await self.send_error(i, error.original)
-            else:
-                await self.report_unknown_exception(i, error.original)
-
-        else:
-            await self.report_unknown_exception(i, error)
 
     @staticmethod
     def create_error_embed(
@@ -198,6 +127,77 @@ class Errors(commands.Cog):
             )
         except discord.InteractionResponded:
             await i.followup.send(f"❌ {error_message}", ephemeral=True, view=view)
+
+    # Prefixed command error listener
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        if isinstance(error, commands.CommandNotFound):
+            return
+        elif isinstance(error, commands.NotOwner):
+            return
+        else:
+            await ctx.reply(f"❌ {error}")
+
+    # Main application command error handler
+    async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
+        # Check if the error is already handled
+        if "handled" in getattr(error, "__notes__", []):
+            return
+
+        if isinstance(
+            error, app_commands.CommandNotFound
+        ) or "Unknown interaction" in str(error):
+            return
+        elif isinstance(error, discord.NotFound):
+            return
+        elif "You are being rate limited" in str(error):
+            return logging.warning(f"Rate limited: Command {i.command.name}")
+
+        elif isinstance(error, app_commands.CommandSignatureMismatch):
+            await self.send_error(
+                i,
+                "Command signature mismatch. Please report this to the developers.",
+                view=ErrorButton(),
+            )
+        elif isinstance(error, app_commands.BotMissingPermissions):
+            msg = (
+                "I don't have enough permissions to run this command!\n"
+                f"Missing permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`\n\n"
+                f"Please add these permissions to my role ('{self.bot.user.name}') in your server/channel settings."
+            )
+            await self.send_error(i, msg)
+        elif isinstance(error, app_commands.MissingPermissions):
+            msg = (
+                "You don't have enough permissions to use this command.\n"
+                f"Required permissions: `{', '.join([perm.title().replace('_', ' ') for perm in error.missing_permissions])}`"
+            )
+            await self.send_error(i, msg)
+        elif isinstance(error, app_commands.CommandOnCooldown):
+            msg = f"This command is on cooldown, try again in {error.retry_after:.1f} seconds."
+            await self.send_error(i, msg)
+        elif isinstance(error, app_commands.TransformerError):
+            await self.send_error(i, error)
+        elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
+            msg = "**No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
+            with suppress(discord.Forbidden):
+                await self.send_error(i, msg)
+        elif isinstance(error, discord.HTTPException):
+            if error.status == 429:
+                if error.response.content.get("global"):
+                    logging.warning(
+                        "GLOBAL RATELIMIT\n"
+                        f"Retry after:{error.response.content['retry_after']}\n"
+                        f"Caused by: {i.user.name} ({i.user.id})"
+                    )
+
+        elif isinstance(error, app_commands.CommandInvokeError):
+            if isinstance(error.original, GenericError):
+                await self.send_error(i, error.original)
+            else:
+                await self.report_unknown_exception(i, error.original)
+
+        else:
+            await self.report_unknown_exception(i, error)
 
 
 async def setup(bot):

@@ -24,12 +24,12 @@ class Embed(discord.Embed):
 
     def __init__(self, *args, **kwargs):
         # Truncate the description to 4096 characters
-        if kwargs.get("description"):
+        if "description" in kwargs:
             description = kwargs["description"]
             if len(description) > 4096:
                 kwargs["description"] = description[:4093] + "..."
         # Truncate the title to 256 characters
-        if kwargs.get("title"):
+        if "title" in kwargs:
             title = kwargs["title"]
             if len(title) > 256:
                 kwargs["title"] = title[:253] + "..."

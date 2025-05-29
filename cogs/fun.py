@@ -9,8 +9,8 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from utils.utils import Embed, GenericError
-from utils.views import Confirm, DeleteButton
+from utils import Embed, GenericError
+from views import Confirm, DeleteButton
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -220,7 +220,7 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
-        expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
+        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
         await i.response.send_message(
             content=f"{user.mention}, you have been challenged to **Tic Tac Toe** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,
@@ -263,7 +263,7 @@ class Fun(commands.Cog):
             raise GenericError("You can't play with a bot!")
 
         view = Confirm(user)
-        expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
+        expires = (datetime.now(UTC) + timedelta(seconds=60)).timestamp()
         await i.response.send_message(
             f"{user.mention}, you have been challenged to **Rock Paper Scissors** by {i.user.mention}! Expires <t:{expires:.0f}:R>.",
             view=view,

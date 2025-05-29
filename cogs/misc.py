@@ -6,8 +6,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
-from utils.utils import VL_STRINGS, GenericError
-from utils.views import InfoButtons
+from utils import VL_STRINGS, GenericError
+from views import InfoButtons
 
 if TYPE_CHECKING:
     from main import OneBot

@@ -11,7 +11,7 @@ class Paginator(View):
 
         :param interaction: The interaction to respond to.
         :type interaction: discord.Interaction
-        :param pages: List of embeds to paginate through. Must not have a footer.
+        :param pages: List of embeds to paginate through.
         :type pages: List[discord.Embed]"""
 
         super().__init__(timeout=timeout)
@@ -20,6 +20,11 @@ class Paginator(View):
         self.current_page: int = 0
         self.total_pages: int = len(pages)
         self.message: discord.Message | None = None
+        self.update_jump_button()
+
+    def update_jump_button(self):
+        """Update the jump button label to show current page number."""
+        self.jump_button.label = f"{self.current_page + 1} / {self.total_pages}"
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         if interaction.user != self.interaction.user:
@@ -30,13 +35,7 @@ class Paginator(View):
         return True
 
     async def start(self) -> None:
-        # Add footer to the first page
         embed = self.pages[0]
-        if embed.footer.text:
-            raise ValueError("Embed footer must not be set.")
-        else:
-            embed.set_footer(text=f"Result {self.current_page + 1}/{self.total_pages}")
-
         try:
             await self.interaction.response.send_message(embed=embed, view=self)
         except discord.InteractionResponded:
@@ -52,17 +51,17 @@ class Paginator(View):
         if isinstance(error, discord.NotFound):
             return
 
-    @discord.ui.button(emoji="⬅️", style=discord.ButtonStyle.green)
+    @discord.ui.button(emoji="⬅️")
     async def previous_button(self, i: Interaction, _: Button) -> None:
         self.current_page = (self.current_page - 1) % self.total_pages
         await self.update_page(i)
 
-    @discord.ui.button(emoji="🔢", style=discord.ButtonStyle.gray)
+    @discord.ui.button(style=discord.ButtonStyle.blurple)
     async def jump_button(self, i: Interaction, _: Button) -> None:
         modal = PageSelectModal(self)
         await i.response.send_modal(modal)
 
-    @discord.ui.button(emoji="➡️", style=discord.ButtonStyle.green)
+    @discord.ui.button(emoji="➡️")
     async def next_button(self, i: Interaction, _: Button) -> None:
         self.current_page = (self.current_page + 1) % self.total_pages
         await self.update_page(i)
@@ -74,13 +73,12 @@ class Paginator(View):
 
     async def update_page(self, i: Interaction | None = None) -> None:
         embed = self.pages[self.current_page]
-        if isinstance(embed, discord.Embed) and not embed.footer.text:
-            embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
+        self.update_jump_button()
 
         if i:
-            await i.response.edit_message(embed=embed)
+            await i.response.edit_message(embed=embed, view=self)
         elif self.message:
-            await self.message.edit(embed=embed)
+            await self.message.edit(embed=embed, view=self)
 
 
 class PageSelectModal(discord.ui.Modal, title="Jump to Page"):

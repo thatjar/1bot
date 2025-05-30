@@ -28,9 +28,10 @@ config = {
     "website": "https://1bot.netlify.app",
     "repository": "https://github.com/thatjar/1bot",
     "emojis": {
-        "support": int,
-        "add_to_server": int,
+        "add_bot": int,
         "website": int,
+        "support": int,
+        "wiki": int,
     },
     "debug": False
 }
@@ -44,7 +45,7 @@ config = {
 - `bot_invite`: If set, will be used as a button to invite the bot to other servers in the botinfo command.
 - `website`: If set, will be used as a button to the bot's website.
 - `repository`: If your bot is made public, you must publish its source code under the AGPL. Set this to your repo URL.
-- `emojis`: Dictionary of custom emoji IDs. If set, will be used as emojis on the buttons for `server_invite`, `bot_invite` and `website` respectively.
+- `emojis`: Dictionary of custom emoji IDs. If set, will be used as emojis on the respective buttons in the botinfo command.
 - `debug`: If set to True, `logging.DEBUG` will be used as the `log_level` in [Bot.run](https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=log_level#discord.ext.commands.Bot.run). Otherwise, `logging.WARNING` will be used. DEBUG will print a lot of information to the console, expect to see stuff printed every few seconds if enabled.
 
 ###### Copyright &copy; 2024-present thatjar. Not affiliated with Discord, Inc.

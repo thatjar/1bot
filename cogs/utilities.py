@@ -76,7 +76,9 @@ class Utilities(commands.Cog):
 
             pages.append(embed)
 
-        paginator = Paginator(interaction=i, pages=pages)
+        paginator = Paginator(
+            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
+        )
         await paginator.start()
 
     # group for /convert
@@ -204,7 +206,9 @@ class Utilities(commands.Cog):
         if not pages:
             raise GenericError("No lyrics found for that query.")
 
-        paginator = Paginator(interaction=i, pages=pages)
+        paginator = Paginator(
+            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
+        )
         await paginator.start()
 
     # translate
@@ -444,7 +448,9 @@ class Utilities(commands.Cog):
 
             pages.append(embed)
 
-        paginator = Paginator(interaction=i, pages=pages)
+        paginator = Paginator(
+            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
+        )
         await paginator.start()
 
 

@@ -45,49 +45,52 @@ class InfoButtons(discord.ui.View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        emoji_id = config.get("emojis", {}).get("wiki")
-        if emoji_id:
-            emoji = f"<:_:{emoji_id}>"
-        else:
-            emoji = "📖"
-
+        wiki_emoji = get_emoji("wiki") or "📖"
         self.add_item(
             discord.ui.Button(
-                label="Wiki", url="https://github.com/thatjar/1bot/wiki", emoji=emoji
+                label="Wiki",
+                url="https://github.com/thatjar/1bot/wiki",
+                emoji=wiki_emoji,
             )
         )
 
         if config.get("bot_invite"):
-            emoji_id = config.get("emojis", {}).get("add_bot")
-            if emoji_id:
-                emoji = f"<:_:{emoji_id}>"
-            else:
-                emoji = "➕"
+            add_emoji = get_emoji("add_bot") or "➕"
             self.add_item(
-                discord.ui.Button(label="Add Me", url=config["bot_invite"], emoji=emoji)
+                discord.ui.Button(
+                    label="Add Me", url=config["bot_invite"], emoji=add_emoji
+                )
             )
 
         if config.get("website"):
-            emoji_id = config.get("emojis", {}).get("website")
-            if emoji_id:
-                emoji = f"<:_:{emoji_id}>"
-            else:
-                emoji = "🌐"
+            site_emoji = get_emoji("website") or "🌐"
             self.add_item(
-                discord.ui.Button(label="Website", url=config["website"], emoji=emoji)
+                discord.ui.Button(
+                    label="Website", url=config["website"], emoji=site_emoji
+                )
             )
 
         if config.get("server_invite"):
-            emoji_id = config.get("emojis", {}).get("support")
-            if emoji_id:
-                emoji = f"<:_:{emoji_id}>"
-            else:
-                emoji = "💬"
+            server_emoji = get_emoji("support") or "💬"
             self.add_item(
                 discord.ui.Button(
-                    label="Server", url=config["server_invite"], emoji=emoji
+                    label="Server", url=config["server_invite"], emoji=server_emoji
                 )
             )
+
+
+def get_emoji(key: str) -> str | None:
+    """Get the emoji string for a key from the config file.
+
+    :param key: The key to get the emoji string for.
+    :type key: str
+    :return: The emoji string or None if not found.
+    :rtype: Optional[str]"""
+
+    emoji_id = config.get("emojis", {}).get(key)
+    if emoji_id:
+        return f"<:_:{emoji_id}>"
+    return None
 
 
 class DeleteButton(discord.ui.View):

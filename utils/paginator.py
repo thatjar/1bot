@@ -5,14 +5,24 @@ from discord.ui import Button, View
 
 class Paginator(View):
     def __init__(
-        self, *, interaction: Interaction, pages: list[discord.Embed], timeout: int = 60
+        self,
+        *,
+        interaction: Interaction,
+        pages: list[discord.Embed],
+        timeout: int = 60,
+        message_content: str | None = None,
     ):
         """Paginator with back, forward, jump, and stop buttons.
 
         :param interaction: The interaction to respond to.
         :type interaction: discord.Interaction
         :param pages: List of embeds to paginate through.
-        :type pages: List[discord.Embed]"""
+        :type pages: List[discord.Embed]
+        :param timeout: Timeout for the paginator view, defaults to 60 seconds.
+        :type timeout: Optional[int]
+        :param message_content: Message to send with the embeds.
+        :type message_content: Optional[str]
+        """
 
         super().__init__(timeout=timeout)
         self.interaction = interaction
@@ -20,6 +30,7 @@ class Paginator(View):
         self.current_page: int = 0
         self.total_pages: int = len(pages)
         self.message: discord.Message | None = None
+        self.message_content = message_content
         self.update_jump_button()
 
     def update_jump_button(self):
@@ -37,9 +48,13 @@ class Paginator(View):
     async def start(self) -> None:
         embed = self.pages[0]
         try:
-            await self.interaction.response.send_message(embed=embed, view=self)
+            await self.interaction.response.send_message(
+                self.message_content, embed=embed, view=self
+            )
         except discord.InteractionResponded:
-            await self.interaction.followup.send(embed=embed, view=self)
+            await self.interaction.followup.send(
+                self.message_content, embed=embed, view=self
+            )
 
         self.message = await self.interaction.original_response()
 

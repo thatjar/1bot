@@ -6,6 +6,7 @@ from contextlib import suppress
 from traceback import format_exception
 from typing import TYPE_CHECKING
 
+import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -26,7 +27,7 @@ class ErrorButton(discord.ui.View):
         if config.get("server_invite"):
             self.add_item(
                 discord.ui.Button(
-                    label="Join the Server",
+                    label="Join Support Server",
                     url=config["server_invite"],
                     emoji=f"<:_:{config.get('emojis', {}).get('support', 0)}>",
                 )
@@ -113,6 +114,12 @@ class Errors(commands.Cog):
         elif isinstance(error, app_commands.CommandInvokeError):
             if isinstance(error.original, GenericError):
                 await self.send_error(i, error.original)
+            elif isinstance(error.original, aiohttp.ConnectionTimeoutError):
+                await self.send_error(
+                    i,
+                    "Connection timed out. Please try again later.",
+                    view=ErrorButton(),
+                )
             else:
                 await self.report_unknown_exception(i, error.original)
 

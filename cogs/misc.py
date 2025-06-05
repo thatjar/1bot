@@ -139,7 +139,8 @@ class Miscellaneous(commands.Cog):
         if asset is None:
             err_msg = f"This user has no {profile.lower()} banner image."
             if colour is not None:
-                err_msg += f" Their banner colour is `#{colour:x}`."
+                hexcode = f"{colour:X}"
+                err_msg += f" Their banner colour is `#{hexcode:>06}`."
             raise GenericError(err_msg)
 
         embed = discord.Embed(

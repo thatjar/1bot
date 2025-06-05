@@ -76,10 +76,15 @@ class Utilities(commands.Cog):
 
             pages.append(embed)
 
-        paginator = Paginator(
-            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
-        )
-        await paginator.start()
+        if len(pages) == 1:
+            await i.response.send_message("Found 1 result:", embed=pages[0])
+        else:
+            paginator = Paginator(
+                interaction=i,
+                pages=pages,
+                message_content=f"Found {len(pages)} results:",
+            )
+            await paginator.start()
 
     # group for /convert
     convert = app_commands.Group(name="convert", description="Convert units")
@@ -206,10 +211,15 @@ class Utilities(commands.Cog):
         if not pages:
             raise GenericError("No lyrics found for that query.")
 
-        paginator = Paginator(
-            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
-        )
-        await paginator.start()
+        if len(pages) == 1:
+            await i.response.send_message("Found 1 result:", embed=pages[0])
+        else:
+            paginator = Paginator(
+                interaction=i,
+                pages=pages,
+                message_content=f"Found {len(pages)} results:",
+            )
+            await paginator.start()
 
     # translate
     @app_commands.command(
@@ -448,10 +458,15 @@ class Utilities(commands.Cog):
 
             pages.append(embed)
 
-        paginator = Paginator(
-            interaction=i, pages=pages, message_content=f"Found {len(pages)} results:"
-        )
-        await paginator.start()
+        if len(pages) == 1:
+            await i.response.send_message("Found 1 result:", embed=pages[0])
+        else:
+            paginator = Paginator(
+                interaction=i,
+                pages=pages,
+                message_content=f"Found {len(pages)} results:",
+            )
+            await paginator.start()
 
 
 async def setup(bot):

@@ -77,7 +77,7 @@ class Utilities(commands.Cog):
             pages.append(embed)
 
         if len(pages) == 1:
-            await i.response.send_message("Found 1 result:", embed=pages[0])
+            await i.followup.send("Found 1 result:", embed=pages[0])
         else:
             paginator = Paginator(
                 interaction=i,
@@ -212,7 +212,7 @@ class Utilities(commands.Cog):
             raise GenericError("No lyrics found for that query.")
 
         if len(pages) == 1:
-            await i.response.send_message("Found 1 result:", embed=pages[0])
+            await i.followup.send("Found 1 result:", embed=pages[0])
         else:
             paginator = Paginator(
                 interaction=i,
@@ -459,7 +459,7 @@ class Utilities(commands.Cog):
             pages.append(embed)
 
         if len(pages) == 1:
-            await i.response.send_message("Found 1 result:", embed=pages[0])
+            await i.followup.send("Found 1 result:", embed=pages[0])
         else:
             paginator = Paginator(
                 interaction=i,

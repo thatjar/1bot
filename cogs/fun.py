@@ -387,7 +387,7 @@ class Fun(commands.Cog):
         embed = Embed(
             colour=self.bot.colour,
         )
-        embed.add_field(name="Your question:", value=f"{question}", inline=False)
+        embed.add_field(name="Your question:", value=question, inline=False)
         embed.add_field(name="The Magic 8Ball says:", value=f"🎱 ||{fortune}||")
         await i.response.send_message(embed=embed)
 

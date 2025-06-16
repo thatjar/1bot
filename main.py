@@ -1,11 +1,11 @@
 import logging
-import os
 from datetime import UTC, datetime
 
 import discord
 from aiohttp import ClientSession
 from discord.ext import commands
 
+from cogs import EXTENSIONS
 from config import config
 
 
@@ -39,9 +39,8 @@ class OneBot(commands.AutoShardedBot):
         logging.info("Starting up...")
         # Load jishaku and all modules in the ./cogs dir
         await self.load_extension("jishaku")
-        for cog in os.listdir("./cogs"):
-            if cog.endswith(".py"):
-                await self.load_extension(f"cogs.{cog[:-3]}")
+        for extension in EXTENSIONS:
+            await self.load_extension(extension)
 
         # aiohttp session for making requests
         self.session = ClientSession()

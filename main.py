@@ -7,9 +7,6 @@ from aiohttp import ClientSession
 from discord.ext import commands
 
 from config import config
-from utils.keep_alive import keep_alive
-
-keep_alive()
 
 
 class OneBot(commands.AutoShardedBot):

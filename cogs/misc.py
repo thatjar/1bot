@@ -27,7 +27,6 @@ class Miscellaneous(commands.Cog):
 
     # botinfo
     @app_commands.command(name="botinfo", description="Get information about the bot")
-    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def botinfo(self, i: discord.Interaction):
         appinfo = await self.bot.application_info()
         user_installs = appinfo.approximate_user_install_count
@@ -68,7 +67,6 @@ class Miscellaneous(commands.Cog):
         user="The user or user ID to get the avatar of (default: yourself)",
         profile="Server avatar / User avatar (default: server)",
     )
-    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def avatar(
         self,
         i: discord.Interaction,
@@ -112,7 +110,6 @@ class Miscellaneous(commands.Cog):
         user="The user to get the banner of (default: yourself)",
         profile="Server banner / User banner (default: user)",
     )
-    @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def banner(
         self,
         i: discord.Interaction,
@@ -239,6 +236,7 @@ class Miscellaneous(commands.Cog):
         await i.response.send_message(embed=embed)
 
     # delete response
+    @app_commands.allowed_installs(guilds=True, users=False)
     async def deleteresponse(self, i: discord.Interaction, message: discord.Message):
         if not message.interaction_metadata or message.author.id != self.bot.user.id:
             raise GenericError(f"Not a {self.bot.user.name} command response.")

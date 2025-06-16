@@ -48,4 +48,4 @@ config = {
 - `emojis`: Dictionary of custom emoji IDs. If set, will be used as emojis on the respective buttons in the botinfo command.
 - `debug`: If set to True, `logging.DEBUG` will be used as the `log_level` in [Bot.run](https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=log_level#discord.ext.commands.Bot.run). Otherwise, `logging.WARNING` will be used. DEBUG will print a lot of information to the console, expect to see stuff printed every few seconds if enabled.
 
-###### Copyright &copy; 2024-present thatjar. Not affiliated with Discord, Inc.
+###### Copyright &copy; 2024-present thatjar, licensed under the GNU AGPL v3. Not affiliated with Discord, Inc.

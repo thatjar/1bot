@@ -170,17 +170,12 @@
     font-size: 120%;
   }
 
-  .card:hover a {
-    color: #fd9d03e6;
+  .card:hover {
+    transform: translateY(-4px);
+    background-color: #23242a;
   }
 
   .card {
     transition: 300ms;
-  }
-
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 5px 10px #4f493d78;
-    background-color: rgba(35, 36, 42, 0.793);
   }
 </style>

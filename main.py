@@ -67,7 +67,6 @@ if __name__ == "__main__":
     level = logging.DEBUG if config.get("debug") else logging.WARNING
 
     logging.getLogger("httpx").setLevel(level)
-    logging.getLogger("werkzeug").setLevel(level)
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     for logger in loggers:
         logger.setLevel(level)

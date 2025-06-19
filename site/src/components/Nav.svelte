@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  let showMobileMenu = false;
+  let showMobileMenu = $state(false);
 
   const handleMobileIconClick = () => {
     showMobileMenu = !showMobileMenu;
@@ -26,8 +26,8 @@
   </div>
 
   <div
-    on:click={handleMobileIconClick}
-    on:keydown={handleMobileIconClick}
+    onclick={handleMobileIconClick}
+    onkeydown={handleMobileIconClick}
     class={`mobile-icon${showMobileMenu ? " active" : ""}`}
     role="button"
     aria-label="Menu"

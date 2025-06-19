@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   export const load = async ({ page }) => ({
     props: {
       key: page.path,
@@ -11,7 +11,7 @@
   import { fly } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
 
-  export let data;
+  let { data, children } = $props();
 
   const duration = 300;
   const delay = duration + 100;
@@ -26,7 +26,7 @@
 {#key data.pathname}
   <main class="page" in:fly={transitionIn} out:fly={transitionOut}>
     <div class="content">
-      <slot />
+      {@render children?.()}
     </div>
   </main>
 {/key}

@@ -11,178 +11,14 @@ from discord.ext import commands
 
 from utils.utils import Embed, GenericError
 from utils.views import Confirm, DeleteButton
+from .ttt import TicTacToe
+from .rps import RockPaperScissors
+from . import battleship
 
 if TYPE_CHECKING:
     from main import OneBot
 
 
-# based on rapptz/discord.py examples (improved to actually enforce turns)
-class TicTacToeButton(discord.ui.Button):
-    def __init__(self, x: int, y: int):
-        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
-        self.x = x
-        self.y = y
-
-    async def callback(self, i: discord.Interaction):
-        assert self.view is not None
-        view = self.view
-        state = view.board[self.y][self.x]
-        if state in (view.X, view.O):
-            return
-
-        if view.current_player == view.X and i.user.id == view.p1:
-            self.style = discord.ButtonStyle.danger
-            self.label = "X"
-            self.disabled = True
-            view.board[self.y][self.x] = view.X
-            view.current_player = view.O
-            content = "It is now O's turn"
-        elif view.current_player == view.O and i.user.id == view.p2:
-            self.style = discord.ButtonStyle.success
-            self.label = "O"
-            self.disabled = True
-            view.board[self.y][self.x] = view.O
-            view.current_player = view.X
-            content = "It is now X's turn"
-        elif (
-            view.current_player == view.X
-            and i.user.id == view.p2
-            or view.current_player == view.O
-            and i.user.id == view.p1
-        ):
-            await i.response.send_message("❌ It's not your turn!", ephemeral=True)
-            return
-        else:
-            await i.response.send_message(
-                "❌ You are not part of this game!", ephemeral=True
-            )
-            return
-
-        winner = view.check_board_winner()
-        if winner is not None:
-            if winner == view.X:
-                content = "**X won!**"
-            elif winner == view.O:
-                content = "**O won!**"
-            else:
-                content = "**It's a tie!**"
-
-            for child in view.children:
-                child.disabled = True
-
-            view.stop()
-
-        await i.response.edit_message(content=content, view=view)
-
-
-class TicTacToe(discord.ui.View):
-    X = -1
-    O = 1  # noqa: E741
-    Tie = 2
-
-    def __init__(self, p1: discord.User, p2: discord.User):
-        super().__init__(timeout=60)
-        self.p1 = p1.id
-        self.p2 = p2.id
-        self.current_player = self.X
-        self.board = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-        ]
-
-        # Our board is made up of 3 by 3 TicTacToeButtons
-        for x in range(3):
-            for y in range(3):
-                self.add_item(TicTacToeButton(x, y))
-
-    # This method checks for the board winner -- it is used by the TicTacToeButton
-    def check_board_winner(self):
-        for across in self.board:
-            value = sum(across)
-            if value == 3:
-                return self.O
-            elif value == -3:
-                return self.X
-
-        # Check vertical
-        for line in range(3):
-            value = self.board[0][line] + self.board[1][line] + self.board[2][line]
-            if value == 3:
-                return self.O
-            elif value == -3:
-                return self.X
-
-        # Check diagonals
-        diag = self.board[0][2] + self.board[1][1] + self.board[2][0]
-        if diag == 3:
-            return self.O
-        elif diag == -3:
-            return self.X
-
-        diag = self.board[0][0] + self.board[1][1] + self.board[2][2]
-        if diag == 3:
-            return self.O
-        elif diag == -3:
-            return self.X
-
-        # If we're here, we need to check if a tie was made
-        if all(i != 0 for row in self.board for i in row):
-            return self.Tie
-
-        return None
-
-
-class RPSButton(discord.ui.Button):
-    def __init__(self, label: str, emoji: str):
-        super().__init__(label=label, emoji=emoji)
-
-    async def callback(self, i: discord.Interaction):
-        view = self.view
-        if i.user.id not in (view.p1.id, view.p2.id):
-            await i.response.send_message(
-                "❌ You are not part of this game.", ephemeral=True
-            )
-            return
-        if view.choices.get(i.user.id):
-            await i.response.send_message(
-                f"❌ You have already chosen {view.choices[i.user.id]}.", ephemeral=True
-            )
-            return
-
-        await i.response.defer()
-
-        view.choices[i.user.id] = self.label
-        if len(view.choices) == 2:
-            if view.choices[view.p1.id] == view.choices[view.p2.id]:
-                view.winner = None
-            elif (
-                view.choices[view.p1.id] == "Rock"
-                and view.choices[view.p2.id] == "Scissors"
-                or view.choices[view.p1.id] == "Paper"
-                and view.choices[view.p2.id] == "Rock"
-                or view.choices[view.p1.id] == "Scissors"
-                and view.choices[view.p2.id] == "Paper"
-            ):
-                view.winner = view.p1
-            else:
-                view.winner = view.p2
-            view.stop()
-
-
-class RockPaperScissors(discord.ui.View):
-    def __init__(self, p1: discord.User, p2: discord.User):
-        super().__init__(timeout=60)
-        self.p1 = p1
-        self.p2 = p2
-        self.choices = {}
-        self.winner = None
-        self.add_item(RPSButton(label="Rock", emoji="🪨"))
-        self.add_item(RPSButton(label="Paper", emoji="📄"))
-        self.add_item(RPSButton(label="Scissors", emoji="✂️"))
-
-
-# Cog containing the actual commands
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot: OneBot = bot
@@ -207,8 +43,10 @@ class Fun(commands.Cog):
                 nsfw = json["nsfw"]
         return json
 
+    games = app_commands.Group(name="games", description="Play games with others")
+
     # tic tac toe
-    @app_commands.command(name="tictactoe", description="Play Tic Tac Toe")
+    @games.command(name="tictactoe", description="Play Tic Tac Toe")
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
@@ -248,7 +86,7 @@ class Fun(commands.Cog):
             )
 
     # rock paper scissors
-    @app_commands.command(
+    @games.command(
         name="rockpaperscissors",
         description="Play Rock Paper Scissors with another user",
     )
@@ -316,6 +154,26 @@ class Fun(commands.Cog):
             embed.description = "### It's a tie!"
             embed.add_field(name="Both players chose:", value=view.choices[i.user.id])
             await i.edit_original_response(embed=embed, view=None)
+
+    # battleship
+    @games.command(name="battleship", description="Play Battleship with another user")
+    @app_commands.describe(user="The user to play with")
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    async def battleship(self, i: discord.Interaction, user: discord.User):
+        if i.guild and i.permissions.use_external_apps is False:
+            raise GenericError("External apps are disabled in this channel.")
+        if i.user.id == user.id:
+            raise GenericError("You can't play with yourself!")
+        if user.bot:
+            raise GenericError("You can't play with a bot!")
+
+        prompt = battleship.Prompt(i.user, user)
+        prompt.message = (
+            await i.response.send_message(
+                f"{user.mention}, you have been challenged to **Battleship** by {i.user.mention}!",
+                view=prompt,
+            )
+        ).resource
 
     # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
@@ -422,7 +280,8 @@ class Fun(commands.Cog):
     ):
         mock_text = "".join(
             [char.upper() if i % 2 else char.lower() for i, char in enumerate(text)]
-        )
+        ).replace("<A:", "<a:")
+        # fix for animated emojis
 
         await i.response.send_message(
             mock_text,

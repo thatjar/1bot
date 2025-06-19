@@ -1,6 +1,7 @@
 import logging
 from datetime import UTC, datetime
 
+import asyncpg
 import discord
 from aiohttp import ClientSession
 from discord.ext import commands
@@ -13,6 +14,7 @@ class OneBot(commands.AutoShardedBot):
     """1Bot's AutoShardedBot subclass"""
 
     session: ClientSession
+    pool: asyncpg.Pool
     launch_time: int
     # Global embed colour
     colour = 0xFF7000
@@ -37,27 +39,35 @@ class OneBot(commands.AutoShardedBot):
 
     async def setup_hook(self) -> None:
         logging.info("Starting up...")
-        # Load jishaku and all modules in the ./cogs dir
-        await self.load_extension("jishaku")
-        for extension in EXTENSIONS:
-            await self.load_extension(extension)
+
+        if config.get("postgres_dsn"):
+            self.pool = await asyncpg.create_pool(config["postgres_dsn"], timeout=30)
 
         # aiohttp session for making requests
         self.session = ClientSession()
         self.launch_time = round(datetime.now(UTC).timestamp())
 
+        # Load jishaku and cogs
+        await self.load_extension("jishaku")
+        for extension in EXTENSIONS:
+            await self.load_extension(extension)
+
     async def on_connect(self) -> None:
         self.user: discord.ClientUser
-        logging.info(f"Connected: {self.user} ({self.user.id})")
+        logging.info(f"Connected: {self.user} ({self.user.id})...")
 
     async def on_ready(self) -> None:
-        logging.info("Ready: Client successfully initialised.")
+        logging.info("Ready: Client is now fully initialised.")
 
     async def close(self) -> None:
-        logging.info("Disconnecting.")
-        await super().close()
+        logging.info("Shutting down.")
+
         if hasattr(self, "session"):
             await self.session.close()
+        if hasattr(self, "pool"):
+            await self.pool.close()
+
+        await super().close()
 
 
 bot = OneBot()

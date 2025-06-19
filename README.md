@@ -22,6 +22,7 @@ You will have to create a `config.py` file in the root directory with the follow
 config = {
     "token": str, # REQUIRED
     "topgg_token": str,
+    "postgres_dsn": str,
     "error_channel": int,
     "server_invite": "https://discord.gg/JGcnKxEPsW",
     "bot_invite": "https://discord.com/oauth2/authorize?client_id=884080176416309288",
@@ -40,6 +41,7 @@ config = {
 
 - `token`: Your Discord application's bot token. This is the only required value in the dict.
 - `topgg_token`: If the bot is listed on top.gg, its auth token.
+- `postgres_dsn`: Postgres database connection string for the starboard feature.
 - `error_channel`: The ID of the channel where unhandled runtime exceptions will be reported to. Not required, but I recommend setting it to get error notifications directly on Discord.
 - `server_invite`: If set, will be used as a support server invite. Unhandled exceptions will give the user this invite. Also used in the botinfo command.
 - `bot_invite`: If set, will be used as a button to invite the bot to other servers in the botinfo command.

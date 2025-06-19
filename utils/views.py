@@ -11,7 +11,7 @@ class Confirm(discord.ui.View):
     :param timeout: View timeout
     :type timeout: float"""
 
-    def __init__(self, target: discord.User, timeout=60, *args, **kwargs):
+    def __init__(self, target: discord.User, timeout: int | None = 60, *args, **kwargs):
         super().__init__(*args, **kwargs, timeout=timeout)
         self.target = target
         self.accepted = None

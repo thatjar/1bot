@@ -109,7 +109,7 @@ class PlayerState:
 # Blue button (enabled) -> Potential hit (bomb_state: None)
 # Blue button (disabled) -> Bomb missed (bomb_state: False)
 # Ship emoji -> You have a ship (enemy_state: None)
-# Bomb emoji -> Enemy hit that spot and missed (enemy_state: False)
+# Cyclone emoji -> Enemy hit that spot and missed (enemy_state: False)
 # Boom emoji -> Enemy hit that spot and succeeded (enemy_state: True)
 
 
@@ -203,14 +203,14 @@ class BoardView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not self.enemy.ready:
             await interaction.response.send_message(
-                "Your enemy is not ready yet, please wait until they are",
+                "❌ Your enemy is not ready yet, please wait until they are",
                 ephemeral=True,
             )
             return False
 
         if not self.player.current_player:
             await interaction.response.send_message(
-                "It is not your turn yet.", ephemeral=True
+                "❌ It is not your turn yet.", ephemeral=True
             )
             return False
         return True
@@ -285,7 +285,7 @@ class BoardSetupView(discord.ui.View):
 
         board = BoardView(self.player, self.enemy)
         place = "first" if self.player.current_player else "second"
-        content = f"Alright you're ready! This is your board. You go {place}! Please do not dismiss this message!"
+        content = f"You're ready! This is your board. You go {place}. Please do not dismiss this message!"
         await interaction.response.edit_message(content=content, view=board)
         board.message = await interaction.original_response()
         board.parent_message = self.parent_view.message

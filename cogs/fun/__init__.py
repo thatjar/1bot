@@ -170,7 +170,8 @@ class Fun(commands.Cog):
         prompt = battleship.Prompt(i.user, user)
         prompt.message = (
             await i.response.send_message(
-                f"{user.mention}, you have been challenged to **Battleship** by {i.user.mention}!",
+                f"{user.mention}, you have been challenged to **Battleship** by {i.user.mention}!"
+                "\nPress your button to start setting up your ships.",
                 view=prompt,
             )
         ).resource

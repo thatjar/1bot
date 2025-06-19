@@ -207,7 +207,7 @@ class Starboard(commands.Cog):
             inline=True,
         )
         embed.add_field(
-            name="Average Stars", value=f"⭐ {stats['avg_stars']}", inline=True
+            name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}", inline=True
         )
         embed.add_field(
             name="Most Starred Message",
@@ -270,7 +270,7 @@ class Starboard(commands.Cog):
             inline=True,
         )
         embed.add_field(
-            name="Average Stars", value=f"⭐ {stats['avg_stars']}", inline=True
+            name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}", inline=True
         )
         embed.add_field(
             name="Most Starred Message",
@@ -312,8 +312,10 @@ class Starboard(commands.Cog):
         """Handle reaction changes for starboard functionality"""
         if not payload.guild_id:
             return
-
         if str(payload.emoji) != "⭐":
+            return
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
             return
 
         # Get starboard config for this guild
@@ -321,12 +323,7 @@ class Starboard(commands.Cog):
             "SELECT channel_id, star_count FROM starboard WHERE guild_id = $1",
             payload.guild_id,
         )
-
         if not configuration:
-            return
-
-        guild = self.bot.get_guild(payload.guild_id)
-        if not guild:
             return
 
         channel = guild.get_channel(payload.channel_id)
@@ -346,6 +343,8 @@ class Starboard(commands.Cog):
                         star_count -= 1  # don't count the author's own reaction
                         break
                 break
+        if star_count < configuration["star_count"]:
+            return
         # check if message is already in starboard
         starred_message = await self.bot.pool.fetchrow(
             "SELECT starboard_message_id, star_count FROM starred_messages WHERE message_id = $1",

@@ -50,17 +50,6 @@ class PlayerState:
             [empty(), empty(), empty(), empty(), empty()],
             [empty(), empty(), empty(), empty(), empty()],
         ]
-        # self.generate_board()
-
-    def generate_board(self) -> None:
-        for size, emoji in ((4, "\N{SHIP}"), (3, "\N{SAILBOAT}"), (2, "\N{CANOE}")):
-            dx, dy = (1, 0) if random.randint(0, 1) else (0, 1)
-            positions = self.get_available_positions(dx, dy, size)
-            x, y = random.choice(positions)
-            for _ in range(0, size):
-                self.board[y][x].emoji = emoji
-                x += dx
-                y += dy
 
     def can_place_ship(self, x: int, y: int, dx: int, dy: int, size: int) -> bool:
         bounds = range(0, 5)
@@ -426,7 +415,7 @@ class ReadyButton(discord.ui.Button["Prompt"]):
 
         setup = BoardSetupView(self.player, self.enemy, self)
         content = (
-            "Set up your board below. In order to set up your board, "
+            "In order to set up your board, "
             "just press 2 points and a ship will automatically be created for you. You cannot have diagonal boats.\n\n"
             "There are 3 boats, \N{SHIP}, \N{SAILBOAT}, and \N{CANOE}. You can only have one of each. "
             "They have the following lengths:\n"
@@ -434,7 +423,7 @@ class ReadyButton(discord.ui.Button["Prompt"]):
             "You can press a button again to undo an in-progress placement. "
             "You cannot move boats once they have been placed. "
             "When you finish setting up all boats you will be ready to play!"
-            "\n-# If you're using a phone, you might want to rotate it to avoid the layout breaking."
+            "\n-# If you're using a phone, you might want to hold it horizontally to avoid the layout breaking."
         )
         await interaction.response.send_message(content, view=setup, ephemeral=True)
 
@@ -468,7 +457,7 @@ class Prompt(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id not in (self.first.member.id, self.second.member.id):
             await interaction.response.send_message(
-                "This prompt is not for you", ephemeral=True
+                "❌ This prompt is not for you", ephemeral=True
             )
             return False
         return True

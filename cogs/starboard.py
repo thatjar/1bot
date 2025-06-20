@@ -306,9 +306,6 @@ class Starboard(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        await self._handle_reaction_change(payload)
-
-    async def _handle_reaction_change(self, payload: discord.RawReactionActionEvent):
         """Handle reaction changes for starboard functionality"""
         if not payload.guild_id:
             return
@@ -345,6 +342,7 @@ class Starboard(commands.Cog):
                 break
         if star_count < configuration["star_count"]:
             return
+
         # check if message is already in starboard
         starred_message = await self.bot.pool.fetchrow(
             "SELECT starboard_message_id, star_count FROM starred_messages WHERE message_id = $1",

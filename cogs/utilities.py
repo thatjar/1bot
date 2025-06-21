@@ -179,6 +179,44 @@ class Utilities(commands.Cog):
                 f"{weight} lbs = **{(weight / 2.20462):.2f} kg**"
             )
 
+    # convert currency
+    @convert.command(
+        name="currency", description="Convert currency from one to another"
+    )
+    @app_commands.describe(
+        amount="The amount of money to convert",
+        source="Currency code to convert from (e.g. USD, EUR)",
+        target="Currency code to convert to (e.g. EUR, USD)",
+    )
+    async def currency(
+        self,
+        i: discord.Interaction,
+        amount: float,
+        source: str,
+        target: str,
+    ):
+        if source == target:
+            raise GenericError("Source and target currencies cannot be the same")
+
+        await i.response.defer()
+
+        async with self.bot.session.get(
+            "https://api.exchangerate-api.com/v4/latest/" + source.upper()
+        ) as r:
+            if not r.ok:
+                raise GenericError("Invalid source currency code")
+            json = await r.json()
+
+        if target.upper() not in json["rates"]:
+            raise GenericError("Invalid target currency code")
+
+        rate = json["rates"][target.upper()]
+        converted_amount = amount * rate
+
+        await i.followup.send(
+            f"{amount} {source.upper()} = **{converted_amount:.2f} {target.upper()}**"
+        )
+
     # lyrics
     @app_commands.command(name="lyrics", description="Get lyrics for a song")
     @app_commands.describe(query="The query to search for")

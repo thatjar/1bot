@@ -39,9 +39,7 @@ class Paginator(View):
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         if interaction.user != self.interaction.user:
-            await interaction.response.send_message(
-                "❌ This is not for you.", ephemeral=True
-            )
+            await interaction.response.defer()
             return False
         return True
 

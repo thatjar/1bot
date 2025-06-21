@@ -1,6 +1,6 @@
 # 1Bot - One bot, several uses.
 
-[![Banner](https://1bot.netlify.app/banner.png)](https://1bot.netlify.app/)
+[![Banner](https://1bot.netlify.app/images/banner.png)](https://1bot.netlify.app/)
 
 1Bot is a free Discord bot that lets you get things done without leaving Discord - from poking fun at your friends to managing channels.  
 Contributions and suggestions are welcome.

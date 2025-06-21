@@ -74,7 +74,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background-image: url("/1botbg.png");
+    background-image: url("/images/1botbg.png");
     background-repeat: space;
     background-size: auto;
     background-attachment: fixed;

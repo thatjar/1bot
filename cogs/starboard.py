@@ -1,8 +1,10 @@
 from typing import TYPE_CHECKING
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils.utils import GenericError
 from utils.views import Confirm
 
 if TYPE_CHECKING:
@@ -71,9 +73,8 @@ class Starboard(commands.Cog):
         if not channel_perms.send_messages:
             # try to set permissions if bot can't send messages
             if not channel_perms.manage_roles:
-                return await i.followup.send(
-                    "❌ Couldn't give myself permission to send messages in that channel, please set it manually.",
-                    ephemeral=True,
+                raise GenericError(
+                    "Couldn't give myself permission to send messages in that channel, please set it manually."
                 )
             overwrite = channel.overwrites_for(i.guild.me)
             overwrite.send_messages = True
@@ -105,10 +106,7 @@ class Starboard(commands.Cog):
             "SELECT channel_id FROM starboard WHERE guild_id = $1", i.guild.id
         )
         if not configuration:
-            return await i.response.send_message(
-                content="❌ No starboard configuration found to disable.",
-                ephemeral=True,
-            )
+            raise GenericError("No starboard configuration found to disable.")
 
         view = Confirm(i.user, timeout=180)
         await i.response.send_message(
@@ -145,11 +143,9 @@ class Starboard(commands.Cog):
         )
 
         if not configuration:
-            await i.response.send_message(
-                "❌ No starboard configuration found. Use `/starboard setup` to configure it.",
-                ephemeral=True,
+            raise GenericError(
+                "No starboard configuration found. Use `/starboard setup` to configure it."
             )
-            return
 
         channel = i.guild.get_channel(configuration["channel_id"])
         channel_mention = (

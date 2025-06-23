@@ -1,5 +1,7 @@
 import re
 import unicodedata
+import zoneinfo
+from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote
 
@@ -9,7 +11,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.paginator import Paginator
-from utils.utils import Embed, GenericError, lang_autocomplete, lang_dict, translator
+from utils.utils import Embed, GenericError, lang_dict, translator
+
+from .autocompletes import lang_autocomplete, timezone_autocomplete
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -96,15 +100,15 @@ class Utilities(commands.Cog):
     )
     @app_commands.describe(
         temperature="The temperature to convert",
-        target="Convert to Fahrenheit or Celsius?",
+        to="Convert to Fahrenheit or Celsius?",
     )
     async def convert_temp(
         self,
         i: discord.Interaction,
         temperature: float,
-        target: Literal["Fahrenheit", "Celsius"],
+        to: Literal["Fahrenheit", "Celsius"],
     ):
-        if target == "Fahrenheit":
+        if to == "Fahrenheit":
             await i.response.send_message(
                 f"{temperature}°C = **{((temperature * 1.8) + 32):.2f}°F**"
             )
@@ -120,15 +124,15 @@ class Utilities(commands.Cog):
     )
     @app_commands.describe(
         distance="The distance to convert",
-        target="Convert to miles or kilometres?",
+        to="Convert to miles or kilometres?",
     )
     async def convert_distance(
         self,
         i: discord.Interaction,
         distance: float,
-        target: Literal["Miles", "Kilometres"],
+        to: Literal["Miles", "Kilometres"],
     ):
-        if target == "Miles":
+        if to == "Miles":
             await i.response.send_message(
                 f"{distance} km = **{(distance / 1.609344):.3f} mi**"
             )
@@ -143,15 +147,15 @@ class Utilities(commands.Cog):
     )
     @app_commands.describe(
         length="The length to convert",
-        target="Convert to inches or centimetres?",
+        to="Convert to inches or centimetres?",
     )
     async def convert_length(
         self,
         i: discord.Interaction,
         length: float,
-        target: Literal["Inches", "Centimetres"],
+        to: Literal["Inches", "Centimetres"],
     ):
-        if target == "Inches":
+        if to == "Inches":
             await i.response.send_message(f"{length} cm = **{(length / 2.54):.2f} in**")
         else:
             await i.response.send_message(f"{length} in = **{(length * 2.54):.2f} cm**")
@@ -162,15 +166,15 @@ class Utilities(commands.Cog):
     )
     @app_commands.describe(
         weight="The weight to convert",
-        target="Convert to pounds or kilograms?",
+        to="Convert to pounds or kilograms?",
     )
     async def convert_weight(
         self,
         i: discord.Interaction,
         weight: float,
-        target: Literal["Pounds", "Kilograms"],
+        to: Literal["Pounds", "Kilograms"],
     ):
-        if target == "Pounds":
+        if to == "Pounds":
             await i.response.send_message(
                 f"{weight} kg = **{(weight * 2.20462):.2f} lb**"
             )
@@ -186,16 +190,17 @@ class Utilities(commands.Cog):
     @app_commands.describe(
         amount="The amount of money to convert",
         source="Currency code to convert from (e.g. USD, EUR)",
-        target="Currency code to convert to (e.g. EUR, USD)",
+        to="Currency code to convert to (e.g. EUR, USD)",
     )
+    @app_commands.rename(source="from")
     async def currency(
         self,
         i: discord.Interaction,
         amount: float,
         source: str,
-        target: str,
+        to: str,
     ):
-        if source == target:
+        if source == to:
             raise GenericError("Source and target currencies cannot be the same")
 
         await i.response.defer()
@@ -207,14 +212,14 @@ class Utilities(commands.Cog):
                 raise GenericError("Invalid source currency code")
             json = await r.json()
 
-        if target.upper() not in json["rates"]:
+        if to.upper() not in json["rates"]:
             raise GenericError("Invalid target currency code")
 
-        rate = json["rates"][target.upper()]
+        rate = json["rates"][to.upper()]
         converted_amount = amount * rate
 
         await i.followup.send(
-            f"{amount} {source.upper()} = **{converted_amount:.2f} {target.upper()}**"
+            f"{amount} {source.upper()} = **{converted_amount:.2f} {to.upper()}**"
         )
 
     # lyrics
@@ -266,20 +271,21 @@ class Utilities(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     @app_commands.describe(
         text="The text to translate",
-        destination="The language to translate to (default: English)",
+        to="The language to translate to (default: English)",
         source="The language to translate from (default: auto-detect)",
     )
-    @app_commands.autocomplete(destination=lang_autocomplete, source=lang_autocomplete)
+    @app_commands.rename(source="from")
+    @app_commands.autocomplete(to=lang_autocomplete, source=lang_autocomplete)
     async def translate(
         self,
         i: discord.Interaction,
         text: str,
-        destination: str = "en",
+        to: str = "en",
         source: str = "auto",
     ):
-        if destination == source:
+        if to == source:
             raise GenericError("Source and destination languages cannot be the same")
-        if destination not in lang_dict and destination not in lang_dict.values():
+        if to not in lang_dict and to not in lang_dict.values():
             raise GenericError("Invalid destination language")
         if (
             source not in lang_dict
@@ -290,7 +296,7 @@ class Utilities(commands.Cog):
 
         await i.response.defer()
 
-        translation = await translator.translate(text, dest=destination, src=source)
+        translation = await translator.translate(text, dest=to, src=source)
         detected_lang_name = lang_dict[translation.src.lower()].title()
         output_lang_name = lang_dict[translation.dest.lower()].title()
 
@@ -505,6 +511,41 @@ class Utilities(commands.Cog):
                 message_content=f"Found {len(pages)} results:",
             )
             await paginator.start()
+
+    # world clock
+    @app_commands.command(
+        name="worldclock", description="Get the current time in a timezone"
+    )
+    @app_commands.describe(
+        timezone="The timezone to get the current time for",
+    )
+    @app_commands.autocomplete(timezone=timezone_autocomplete)
+    async def worldclock(self, i: discord.Interaction, timezone: str):
+        try:
+            current_time = datetime.now(zoneinfo.ZoneInfo(timezone))
+        except zoneinfo.ZoneInfoNotFoundError:
+            raise GenericError("Invalid timezone.")
+
+        formatted_time_12h = current_time.strftime("%I:%M:%S %p")
+        formatted_time_24h = current_time.strftime("%H:%M:%S")
+        offset = current_time.strftime("%z")
+        offset_str = offset[:3] + ":" + offset[3:]
+
+        embed = discord.Embed(
+            colour=self.bot.colour,
+            description=f"Current time in {timezone} ({offset_str})",
+        )
+        embed.add_field(
+            name="12-hour format",
+            value=formatted_time_12h,
+            inline=False,
+        )
+        embed.add_field(
+            name="24-hour format",
+            value=formatted_time_24h,
+            inline=False,
+        )
+        await i.response.send_message(embed=embed)
 
 
 async def setup(bot):

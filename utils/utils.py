@@ -57,17 +57,6 @@ class Embed(discord.Embed):
         return super().set_author(name=name, icon_url=icon_url, url=url)
 
 
-async def lang_autocomplete(
-    _: discord.Interaction, current: str
-) -> list[discord.app_commands.Choice[str]]:
-    langs = lang_dict.values()
-    return [
-        discord.app_commands.Choice(name=lang.title(), value=lang)
-        for lang in langs
-        if lang.startswith(current.lower())
-    ][:25]
-
-
 vl = discord.VerificationLevel
 VL_STRINGS = {
     vl.none: "None",

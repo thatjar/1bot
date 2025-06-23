@@ -4,3 +4,4 @@ jishaku @ git+https://github.com/scarletcafe/jishaku@master
 
 asyncpg
 googletrans
+tzdata

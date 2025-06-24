@@ -30,6 +30,11 @@ class Miscellaneous(commands.Cog):
     async def botinfo(self, i: discord.Interaction):
         appinfo = await self.bot.application_info()
         user_installs = appinfo.approximate_user_install_count
+        command_count = 0
+        for command in self.bot.tree.get_commands():
+            command_count += 1
+            if isinstance(command, app_commands.Group):
+                command_count += len(command.commands) - 1
         embed = discord.Embed(
             title=f"{self.bot.user.name} Stats and Information",
             colour=self.bot.colour,
@@ -37,7 +42,7 @@ class Miscellaneous(commands.Cog):
             f"**User installs**: {user_installs}\n"
             f"**Uptime**: <t:{self.bot.launch_time}:R>\n"
             f"**Websocket latency**: {(self.bot.latency * 1000):.0f} ms\n"
-            f"**Command count**: {len(self.bot.tree.get_commands())} (not including subcommands)\n",
+            f"**Command count**: {command_count}\n",
         )
         if i.guild:
             embed.description += f"**Shard ID**: {i.guild.shard_id}"

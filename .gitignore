@@ -1,13 +1,5 @@
 config.py
 __pycache__
 
-# Pterodactyl server
 .local
 .cache
-
-# Site
-site/.svelte-kit
-site/node_modules
-site/build
-site/package
-site/.netlify

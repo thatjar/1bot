@@ -1,5 +1,6 @@
 # An extension to handle command errors
 
+from __future__ import annotations
 
 import logging
 from contextlib import suppress
@@ -37,8 +38,8 @@ class ErrorButton(discord.ui.View):
 class Errors(commands.Cog):
     """Cog to handle command errors. Does not contain any commands."""
 
-    def __init__(self, bot):
-        self.bot: OneBot = bot
+    def __init__(self, bot: OneBot):
+        self.bot = bot
         self.error_channel = None
 
     async def cog_load(self):
@@ -205,7 +206,3 @@ class Errors(commands.Cog):
             )
         except discord.InteractionResponded:
             await i.followup.send(f"❌ {error_message}", ephemeral=True, view=view)
-
-
-async def setup(bot):
-    await bot.add_cog(Errors(bot))

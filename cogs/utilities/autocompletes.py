@@ -11,7 +11,7 @@ async def lang_autocomplete(
     return [
         discord.app_commands.Choice(name=lang.title(), value=lang)
         for lang in langs
-        if lang.startswith(current.lower()) or current.lower() in lang
+        if current.lower() in lang
     ][:25]
 
 
@@ -24,5 +24,5 @@ async def timezone_autocomplete(
     return [
         discord.app_commands.Choice(name=tz, value=tz)
         for tz in TIMEZONES
-        if tz.lower().startswith(current.lower()) or current.lower() in tz.lower()
+        if current.lower() in tz.lower()
     ][:25]

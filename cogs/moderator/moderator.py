@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -12,8 +14,8 @@ if TYPE_CHECKING:
 
 
 class Moderator(commands.Cog):
-    def __init__(self, bot):
-        self.bot: OneBot = bot
+    def __init__(self, bot: OneBot):
+        self.bot = bot
 
     def cog_load(self):
         for cmd in self.walk_app_commands():
@@ -589,7 +591,3 @@ class Moderator(commands.Cog):
             )
 
         await i.response.send_message(embed=embed, ephemeral=silent)
-
-
-async def setup(bot):
-    await bot.add_cog(Moderator(bot))

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sys import version_info
 from typing import TYPE_CHECKING, Literal
 
@@ -14,8 +16,8 @@ if TYPE_CHECKING:
 
 
 class Miscellaneous(commands.Cog):
-    def __init__(self, bot):
-        self.bot: OneBot = bot
+    def __init__(self, bot: OneBot):
+        self.bot = bot
         self.bot.tree.add_command(
             app_commands.ContextMenu(name="User Info", callback=self.userinfo_ctx)
         )
@@ -256,7 +258,3 @@ class Miscellaneous(commands.Cog):
             raise GenericError(
                 "This response can only be deleted by its invoker or a moderator."
             )
-
-
-async def setup(bot):
-    await bot.add_cog(Miscellaneous(bot))

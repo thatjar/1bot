@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import discord
@@ -12,8 +14,8 @@ if TYPE_CHECKING:
 
 
 class Starboard(commands.Cog):
-    def __init__(self, bot):
-        self.bot: OneBot = bot
+    def __init__(self, bot: OneBot):
+        self.bot = bot
 
     async def cog_load(self):
         for cmd in self.walk_app_commands():
@@ -50,10 +52,7 @@ class Starboard(commands.Cog):
                     """
             )
 
-    starboard_group = app_commands.Group(
-        name="starboard", description="Starboard configuration and management"
-    )
-
+    # set starboard
     @app_commands.command(
         description="Setup/edit starboard configuration for this server"
     )
@@ -98,6 +97,7 @@ class Starboard(commands.Cog):
             f"✅ Starboard has been set to {channel.mention} with a threshold of {min_stars} stars.\n"
         )
 
+    # disable starboard
     @app_commands.command(description="Disable the starboard for this server")
     @app_commands.default_permissions(manage_guild=True)
     async def starboard_disable(self, i: discord.Interaction):
@@ -133,6 +133,10 @@ class Starboard(commands.Cog):
         await i.edit_original_response(
             content="✅ Starboard and starred message data for this server have been removed."
         )
+
+    starboard_group = app_commands.Group(
+        name="starboard", description="Starboard configuration and management"
+    )
 
     @starboard_group.command(description="View the current starboard configuration")
     async def view_config(self, i: discord.Interaction):
@@ -384,8 +388,3 @@ class Starboard(commands.Cog):
                         "DELETE FROM starred_messages WHERE message_id = $1",
                         message.id,
                     )
-
-
-async def setup(bot):
-    if hasattr(bot, "pool"):
-        await bot.add_cog(Starboard(bot))

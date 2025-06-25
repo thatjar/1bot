@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib
 import logging
 import subprocess
@@ -15,8 +17,8 @@ if TYPE_CHECKING:
 class Etc(commands.Cog):
     """Cog for owner commands, background tasks, etc. Not for end-user commands/features."""
 
-    def __init__(self, bot):
-        self.bot: OneBot = bot
+    def __init__(self, bot: OneBot):
+        self.bot = bot
         self.post_stats.start()
 
     @tasks.loop(hours=6)
@@ -115,7 +117,3 @@ class Etc(commands.Cog):
     async def activity(self, ctx: commands.Context, *, status: str | None = None):
         await self.bot.change_presence(activity=discord.CustomActivity(status))
         await ctx.reply(f"✅ Activity set to `{status}`.")
-
-
-async def setup(bot):
-    await bot.add_cog(Etc(bot))

@@ -42,7 +42,6 @@ class Miscellaneous(commands.Cog):
             colour=self.bot.colour,
             description=f"**Servers**: {len(self.bot.guilds)}\n"
             f"**User installs**: {user_installs}\n"
-            f"**Uptime**: <t:{self.bot.launch_time}:R>\n"
             f"**Websocket latency**: {(self.bot.latency * 1000):.0f} ms\n"
             f"**Command count**: {command_count}\n",
         )

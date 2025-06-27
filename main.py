@@ -1,5 +1,4 @@
 import logging
-from datetime import UTC, datetime
 
 import asyncpg
 import discord
@@ -15,7 +14,6 @@ class OneBot(commands.AutoShardedBot):
 
     session: ClientSession
     pool: asyncpg.Pool
-    launch_time: int
     # Global embed colour
     colour = 0xFF7000
 
@@ -43,9 +41,7 @@ class OneBot(commands.AutoShardedBot):
         if config.get("postgres_dsn"):
             self.pool = await asyncpg.create_pool(config["postgres_dsn"], timeout=30)
 
-        # aiohttp session for making requests
         self.session = ClientSession()
-        self.launch_time = round(datetime.now(UTC).timestamp())
 
         # Load jishaku and cogs
         await self.load_extension("jishaku")

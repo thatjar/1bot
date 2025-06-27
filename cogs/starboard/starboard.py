@@ -357,7 +357,7 @@ class Starboard(commands.Cog):
             # create new starboard entry
             starboard_msg = await message.forward(starboard_channel)
             await starboard_channel.send(
-                f"*\- {message.author.mention}, <t:{message.created_at.timestamp():.0f}:f>*"
+                rf"*\- {message.author.mention}, <t:{message.created_at.timestamp():.0f}:f>*"
             )
 
             await self.bot.pool.execute(

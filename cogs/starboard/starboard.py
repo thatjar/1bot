@@ -117,7 +117,7 @@ class Starboard(commands.Cog):
         await view.wait()
         if view.accepted is None:
             return await i.edit_original_response(
-                content="❌ Timed out waiting for a response.", view=None
+                content="⌛ Timed out waiting for a response.", view=None
             )
         if not view.accepted:
             return await i.edit_original_response(content="Cancelled.", view=None)

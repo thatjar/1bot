@@ -9,9 +9,15 @@ from main import OneBot
 
 
 class HangmanGame:
-    """Class to handle the logic for a Hangman game."""
-
     def __init__(self, word: str, max_attempts: int = 6):
+        """Class to handle the logic for a Hangman game.
+
+        :param word: The word to guess
+        :type word: str
+        :param max_attempts: The maximum number of incorrect attempts allowed
+        :type max_attempts: int
+        """
+
         self.word = word.lower()
         self.guessed_letters: Set[str] = set()
         self.max_attempts = max_attempts
@@ -109,6 +115,9 @@ class HangmanGame:
 
 
 class CustomWordView(discord.ui.View):
+    children: list[discord.ui.Button]
+    message: discord.Message
+
     def __init__(self, user: discord.User, player: discord.User, timeout: float = 60.0):
         """View for entering a custom word in Hangman.
 
@@ -116,30 +125,36 @@ class CustomWordView(discord.ui.View):
         :type user: discord.User
         :param player: The player
         :type player: discord.User
+        :param timeout: Timeout for the view
+        :type timeout: float
         """
         super().__init__(timeout=timeout)
         self.user = user
         self.player = player
-        self.message: discord.Message | None = None
 
     @discord.ui.button(label="Enter Custom Word", style=discord.ButtonStyle.primary)
     async def custom_word_button(self, i: discord.Interaction, _: discord.ui.Button):
         """Button to open the modal for entering a custom word."""
         if i.user.id != self.user.id:
-            return await i.response.defer()
+            return await i.response.send_message(
+                f"❌ This is for {self.user.mention}.", ephemeral=True
+            )
 
         modal = CustomWordModal(self.message, self.player)
         await i.response.send_modal(modal)
 
     async def on_timeout(self):
-        """Called when the view times out."""
+        for item in self.children:
+            item.disabled = True
         if self.message:
-            await self.message.edit(content="⌛ Timed out.", view=None, embed=None)
+            await self.message.edit(
+                content="⌛ Timed out waiting for input.", view=self, embed=None
+            )
 
 
 class CustomWordModal(discord.ui.Modal, title="Enter your word"):
     def __init__(self, message: discord.Message, player: discord.User):
-        """Docstring for __init__
+        """Modal to input a custom word for Hangman.
 
         :param message: Message to edit with the game embed
         :type message: discord.Message
@@ -164,6 +179,7 @@ class CustomWordModal(discord.ui.Modal, title="Enter your word"):
                 "Please enter a valid word (A-Z).", ephemeral=True
             )
 
+        await i.response.defer()
         game = HangmanGame(custom_word)
         view = HangmanView(game, self.player)
         view.message = await self.message.edit(
@@ -171,7 +187,6 @@ class CustomWordModal(discord.ui.Modal, title="Enter your word"):
             embed=view.get_game_embed(),
             view=view,
         )
-        await i.response.defer()
 
 
 class GuessLetterModal(discord.ui.Modal, title="Guess a Letter"):
@@ -200,7 +215,7 @@ class GuessLetterModal(discord.ui.Modal, title="Guess a Letter"):
 
         is_correct = self.game_view.game.guess(letter)
         result_message = (
-            f"Your guess: '{letter}' - {'Correct!' if is_correct else 'Incorrect!'}"
+            f"Your guess: '{letter}' - {'Correct ✅' if is_correct else 'Incorrect ❌'}"
         )
         await i.response.send_message(result_message, ephemeral=True)
 
@@ -216,9 +231,18 @@ class GuessLetterModal(discord.ui.Modal, title="Guess a Letter"):
 
 
 class HangmanView(discord.ui.View):
-    """UI View for the Hangman game."""
+    children: list[discord.ui.Button]
 
     def __init__(self, game: HangmanGame, player: discord.User, timeout: float = 180.0):
+        """The view for the Hangman game.
+
+        :param game: The Hangman game instance
+        :type game: HangmanGame
+        :param player: The user playing the game
+        :type player: discord.User
+        :param timeout: Timeout for the view
+        :type timeout: float"""
+
         super().__init__(timeout=timeout)
         self.game = game
         self.player = player
@@ -267,7 +291,6 @@ class HangmanView(discord.ui.View):
                 embed.add_field(name="Result", value="😔 You lost!", inline=False)
 
             for item in self.children:
-                assert isinstance(item, discord.ui.Button)
                 item.disabled = True
 
         return embed

@@ -74,9 +74,7 @@ class Fun(commands.Cog):
         )
         timed_out = await view.wait()
         if timed_out:
-            await i.edit_original_response(
-                content=":information_source: The game timed out.", view=None
-            )
+            await i.edit_original_response(content="⌛ The game timed out.", view=None)
 
     # rock paper scissors
     @games.command(
@@ -123,7 +121,7 @@ class Fun(commands.Cog):
         timed_out = await view.wait()
         if timed_out:
             await i.edit_original_response(
-                content=":information_source: The game timed out.",
+                content="⌛ The game timed out.",
                 view=None,
                 embed=None,
             )

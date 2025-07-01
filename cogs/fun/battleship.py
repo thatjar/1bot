@@ -454,7 +454,9 @@ class Prompt(discord.ui.View):
 
     async def on_timeout(self) -> None:
         self.disable()
-        await self.message.edit(content="This prompt has timed out.", view=self)
+        await self.message.edit(
+            content="⌛ Timed out waiting for responses.", view=self
+        )
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id not in (self.first.member.id, self.second.member.id):

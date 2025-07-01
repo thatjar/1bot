@@ -140,7 +140,7 @@ class CustomWordView(discord.ui.View):
                 f"❌ This is for {self.user.mention}.", ephemeral=True
             )
 
-        modal = CustomWordModal(self.message, self.player)
+        modal = CustomWordModal(self)
         await i.response.send_modal(modal)
 
     async def on_timeout(self):
@@ -153,17 +153,18 @@ class CustomWordView(discord.ui.View):
 
 
 class CustomWordModal(discord.ui.Modal, title="Enter your word"):
-    def __init__(self, message: discord.Message, player: discord.User):
+    def __init__(self, view: CustomWordView):
         """Modal to input a custom word for Hangman.
 
         :param message: Message to edit with the game embed
         :type message: discord.Message
         :param player: The player who will play the game
         :type player: discord.User
+        :param view: The view that opened this modal
+        :type view: CustomWordView
         """
         super().__init__()
-        self.message = message
-        self.player = player
+        self.view = view
 
     word = discord.ui.TextInput(
         label="Custom Word",
@@ -181,12 +182,13 @@ class CustomWordModal(discord.ui.Modal, title="Enter your word"):
 
         await i.response.defer()
         game = HangmanGame(custom_word)
-        view = HangmanView(game, self.player)
-        view.message = await self.message.edit(
-            content=f"{i.user.mention} created a Hangman game for {self.player.mention} with a custom word!",
+        view = HangmanView(game, self.view.player)
+        view.message = await self.view.message.edit(
+            content=f"{i.user.mention} created a Hangman game for {self.view.player.mention} with a custom word!",
             embed=view.get_game_embed(),
             view=view,
         )
+        self.view.stop()
 
 
 class GuessLetterModal(discord.ui.Modal, title="Guess a Letter"):
@@ -292,6 +294,7 @@ class HangmanView(discord.ui.View):
 
             for item in self.children:
                 item.disabled = True
+            self.stop()
 
         return embed
 

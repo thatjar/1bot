@@ -171,7 +171,7 @@ class Fun(commands.Cog):
     @games.command(name="hangman", description="Play a game of Hangman")
     @app_commands.describe(
         difficulty="The difficulty of the random word to guess for yourself (default: medium)",
-        player="If you want to give a custom word to another player. (default: play by yourself with a random word)",
+        player="User to give a custom word to. (default: play by yourself with a random word)",
     )
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def hangman(

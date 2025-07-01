@@ -15,7 +15,7 @@ from utils.utils import Embed, GenericError
 from utils.views import Confirm, DeleteButton
 
 from . import battleship
-from .hangman import HangmanGame, HangmanView, get_random_word
+from .hangman import HangmanGame, HangmanView, CustomWordView, get_random_word
 from .rps import RockPaperScissors
 from .ttt import TicTacToe
 
@@ -172,50 +172,29 @@ class Fun(commands.Cog):
     # hangman
     @games.command(name="hangman", description="Play a game of Hangman")
     @app_commands.describe(
-        difficulty="The difficulty level of the word to guess (default: medium)",
-        custom_word="Provide your own word (creates a game for others to play)",
-        player="The user who will play the game (required for custom words)",
+        difficulty="The difficulty of the random word to guess for yourself (default: medium)",
+        player="If you want to give a custom word to another player. (default: play by yourself with a random word)",
     )
-    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def hangman(
         self,
         i: discord.Interaction,
         difficulty: Literal["easy", "medium", "hard"] = "medium",
-        custom_word: app_commands.Range[str, 3, 30] | None = None,
         player: discord.User | None = None,
     ):
         if player:
             if i.guild and i.permissions.use_external_apps is False:
                 raise GenericError("External apps are disabled in this channel.")
-        if player and not custom_word:
-            raise GenericError(
-                "To give someone else a game, you must provide a custom word."
-            )
-
-        if custom_word:
-            if not player:
-                raise GenericError(
-                    "You must specify a player when providing a custom word."
-                )
             if player.id == i.user.id:
                 raise GenericError("You can't play with yourself!")
             if player.bot:
                 raise GenericError("You can't play with a bot!")
 
-            word = custom_word.strip().lower()
-            if not word.isalpha():
-                raise GenericError(
-                    "The custom word must only contain letters (A-Z, a-z) with no spaces or symbols."
-                )
-
-            game = HangmanGame(word)
-            view = HangmanView(game, player)
-            embed = view.get_game_embed()
-            view.message = (
+            word_input_btn = CustomWordView(i.user, player)
+            word_input_btn.message = (
                 await i.response.send_message(
-                    f"{i.user.display_name} created a Hangman game for {player.mention} with a custom word!",
-                    embed=embed,
-                    view=view,
+                    f"{i.user.mention} is creating a Hangman game for {player.mention} with a custom word...",
+                    view=word_input_btn,
                 )
             ).resource
         else:
@@ -223,18 +202,13 @@ class Fun(commands.Cog):
 
             game = HangmanGame(word)
             view = HangmanView(game, i.user)
-            embed = view.get_game_embed()
             view.message = (
                 await i.response.send_message(
-                    f"{i.user.display_name} is playing Hangman",
-                    embed=embed,
+                    f"{i.user.mention} is playing Hangman",
+                    embed=view.get_game_embed(),
                     view=view,
                 )
             ).resource
-
-        timed_out = await view.wait()
-        if timed_out and view.message:
-            await view.message.edit(content="⏰ The game timed out.", view=None)
 
     # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)

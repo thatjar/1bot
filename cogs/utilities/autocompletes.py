@@ -24,5 +24,5 @@ async def timezone_autocomplete(
     return [
         discord.app_commands.Choice(name=tz, value=tz)
         for tz in TIMEZONES
-        if current.lower() in tz.lower()
+        if current.lower().replace(" ", "_") in tz.lower()
     ][:25]

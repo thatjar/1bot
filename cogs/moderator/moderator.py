@@ -17,7 +17,6 @@ class Moderator(commands.Cog):
     def __init__(self, bot: OneBot):
         self.bot = bot
 
-    def cog_load(self):
         for cmd in self.walk_app_commands():
             cmd.allowed_installs = app_commands.AppInstallationType(
                 guild=True, user=False

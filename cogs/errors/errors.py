@@ -11,7 +11,6 @@ import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import MISSING
 
 from config import config
 from utils.utils import GenericError
@@ -60,12 +59,30 @@ class Errors(commands.Cog):
         else:
             await ctx.reply(f"❌ {error}")
 
-    # Main application command error handler
+    # actual app command error handling method
     async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
-        # Check if the error is already handled
         if "handled" in getattr(error, "__notes__", []):
             return
 
+        if await self.handle(i, error):
+            return
+
+        elif isinstance(error, app_commands.CommandInvokeError):
+            if isinstance(error.original, GenericError):
+                await self.send_error(i, error.original)
+            elif isinstance(error.original, aiohttp.ConnectionTimeoutError):
+                await self.send_error(
+                    i, "Connection timed out. Please try again later."
+                )
+            else:
+                if not await self.handle(i, error.original):
+                    await self.report_unknown_exception(i, error.original)
+
+        else:
+            await self.report_unknown_exception(i, error)
+
+    async def handle(self, i: discord.Interaction, error: Exception) -> bool:
+        """Send a corresponding error message for an exception, return True if the error was handled, False otherwise."""
         if isinstance(
             error, app_commands.CommandNotFound
         ) or "Unknown interaction" in str(error):
@@ -107,25 +124,12 @@ class Errors(commands.Cog):
             if error.status == 429:
                 if error.response.content.get("global"):
                     logging.warning(
-                        "GLOBAL RATELIMIT\n"
-                        f"Retry after:{error.response.content['retry_after']}\n"
-                        f"Caused by: {i.user.name} ({i.user.id})"
+                        "RATELIMIT\n"
+                        f"Retry after:{error.response.content['retry_after']}"
                     )
-
-        elif isinstance(error, app_commands.CommandInvokeError):
-            if isinstance(error.original, GenericError):
-                await self.send_error(i, error.original)
-            elif isinstance(error.original, aiohttp.ConnectionTimeoutError):
-                await self.send_error(
-                    i,
-                    "Connection timed out. Please try again later.",
-                    view=ErrorButton(),
-                )
-            else:
-                await self.report_unknown_exception(i, error.original)
-
         else:
-            await self.report_unknown_exception(i, error)
+            return False
+        return True
 
     @staticmethod
     def create_error_embed(
@@ -168,14 +172,6 @@ class Errors(commands.Cog):
     ) -> None:
         """Reports an unknown exception to the error channel and send an error message to the user."""
 
-        user_embed = discord.Embed(
-            title="⚠️ Unexpected error",
-            description="An unknown error was encountered. It has been automatically reported.",
-            colour=0xFF0000,
-        )
-        if config.get("server_invite"):
-            user_embed.description += "\nIf you would like to know more about this error and the progress on addressing it, join the server."
-
         if self.error_channel:
             report_embed = self.create_error_embed(i, error)
             await self.error_channel.send(embed=report_embed)
@@ -184,6 +180,14 @@ class Errors(commands.Cog):
             logging.error(
                 f"In command '{i.command.name}': {''.join(format_exception(error))}"
             )
+
+        user_embed = discord.Embed(
+            title="⚠️ Unexpected error",
+            description="An unknown error was encountered. It has been automatically reported.",
+            colour=0xFF0000,
+        )
+        if config.get("server_invite"):
+            user_embed.description += "\nIf you would like to know more about this error and the progress on addressing it, join the server."
 
         try:
             await i.response.send_message(
@@ -196,7 +200,7 @@ class Errors(commands.Cog):
     async def send_error(
         i: discord.Interaction,
         error_message: str,
-        view: discord.ui.View = MISSING,
+        view: discord.ui.View = discord.utils.MISSING,
     ) -> None:
         """Send an error message to the user."""
 

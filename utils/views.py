@@ -105,7 +105,7 @@ class DeleteButton(discord.ui.View):
 
     @discord.ui.button(label="Delete", emoji="🗑️")
     async def delete(self, i: discord.Interaction, _: discord.ui.Button):
-        if i.user.id in self.allowed_users or i.permissions.manage_messages:
+        if i.user.id in self.allowed_users:
             await i.response.defer(ephemeral=True)
             await i.edit_original_response(
                 content=f"-# *Removed by {i.user.mention}*",

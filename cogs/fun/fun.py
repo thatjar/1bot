@@ -15,6 +15,7 @@ from utils.utils import Embed, GenericError
 from utils.views import Confirm, DeleteButton
 
 from . import battleship
+from .hangman import HangmanGame, HangmanView, get_random_word
 from .rps import RockPaperScissors
 from .ttt import TicTacToe
 
@@ -35,21 +36,10 @@ class Fun(commands.Cog):
             app_commands.ContextMenu(name="Woosh", callback=self.woosh_ctx),
         )
 
-    @staticmethod
-    async def get_reddit_post(session: ClientSession) -> dict:
-        nsfw = True
-        while nsfw:
-            async with session.get("https://meme-api.com/gimme") as r:
-                json = await r.json()
-                if "message" in json:
-                    return json
-                nsfw = json["nsfw"]
-        return json
-
-    games = app_commands.Group(name="games", description="Play games with others")
+    games = app_commands.Group(name="games", description="Play minigames")
 
     # tic tac toe
-    @games.command(name="tictactoe", description="Play Tic Tac Toe")
+    @games.command(name="tictactoe", description="Play Tic Tac Toe with another user")
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
@@ -178,6 +168,73 @@ class Fun(commands.Cog):
                 view=prompt,
             )
         ).resource
+
+    # hangman
+    @games.command(name="hangman", description="Play a game of Hangman")
+    @app_commands.describe(
+        difficulty="The difficulty level of the word to guess (default: medium)",
+        custom_word="Provide your own word (creates a game for others to play)",
+        player="The user who will play the game (required for custom words)",
+    )
+    @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
+    async def hangman(
+        self,
+        i: discord.Interaction,
+        difficulty: Literal["easy", "medium", "hard"] = "medium",
+        custom_word: app_commands.Range[str, 3, 30] | None = None,
+        player: discord.User | None = None,
+    ):
+        if player:
+            if i.guild and i.permissions.use_external_apps is False:
+                raise GenericError("External apps are disabled in this channel.")
+        if player and not custom_word:
+            raise GenericError(
+                "To give someone else a game, you must provide a custom word."
+            )
+
+        if custom_word:
+            if not player:
+                raise GenericError(
+                    "You must specify a player when providing a custom word."
+                )
+            if player.id == i.user.id:
+                raise GenericError("You can't play with yourself!")
+            if player.bot:
+                raise GenericError("You can't play with a bot!")
+
+            word = custom_word.strip().lower()
+            if not word.isalpha():
+                raise GenericError(
+                    "The custom word must only contain letters (A-Z, a-z) with no spaces or symbols."
+                )
+
+            game = HangmanGame(word)
+            view = HangmanView(game, player)
+            embed = view.get_game_embed()
+            view.message = (
+                await i.response.send_message(
+                    f"{i.user.display_name} created a Hangman game for {player.mention} with a custom word!",
+                    embed=embed,
+                    view=view,
+                )
+            ).resource
+        else:
+            word = get_random_word(difficulty)
+
+            game = HangmanGame(word)
+            view = HangmanView(game, i.user)
+            embed = view.get_game_embed()
+            view.message = (
+                await i.response.send_message(
+                    f"{i.user.display_name} is playing Hangman",
+                    embed=embed,
+                    view=view,
+                )
+            ).resource
+
+        timed_out = await view.wait()
+        if timed_out and view.message:
+            await view.message.edit(content="⏰ The game timed out.", view=None)
 
     # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
@@ -424,6 +481,18 @@ class Fun(commands.Cog):
         )
         embed.set_image(url=json["img"])
         await i.response.send_message(embed=embed)
+
+    # get non-nsfw reddit post
+    @staticmethod
+    async def get_reddit_post(session: ClientSession) -> dict:
+        nsfw = True
+        while nsfw:
+            async with session.get("https://meme-api.com/gimme") as r:
+                json = await r.json()
+                if "message" in json:
+                    return json
+                nsfw = json["nsfw"]
+        return json
 
     # meme
     @app_commands.command(name="meme", description="Get a random meme")

@@ -11,7 +11,7 @@ from aiohttp import ClientSession
 from discord import app_commands
 from discord.ext import commands
 
-from utils.utils import Embed, GenericError
+from utils.utils import Embed
 from utils.views import Confirm, DeleteButton
 
 from . import battleship
@@ -44,11 +44,11 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
         if i.guild and i.permissions.use_external_apps is False:
-            raise GenericError("External apps are disabled in this channel.")
+            raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
-            raise GenericError("You can't play with yourself!")
+            raise RuntimeError("You can't play with yourself!")
         if user.bot:
-            raise GenericError("You can't play with a bot!")
+            raise RuntimeError("You can't play with a bot!")
 
         view = Confirm(user)
         expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
@@ -85,11 +85,11 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def rps(self, i: discord.Interaction, user: discord.User):
         if i.guild and i.permissions.use_external_apps is False:
-            raise GenericError("External apps are disabled in this channel.")
+            raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
-            raise GenericError("You can't play with yourself!")
+            raise RuntimeError("You can't play with yourself!")
         if user.bot:
-            raise GenericError("You can't play with a bot!")
+            raise RuntimeError("You can't play with a bot!")
 
         view = Confirm(user)
         expires = (datetime.now(UTC) + timedelta(seconds=61)).timestamp()
@@ -152,11 +152,11 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def battleship(self, i: discord.Interaction, user: discord.User):
         if i.guild and i.permissions.use_external_apps is False:
-            raise GenericError("External apps are disabled in this channel.")
+            raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
-            raise GenericError("You can't play with yourself!")
+            raise RuntimeError("You can't play with yourself!")
         if user.bot:
-            raise GenericError("You can't play with a bot!")
+            raise RuntimeError("You can't play with a bot!")
 
         prompt = battleship.Prompt(i.user, user)
         prompt.message = (
@@ -182,11 +182,11 @@ class Fun(commands.Cog):
     ):
         if player:
             if i.guild and i.permissions.use_external_apps is False:
-                raise GenericError("External apps are disabled in this channel.")
+                raise RuntimeError("External apps are disabled in this channel.")
             if player.id == i.user.id:
-                raise GenericError("You can't play with yourself!")
+                raise RuntimeError("You can't play with yourself!")
             if player.bot:
-                raise GenericError("You can't play with a bot!")
+                raise RuntimeError("You can't play with a bot!")
 
             word_input_btn = CustomWordView(i.user, player)
             word_input_btn.message = (
@@ -212,9 +212,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def quote(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
-            raise GenericError("The message has no text content.")
+            raise RuntimeError("The message has no text content.")
         if len(message.content) > 100:
-            raise GenericError("The text must have no more than 100 characters.")
+            raise RuntimeError("The text must have no more than 100 characters.")
 
         await i.response.defer()
 
@@ -229,7 +229,7 @@ class Fun(commands.Cog):
             },
         ) as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             image = await r.read()
 
         attachment = discord.File(BytesIO(image), filename="quote.png")
@@ -325,9 +325,9 @@ class Fun(commands.Cog):
     @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def mock_ctx(self, i: discord.Interaction, message: discord.Message):
         if not message.content:
-            raise GenericError("The message has no text.")
+            raise RuntimeError("The message has no text.")
         if len(message.content) > 2000:
-            raise GenericError("The text must be no more than 2000 characters.")
+            raise RuntimeError("The text must be no more than 2000 characters.")
         await self.mock.callback(self, i, message.content)
 
     # dadjoke
@@ -339,7 +339,7 @@ class Fun(commands.Cog):
             "https://icanhazdadjoke.com/", headers={"Accept": "application/json"}
         ) as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
             await i.followup.send(json["joke"])
 
@@ -350,7 +350,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/dog") as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -365,7 +365,7 @@ class Fun(commands.Cog):
         await i.response.defer()
         async with self.bot.session.get("https://some-random-api.com/animal/cat") as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -382,7 +382,7 @@ class Fun(commands.Cog):
             "https://some-random-api.com/animal/panda"
         ) as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
 
         embed = discord.Embed(colour=self.bot.colour)
@@ -432,7 +432,7 @@ class Fun(commands.Cog):
     ):
         async with self.bot.session.get("https://xkcd.com/info.0.json") as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
 
         if mode == "random":
@@ -442,7 +442,7 @@ class Fun(commands.Cog):
                 f"https://xkcd.com/{comic_num}/info.0.json"
             ) as r:
                 if not r.ok:
-                    raise GenericError()
+                    raise RuntimeError()
                 json = await r.json()
 
         embed = discord.Embed(
@@ -474,10 +474,10 @@ class Fun(commands.Cog):
         try:
             json = await self.get_reddit_post(self.bot.session)
         except Exception:
-            raise GenericError()
+            raise RuntimeError()
 
         if "message" in json:
-            raise GenericError(json["message"])
+            raise RuntimeError(json["message"])
 
         embed = (
             discord.Embed(

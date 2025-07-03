@@ -13,7 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.paginator import Paginator
-from utils.utils import Embed, GenericError, lang_dict, translator
+from utils.utils import Embed, lang_dict, translator
 
 from .autocompletes import lang_autocomplete, timezone_autocomplete
 
@@ -45,9 +45,9 @@ class Utilities(commands.Cog):
             try:
                 json = await r.json()
             except aiohttp.ContentTypeError:
-                raise GenericError("Invalid location. Try with a more specific query.")
+                raise RuntimeError("Invalid location. Try with a more specific query.")
         if not json or not json.get("message"):  # handle empty response
-            raise GenericError("Invalid location. Try with a more specific query.")
+            raise RuntimeError("Invalid location. Try with a more specific query.")
 
         pages = []
         for entry in json["message"]:
@@ -203,7 +203,7 @@ class Utilities(commands.Cog):
         to: str,
     ):
         if source == to:
-            raise GenericError("Source and target currencies cannot be the same")
+            raise RuntimeError("Source and target currencies cannot be the same")
 
         await i.response.defer()
 
@@ -211,11 +211,11 @@ class Utilities(commands.Cog):
             "https://api.exchangerate-api.com/v4/latest/" + source.upper()
         ) as r:
             if not r.ok:
-                raise GenericError("Invalid source currency code")
+                raise RuntimeError("Invalid source currency code")
             json = await r.json()
 
         if to.upper() not in json["rates"]:
-            raise GenericError("Invalid target currency code")
+            raise RuntimeError("Invalid target currency code")
 
         rate = json["rates"][to.upper()]
         converted_amount = amount * rate
@@ -234,10 +234,10 @@ class Utilities(commands.Cog):
             "https://lrclib.net/api/search", params={"q": query}
         ) as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
             if not json:  # handle empty response
-                raise GenericError("No results found for that query.")
+                raise RuntimeError("No results found for that query.")
 
         pages = []
         for entry in json:
@@ -254,7 +254,7 @@ class Utilities(commands.Cog):
             pages.append(embed)
 
         if not pages:
-            raise GenericError("No lyrics found for that query.")
+            raise RuntimeError("No lyrics found for that query.")
 
         if len(pages) == 1:
             await i.followup.send("Found 1 result:", embed=pages[0])
@@ -286,15 +286,15 @@ class Utilities(commands.Cog):
         source: str = "auto",
     ):
         if to == source:
-            raise GenericError("Source and destination languages cannot be the same")
+            raise RuntimeError("Source and destination languages cannot be the same")
         if to not in lang_dict and to not in lang_dict.values():
-            raise GenericError("Invalid destination language")
+            raise RuntimeError("Invalid destination language")
         if (
             source not in lang_dict
             and source not in lang_dict.values()
             and source != "auto"
         ):
-            raise GenericError("Invalid source language")
+            raise RuntimeError("Invalid source language")
 
         await i.response.defer()
 
@@ -339,14 +339,14 @@ class Utilities(commands.Cog):
             try:
                 json = await r.json()
             except aiohttp.ContentTypeError:
-                raise GenericError()
+                raise RuntimeError()
         if not json:  # handle empty response
-            raise GenericError()
+            raise RuntimeError()
         if isinstance(json, dict) and json.get("title") == "No Definitions Found":
             if json["title"] == "No Definitions Found":
-                raise GenericError("No definitions found for that word")
+                raise RuntimeError("No definitions found for that word")
             else:
-                raise GenericError()
+                raise RuntimeError()
 
         data = json[0]
 
@@ -391,7 +391,7 @@ class Utilities(commands.Cog):
 
         msg = "\n".join(map(to_string, characters.strip()))
         if len(msg) > 2000:
-            raise GenericError(
+            raise RuntimeError(
                 "Result too long to send. Please try again with fewer characters."
             )
         await i.response.send_message(msg, suppress_embeds=True)
@@ -410,12 +410,12 @@ class Utilities(commands.Cog):
         try:
             async with self.bot.session.get(url) as r:
                 if r.status != 200:
-                    raise GenericError("Invalid/incomplete URL.")
+                    raise RuntimeError("Invalid/incomplete URL.")
 
                 emoji_bytes = await r.read()
 
         except aiohttp.ClientError:
-            raise GenericError("Invalid/incomplete URL.")
+            raise RuntimeError("Invalid/incomplete URL.")
 
         emoji = await i.guild.create_custom_emoji(
             name=name, image=emoji_bytes, reason=f"Uploaded by {i.user}"
@@ -475,10 +475,10 @@ class Utilities(commands.Cog):
             "https://api.urbandictionary.com/v0/define", params={"term": term}
         ) as r:
             if not r.ok:
-                raise GenericError()
+                raise RuntimeError()
             json = await r.json()
             if not json or not json.get("list"):  # handle empty response
-                raise GenericError("No results found for that query.")
+                raise RuntimeError("No results found for that query.")
 
         pages = []
         for entry in json["list"]:
@@ -521,7 +521,7 @@ class Utilities(commands.Cog):
         try:
             current_time = datetime.now(zoneinfo.ZoneInfo(timezone))
         except zoneinfo.ZoneInfoNotFoundError:
-            raise GenericError("Invalid timezone.")
+            raise RuntimeError("Invalid timezone.")
 
         formatted_time_12h = current_time.strftime("%I:%M:%S %p")
         formatted_time_24h = current_time.strftime("%H:%M:%S")

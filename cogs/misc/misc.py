@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
-from utils.utils import VL_STRINGS, GenericError
+from utils.utils import VL_STRINGS
 from utils.views import InfoButtons
 
 if TYPE_CHECKING:
@@ -144,7 +144,7 @@ class Miscellaneous(commands.Cog):
             if colour is not None:
                 hexcode = f"{colour:X}"
                 err_msg += f" Their banner colour is `#{hexcode:>06}`."
-            raise GenericError(err_msg)
+            raise RuntimeError(err_msg)
 
         embed = discord.Embed(
             colour=self.bot.colour,
@@ -245,7 +245,7 @@ class Miscellaneous(commands.Cog):
     @app_commands.allowed_installs(guilds=True, users=False)
     async def deleteresponse(self, i: discord.Interaction, message: discord.Message):
         if not message.interaction_metadata or message.author.id != self.bot.user.id:
-            raise GenericError(f"Not a {self.bot.user.name} command response.")
+            raise RuntimeError(f"Not a {self.bot.user.name} command response.")
 
         if (
             message.interaction_metadata.user.id == i.user.id
@@ -254,6 +254,6 @@ class Miscellaneous(commands.Cog):
             await message.delete()
             await i.response.send_message("✅ Response deleted.", ephemeral=True)
         else:
-            raise GenericError(
+            raise RuntimeError(
                 "This response can only be deleted by its invoker or a moderator."
             )

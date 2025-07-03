@@ -1,22 +1,8 @@
 import discord
 import googletrans
-from discord.ext.commands import errors
 
 translator = googletrans.Translator()
 lang_dict = googletrans.LANGUAGES
-
-
-class GenericError(errors.CommandInvokeError):
-    """A generic error that can be raised to provide a custom error message to the end user."""
-
-    def __init__(self, message: str = "Something went wrong. Please try again later."):
-        self.message = message
-
-    def __str__(self) -> str:
-        return self.message
-
-    def __repr__(self) -> str:
-        return f"GenericError('{self.message}')"
 
 
 class Embed(discord.Embed):

@@ -7,8 +7,6 @@ from dataclasses import dataclass
 import discord
 import random
 
-from utils.utils import GenericError
-
 
 @dataclass()
 class Cell:
@@ -222,7 +220,7 @@ class BoardSetupButton(discord.ui.Button["BoardSetupView"]):
 
         try:
             self.view.place_at(self.x, self.y)
-        except GenericError as e:
+        except RuntimeError as e:
             await interaction.response.send_message(f"❌ {e}", ephemeral=True)
         else:
             if self.view.is_done():
@@ -311,7 +309,7 @@ class BoardSetupView(discord.ui.View):
             # If both x and y inputs are different then we're trying a diagonal boat
             # This is forbidden
             if old_x != x and old_y != y:
-                raise GenericError("You can't have diagonal pieces.")
+                raise RuntimeError("You can't have diagonal pieces.")
 
             if old_x != x:
                 size = abs(old_x - x) + 1
@@ -322,7 +320,7 @@ class BoardSetupView(discord.ui.View):
                 dx, dy = (0, 1)
                 start_x, start_y = x, min(old_y, y)
             else:
-                raise GenericError(
+                raise RuntimeError(
                     "Sorry, couldn't figure out what you wanted to do here."
                 )
 
@@ -333,17 +331,17 @@ class BoardSetupView(discord.ui.View):
             }
 
             if size not in boats:
-                raise GenericError(
+                raise RuntimeError(
                     "This ship is too big. Only ships sizes 4, 3, or 2 are supported."
                 )
 
             if size in self.taken_lengths:
-                raise GenericError(
+                raise RuntimeError(
                     f"You already have a boat that is {size} units long."
                 )
 
             if not self.can_place_ship(start_x, start_y, dx, dy, size):
-                raise GenericError("This ship would be blocked off.")
+                raise RuntimeError("This ship would be blocked off.")
 
             emoji = boats[size]
             for _ in range(size):

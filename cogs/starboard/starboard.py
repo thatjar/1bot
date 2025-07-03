@@ -6,7 +6,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.utils import GenericError
 from utils.views import Confirm
 
 if TYPE_CHECKING:
@@ -72,7 +71,7 @@ class Starboard(commands.Cog):
         if not channel_perms.send_messages:
             # try to set permissions if bot can't send messages
             if not channel_perms.manage_roles:
-                raise GenericError(
+                raise RuntimeError(
                     "Couldn't give myself permission to send messages in that channel, please set it manually."
                 )
             overwrite = channel.overwrites_for(i.guild.me)
@@ -106,7 +105,7 @@ class Starboard(commands.Cog):
             "SELECT channel_id FROM starboard WHERE guild_id = $1", i.guild.id
         )
         if not configuration:
-            raise GenericError("No starboard configuration found to disable.")
+            raise RuntimeError("No starboard configuration found to disable.")
 
         view = Confirm(i.user, timeout=180)
         await i.response.send_message(
@@ -147,7 +146,7 @@ class Starboard(commands.Cog):
         )
 
         if not configuration:
-            raise GenericError(
+            raise RuntimeError(
                 "No starboard configuration found. Use `/starboard setup` to configure it."
             )
 

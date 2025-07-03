@@ -13,7 +13,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
-from utils.utils import GenericError
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -68,7 +67,7 @@ class Errors(commands.Cog):
             return
 
         elif isinstance(error, app_commands.CommandInvokeError):
-            if isinstance(error.original, GenericError):
+            if isinstance(error.original, RuntimeError):
                 await self.send_error(i, error.original)
             elif isinstance(error.original, aiohttp.ConnectionTimeoutError):
                 await self.send_error(

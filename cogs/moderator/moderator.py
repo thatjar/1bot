@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.utils import Embed, GenericError
+from utils.utils import Embed
 
 if TYPE_CHECKING:
     from main import OneBot
@@ -106,7 +106,7 @@ class Moderator(commands.Cog):
                 break
 
         if not messages_to_delete:
-            raise GenericError(
+            raise RuntimeError(
                 "No messages found to purge (up to 100, up to two weeks old)."
             )
 
@@ -146,7 +146,7 @@ class Moderator(commands.Cog):
                 break
 
         if not messages_to_delete:
-            raise GenericError(
+            raise RuntimeError(
                 "No bot messages found to purge (up to 100, up to two weeks old)."
             )
 
@@ -186,7 +186,7 @@ class Moderator(commands.Cog):
                 break
 
         if not messages_to_delete:
-            raise GenericError(
+            raise RuntimeError(
                 "No human messages found to purge (up to 100, up to two weeks old)."
             )
 
@@ -230,7 +230,7 @@ class Moderator(commands.Cog):
                 break
 
         if not messages_to_delete:
-            raise GenericError(
+            raise RuntimeError(
                 "No messages found from that user (up to 100, up to two weeks old)."
             )
 
@@ -266,7 +266,7 @@ class Moderator(commands.Cog):
 
         overwrite = i.channel.overwrites_for(role)
         if overwrite.create_public_threads is overwrite.create_private_threads is False:
-            raise GenericError(
+            raise RuntimeError(
                 f"This channel already has disabled threads for `{role.name}`."
             )
 
@@ -311,7 +311,7 @@ class Moderator(commands.Cog):
         if amount is None:
             # if no amount is given, show the current slowmode
             if i.channel.slowmode_delay == 0:
-                raise GenericError("This channel has no slowmode.")
+                raise RuntimeError("This channel has no slowmode.")
             seconds = i.channel.slowmode_delay
             await i.response.send_message(f"Current slowmode: **{seconds} seconds**")
             return
@@ -319,7 +319,7 @@ class Moderator(commands.Cog):
         seconds = amount if unit == 1 else amount * unit.value
 
         if not 0 <= seconds <= 21600:
-            raise GenericError("Slowmode must be between 0 and 6 hours.")
+            raise RuntimeError("Slowmode must be between 0 and 6 hours.")
         await i.response.defer(ephemeral=True)
 
         await i.channel.edit(
@@ -358,7 +358,7 @@ class Moderator(commands.Cog):
             is overwrite.create_private_threads
             is False
         ):
-            raise GenericError(f"This channel is already locked for `{role.name}`.")
+            raise RuntimeError(f"This channel is already locked for `{role.name}`.")
 
         overwrite.send_messages = False
         overwrite.create_public_threads = False
@@ -419,7 +419,7 @@ class Moderator(commands.Cog):
             is overwrite.create_private_threads
             in (None, True)
         ):
-            raise GenericError(f"This channel is already unlocked for `{role.name}`.")
+            raise RuntimeError(f"This channel is already unlocked for `{role.name}`.")
 
         overwrite.send_messages = None
         overwrite.create_public_threads = None
@@ -481,17 +481,17 @@ class Moderator(commands.Cog):
         silent: bool = False,
     ):
         if user == i.user:
-            raise GenericError("You cannot time out yourself.")
+            raise RuntimeError("You cannot time out yourself.")
         if user == i.guild.me:
-            raise GenericError("I cannot time out myself.")
+            raise RuntimeError("I cannot time out myself.")
         if user.top_role >= i.user.top_role:
-            raise GenericError(
+            raise RuntimeError(
                 "You cannot time out a user with a higher or equal role than you."
             )
 
         total_minutes = days * 1440 + hours * 60 + minutes
         if not 0 <= total_minutes <= 40320:
-            raise GenericError("Timeout duration must be between 0 and 28 days.")
+            raise RuntimeError("Timeout duration must be between 0 and 28 days.")
 
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"
@@ -542,14 +542,14 @@ class Moderator(commands.Cog):
         silent: bool = False,
     ):
         if user == i.user:
-            raise GenericError("You cannot ban yourself.")
+            raise RuntimeError("You cannot ban yourself.")
         if user == i.guild.me:
-            raise GenericError("I cannot ban myself.")
+            raise RuntimeError("I cannot ban myself.")
         if delete_days * 86400 + delete_hours * 3600 > 604800:
-            raise GenericError("Total duration must be between 0 and 7 days.")
+            raise RuntimeError("Total duration must be between 0 and 7 days.")
         if isinstance(user, discord.Member):
             if user.top_role >= i.user.top_role:
-                raise GenericError(
+                raise RuntimeError(
                     "You cannot ban a user with a higher or equal role than you."
                 )
 
@@ -576,7 +576,7 @@ class Moderator(commands.Cog):
                 delete_message_seconds=delete_days * 86400 + delete_hours * 3600,
             )
         except discord.Forbidden:
-            raise GenericError("I do not have permission to ban that user.")
+            raise RuntimeError("I do not have permission to ban that user.")
 
         embed = Embed(
             title="User Banned",

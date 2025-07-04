@@ -299,7 +299,10 @@ class HangmanView(discord.ui.View):
         return embed
 
     async def on_timeout(self):
-        await self.message.edit(content="⌛ The Hangman game has timed out.", view=None)
+        await self.message.edit(
+            content=f"⌛ The Hangman game has timed out.\nThe word was: ||{self.game.word}||",
+            view=None,
+        )
 
 
 WORD_LISTS = {

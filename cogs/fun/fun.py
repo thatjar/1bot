@@ -15,7 +15,7 @@ from utils.utils import Embed
 from utils.views import Confirm, DeleteButton
 
 from . import battleship
-from .hangman import HangmanGame, HangmanView, CustomWordView, get_random_word
+from .hangman import CustomWordView, HangmanGame, HangmanView, get_random_word
 from .rps import RockPaperScissors
 from .ttt import TicTacToe
 
@@ -343,8 +343,12 @@ class Fun(commands.Cog):
             json = await r.json()
             await i.followup.send(json["joke"])
 
+    animal = app_commands.Group(
+        name="animal", description="Get random animal images and facts"
+    )
+
     # dog
-    @app_commands.command(name="dog", description="Get a random dog image and fact")
+    @animal.command(name="dog", description="Get a random dog image and fact")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def dog(self, i: discord.Interaction):
         await i.response.defer()
@@ -353,13 +357,13 @@ class Fun(commands.Cog):
                 raise RuntimeError()
             json = await r.json()
 
-        embed = discord.Embed(colour=self.bot.colour)
+        embed = Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Dog fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
     # cat
-    @app_commands.command(name="cat", description="Get a random cat image and fact")
+    @animal.command(name="cat", description="Get a random cat image and fact")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def cat(self, i: discord.Interaction):
         await i.response.defer()
@@ -368,13 +372,13 @@ class Fun(commands.Cog):
                 raise RuntimeError()
             json = await r.json()
 
-        embed = discord.Embed(colour=self.bot.colour)
+        embed = Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Cat fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
     # panda
-    @app_commands.command(name="panda", description="Get a random panda image and fact")
+    @animal.command(name="panda", description="Get a random panda image and fact")
     @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
     async def panda(self, i: discord.Interaction):
         await i.response.defer()
@@ -385,9 +389,24 @@ class Fun(commands.Cog):
                 raise RuntimeError()
             json = await r.json()
 
-        embed = discord.Embed(colour=self.bot.colour)
+        embed = Embed(colour=self.bot.colour)
         embed.set_image(url=json["image"])
         embed.set_footer(text="Panda fact: " + json["fact"])
+        await i.followup.send(embed=embed)
+
+    # fox
+    @animal.command(name="fox", description="Get a random fox image and fact")
+    @app_commands.checks.cooldown(1, 10, key=lambda i: i.channel)
+    async def fox(self, i: discord.Interaction):
+        await i.response.defer()
+        async with self.bot.session.get("https://some-random-api.com/animal/fox") as r:
+            if not r.ok:
+                raise RuntimeError()
+            json = await r.json()
+
+        embed = Embed(colour=self.bot.colour)
+        embed.set_image(url=json["image"])
+        embed.set_footer(text="Fox fact: " + json["fact"])
         await i.followup.send(embed=embed)
 
     # megamind

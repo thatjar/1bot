@@ -68,7 +68,11 @@ class Errors(commands.Cog):
 
         elif isinstance(error, app_commands.CommandInvokeError):
             if isinstance(error.original, RuntimeError):
-                await self.send_error(i, error.original)
+                await self.send_error(
+                    i,
+                    str(error.original)
+                    or "Something went wrong. Please try again later.",
+                )
             elif isinstance(error.original, aiohttp.ConnectionTimeoutError):
                 await self.send_error(
                     i, "Connection timed out. Please try again later."

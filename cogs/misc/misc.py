@@ -8,7 +8,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import config
-from utils.utils import VL_STRINGS
 from utils.views import InfoButtons
 
 if TYPE_CHECKING:
@@ -224,6 +223,15 @@ class Miscellaneous(commands.Cog):
     @app_commands.checks.cooldown(2, 15, key=lambda i: i.channel)
     async def serverinfo(self, i: discord.Interaction):
         guild = await self.bot.fetch_guild(i.guild.id)
+
+        VL_STRINGS = {
+            discord.VerificationLevel.none: "None",
+            discord.VerificationLevel.low: "Members must have a verified email on their Discord account.",
+            discord.VerificationLevel.medium: "Members must have a verified email and be registered on Discord for more than five minutes.",
+            discord.VerificationLevel.high: "Members must have a verified email, be registered on Discord for more than five minutes,"
+            " and be a member of the server for more than ten minutes.",
+            discord.VerificationLevel.highest: "Members must have a verified phone number.",
+        }
 
         embed = discord.Embed(
             title=guild.name,

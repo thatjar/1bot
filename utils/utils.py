@@ -9,52 +9,36 @@ class Embed(discord.Embed):
     """Embed with automatic truncating."""
 
     def __init__(self, *args, **kwargs):
-        if kwargs.get("description"):
-            description = kwargs["description"]
-            if type(description) is str:
-                description = description.strip()
-                if len(description) > 4096:
-                    kwargs["description"] = description[:4093] + "..."
-        if kwargs.get("title"):
-            title = kwargs["title"]
-            if type(title) is str:
-                title = title.strip()
-                if len(title) > 256:
-                    kwargs["title"] = title[:253] + "..."
+        description = kwargs.get("description")
+        if description is not None:
+            desc_str = str(description).strip()
+            if len(desc_str) > 4096:
+                kwargs["description"] = desc_str[:4093] + "..."
+
+        title = kwargs.get("title")
+        if title is not None:
+            title_str = str(title).strip()
+            if len(title_str) > 256:
+                kwargs["title"] = title_str[:253] + "..."
         super().__init__(*args, **kwargs)
 
     def add_field(self, *, name, value, inline=True):
-        if type(name) is str:
-            name = name.strip()
-            if len(name) > 256:
-                name = name[:253] + "..."
-        if type(value) is str:
-            value = value.strip()
-            if len(value) > 1024:
-                value = value[:1021] + "..."
-        return super().add_field(name=name, value=value, inline=inline)
+        name_str = str(name).strip()
+        value_str = str(value).strip()
+        if len(name_str) > 256:
+            name_str = name_str[:253] + "..."
+        if len(value_str) > 1024:
+            value_str = value_str[:1021] + "..."
+        return super().add_field(name=name_str, value=value_str, inline=inline)
 
     def set_footer(self, *, text=None, icon_url=None):
-        if type(text) is str:
-            text = text.strip()
-            if len(text) > 2048:
-                text = text[:2045] + "..."
-        return super().set_footer(text=text, icon_url=icon_url)
+        text_str = str(text).strip()
+        if len(text_str) > 2048:
+            text_str = text_str[:2045] + "..."
+        return super().set_footer(text=text_str, icon_url=icon_url)
 
     def set_author(self, *, name=None, icon_url=None, url=None):
-        if type(name) is str:
-            name = name.strip()
-            if len(name) > 256:
-                name = name[:253] + "..."
-        return super().set_author(name=name, icon_url=icon_url, url=url)
-
-
-vl = discord.VerificationLevel
-VL_STRINGS = {
-    vl.none: "None",
-    vl.low: "Members must have a verified email on their Discord account.",
-    vl.medium: "Members must have a verified email and be registered on Discord for more than five minutes.",
-    vl.high: "Members must have a verified email, be registered on Discord for more than five minutes,"
-    " and be a member of the server for more than ten minutes.",
-    vl.highest: "Members must have a verified phone number.",
-}
+        name_str = str(name).strip()
+        if len(name_str) > 256:
+            name_str = name_str[:253] + "..."
+        return super().set_author(name=name_str, icon_url=icon_url, url=url)

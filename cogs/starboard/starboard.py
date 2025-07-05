@@ -158,12 +158,8 @@ class Starboard(commands.Cog):
         )
 
         embed = discord.Embed(title="Starboard Configuration", color=self.bot.colour)
-        embed.add_field(name="Channel", value=channel_mention, inline=True)
-        embed.add_field(
-            name="Minimum Stars",
-            value=str(configuration["star_count"]),
-            inline=True,
-        )
+        embed.add_field(name="Channel", value=channel_mention)
+        embed.add_field(name="Minimum Stars", value=str(configuration["star_count"]))
 
         await i.followup.send(embed=embed)
 
@@ -201,21 +197,14 @@ class Starboard(commands.Cog):
 
         embed = discord.Embed(title="Starboard Statistics", color=self.bot.colour)
         embed.add_field(
-            name="Total Starred Messages",
-            value=str(stats["total_starred"]),
-            inline=True,
+            name="Total Starred Messages", value=str(stats["total_starred"])
         )
-        embed.add_field(
-            name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}", inline=True
-        )
+        embed.add_field(name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}")
         embed.add_field(
             name="Most Starred Message",
             value=f"🌟 {stats['max_stars']} ({most_starred_msg_url})",
-            inline=True,
         )
-        embed.add_field(
-            name="Total Stars", value=f"✨ {stats['total_stars']}", inline=True
-        )
+        embed.add_field(name="Total Stars", value=f"✨ {stats['total_stars']}")
 
         await i.response.send_message(embed=embed)
 
@@ -264,21 +253,14 @@ class Starboard(commands.Cog):
             title=f"{user.name}'s Starboard Statistics", color=self.bot.colour
         )
         embed.add_field(
-            name="Total Starred Messages",
-            value=str(stats["total_starred"]),
-            inline=True,
+            name="Total Starred Messages", value=str(stats["total_starred"])
         )
-        embed.add_field(
-            name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}", inline=True
-        )
+        embed.add_field(name="Average Stars", value=f"⭐ {stats['avg_stars']:.1f}")
         embed.add_field(
             name="Most Starred Message",
             value=f"🌟 {stats['max_stars']} ({most_starred_msg_url})",
-            inline=True,
         )
-        embed.add_field(
-            name="Total Stars", value=f"✨ {stats['total_stars']}", inline=True
-        )
+        embed.add_field(name="Total Stars", value=f"✨ {stats['total_stars']}")
 
         await i.followup.send(embed=embed)
 

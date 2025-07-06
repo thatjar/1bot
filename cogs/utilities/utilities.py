@@ -527,19 +527,17 @@ class Utilities(commands.Cog):
         formatted_time_24h = current_time.strftime("%H:%M:%S")
         offset = current_time.strftime("%z")
         offset_str = offset[:3] + ":" + offset[3:]
+        dst = current_time.dst()
 
         embed = discord.Embed(
             colour=self.bot.colour,
-            description=f"Current time in {timezone} ({offset_str})",
+            title=f"{formatted_time_12h} ({formatted_time_24h})",
+            description=f"{timezone} ({offset_str})",
         )
-        embed.add_field(
-            name="12-hour format",
-            value=formatted_time_12h,
-            inline=False,
-        )
-        embed.add_field(
-            name="24-hour format",
-            value=formatted_time_24h,
-            inline=False,
-        )
+        if dst:
+            embed.add_field(
+                name="Daylight Saving Time",
+                value=f"+{dst}",
+                inline=False,
+            )
         await i.response.send_message(embed=embed)

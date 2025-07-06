@@ -264,7 +264,10 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
 
-        overwrite = i.channel.overwrites_for(role)
+        try:
+            overwrite = i.channel.overwrites_for(role)
+        except AttributeError:
+            raise RuntimeError("This command cannot be used on a thread.")
         if overwrite.create_public_threads is overwrite.create_private_threads is False:
             raise RuntimeError(
                 f"This channel already has disabled threads for `{role.name}`."
@@ -351,7 +354,11 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
 
-        overwrite = i.channel.overwrites_for(role)
+        try:
+            overwrite = i.channel.overwrites_for(role)
+        except AttributeError:
+            raise RuntimeError("This command cannot be used on a thread.")
+
         if (
             overwrite.send_messages
             is overwrite.create_public_threads
@@ -412,7 +419,11 @@ class Moderator(commands.Cog):
         await i.response.defer(ephemeral=True)
         role = role or i.guild.default_role
 
-        overwrite = i.channel.overwrites_for(role)
+        try:
+            overwrite = i.channel.overwrites_for(role)
+        except AttributeError:
+            raise RuntimeError("This command cannot be used on a thread.")
+
         if (
             overwrite.send_messages
             is overwrite.create_public_threads

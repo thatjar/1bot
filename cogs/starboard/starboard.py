@@ -336,6 +336,15 @@ class Starboard(commands.Cog):
 
         if not starred_message:
             # create new starboard entry
+            if not starboard_channel.permissions_for(guild.me).send_messages:
+                try:
+                    overwrite = starboard_channel.overwrites_for(guild.me)
+                    overwrite.send_messages = True
+                    await starboard_channel.set_permissions(
+                        guild.me, overwrite=overwrite, reason="Starboard setup"
+                    )
+                except discord.Forbidden:
+                    return
             starboard_msg = await message.forward(starboard_channel)
             await starboard_channel.send(
                 rf"*\- {message.author.mention}, <t:{message.created_at.timestamp():.0f}:f>*"

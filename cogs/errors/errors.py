@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from main import OneBot
 
 
-class ErrorButton(discord.ui.View):
+class Support(discord.ui.View):
     """A view with a button to join the support server, if its url is configured."""
 
     def __init__(self, *args, **kwargs):
@@ -48,7 +48,7 @@ class Errors(commands.Cog):
         self._old_tree_error = tree.on_error
         tree.on_error = self.tree_on_error
 
-    # Prefixed command error listener
+    # prefixed command error handler
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
         if isinstance(error, commands.CommandNotFound):
@@ -85,13 +85,14 @@ class Errors(commands.Cog):
             await self.report_unknown_exception(i, error)
 
     async def handle(self, i: discord.Interaction, error: Exception) -> bool:
-        """Send a corresponding error message for an exception, return True if the error was handled, False otherwise."""
+        """Send a corresponding error message for an exception, and return whether it was handled."""
+
         if isinstance(
             error, app_commands.CommandNotFound
         ) or "Unknown interaction" in str(error):
-            return
+            return True
         elif isinstance(error, discord.NotFound):
-            return
+            return True
         elif "You are being rate limited" in str(error):
             return logging.warning(f"Rate limited: Command {i.command.name}")
 
@@ -99,7 +100,7 @@ class Errors(commands.Cog):
             await self.send_error(
                 i,
                 "Command signature mismatch. Please report this to the developers.",
-                view=ErrorButton(),
+                view=Support(),
             )
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
@@ -132,6 +133,8 @@ class Errors(commands.Cog):
                     )
         else:
             return False
+
+        # if we reach here, the error was handled
         return True
 
     @staticmethod
@@ -194,10 +197,10 @@ class Errors(commands.Cog):
 
         try:
             await i.response.send_message(
-                embed=user_embed, ephemeral=True, view=ErrorButton()
+                embed=user_embed, ephemeral=True, view=Support()
             )
         except discord.InteractionResponded:
-            await i.followup.send(embed=user_embed, ephemeral=True, view=ErrorButton())
+            await i.followup.send(embed=user_embed, ephemeral=True, view=Support())
 
     @staticmethod
     async def send_error(

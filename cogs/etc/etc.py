@@ -37,7 +37,7 @@ class Etc(commands.Cog):
             ) as r:
                 if r.status != 200:
                     logging.error(
-                        f"Failed to post guild count to top.gg (status code: {r.status}):\n{r.text}"
+                        f"Failed to post guild count to top.gg (status {r.status}):\n{await r.text()}"
                     )
         except Exception as e:
             logging.error(f"Failed to post guild count to top.gg:\n{e}")

@@ -43,8 +43,12 @@ class Fun(commands.Cog):
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def tictactoe(self, i: discord.Interaction, user: discord.User):
-        if i.guild not in self.bot.guilds and i.permissions.use_external_apps is False:
-            raise RuntimeError("External apps are disabled in this channel.")
+        if i.guild:
+            if (
+                not self.bot.get_guild(i.guild.id)
+                and not i.permissions.use_external_apps
+            ):
+                raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise RuntimeError("You can't play with yourself!")
         if user.bot:
@@ -84,8 +88,12 @@ class Fun(commands.Cog):
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def rps(self, i: discord.Interaction, user: discord.User):
-        if i.guild not in self.bot.guilds and i.permissions.use_external_apps is False:
-            raise RuntimeError("External apps are disabled in this channel.")
+        if i.guild:
+            if (
+                not self.bot.get_guild(i.guild.id)
+                and not i.permissions.use_external_apps
+            ):
+                raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise RuntimeError("You can't play with yourself!")
         if user.bot:
@@ -151,8 +159,12 @@ class Fun(commands.Cog):
     @app_commands.describe(user="The user to play with")
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def battleship(self, i: discord.Interaction, user: discord.User):
-        if i.guild not in self.bot.guilds and i.permissions.use_external_apps is False:
-            raise RuntimeError("External apps are disabled in this channel.")
+        if i.guild:
+            if (
+                not self.bot.get_guild(i.guild.id)
+                and not i.permissions.use_external_apps
+            ):
+                raise RuntimeError("External apps are disabled in this channel.")
         if i.user.id == user.id:
             raise RuntimeError("You can't play with yourself!")
         if user.bot:
@@ -181,11 +193,12 @@ class Fun(commands.Cog):
         player: discord.User | None = None,
     ):
         if player:
-            if (
-                i.guild not in self.bot.guilds
-                and i.permissions.use_external_apps is False
-            ):
-                raise RuntimeError("External apps are disabled in this channel.")
+            if i.guild:
+                if (
+                    not self.bot.get_guild(i.guild.id)
+                    and not i.permissions.use_external_apps
+                ):
+                    raise RuntimeError("External apps are disabled in this channel.")
             if player.id == i.user.id:
                 raise RuntimeError("You can't play with yourself!")
             if player.bot:

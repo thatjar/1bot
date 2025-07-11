@@ -321,7 +321,7 @@ class Utilities(commands.Cog):
     # translate (ctxmenu)
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def translate_ctx(self, i: discord.Interaction, message: discord.Message):
-        await self.translate.callback(self, i, message.content)
+        await self.translate.callback(self, i, message.clean_content)
 
     # define
     @app_commands.command(

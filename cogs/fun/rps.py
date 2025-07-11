@@ -6,7 +6,7 @@ class RPSButton(discord.ui.Button):
         super().__init__(label=label, emoji=emoji)
 
     async def callback(self, i: discord.Interaction):
-        view = self.view
+        view: RockPaperScissors = self.view
         if i.user.id not in (view.p1.id, view.p2.id):
             await i.response.send_message(
                 "❌ You are not part of this game.", ephemeral=True
@@ -41,10 +41,10 @@ class RPSButton(discord.ui.Button):
 class RockPaperScissors(discord.ui.View):
     def __init__(self, p1: discord.User, p2: discord.User):
         super().__init__(timeout=60)
-        self.p1 = p1
-        self.p2 = p2
-        self.choices = {}
-        self.winner = None
+        self.p1: discord.User = p1
+        self.p2: discord.User = p2
+        self.choices: dict[int, str] = {}
+        self.winner: discord.User | None = None
         self.add_item(RPSButton(label="Rock", emoji="🪨"))
         self.add_item(RPSButton(label="Paper", emoji="📄"))
         self.add_item(RPSButton(label="Scissors", emoji="✂️"))

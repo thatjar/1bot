@@ -529,15 +529,10 @@ class Utilities(commands.Cog):
         offset_str = offset[:3] + ":" + offset[3:]
         dst = current_time.dst()
 
-        embed = discord.Embed(
-            colour=self.bot.colour,
-            title=f"{formatted_time_12h} ({formatted_time_24h})",
-            description=f"{timezone} ({offset_str})",
+        embed = discord.Embed(colour=self.bot.colour)
+        embed.description = (
+            f"# {formatted_time_12h} ({formatted_time_24h})\n{timezone} ({offset_str})"
         )
         if dst:
-            embed.add_field(
-                name="Daylight Saving Time",
-                value=f"+{dst}",
-                inline=False,
-            )
+            embed.description += f"\n-# Daylight Saving Time: +{dst}"
         await i.response.send_message(embed=embed)

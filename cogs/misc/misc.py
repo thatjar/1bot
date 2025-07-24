@@ -255,13 +255,11 @@ class Miscellaneous(commands.Cog):
         if not message.interaction_metadata or message.author.id != self.bot.user.id:
             raise RuntimeError(f"Not a {self.bot.user.name} command response.")
 
-        if (
-            message.interaction_metadata.user.id == i.user.id
-            or i.permissions.manage_messages
-        ):
+        if message.interaction_metadata.user.id == i.user.id:
+            await i.response.defer(ephemeral=True)
             await message.delete()
-            await i.response.send_message("✅ Response deleted.", ephemeral=True)
+            await i.followup.send("✅ Response deleted.")
         else:
             raise RuntimeError(
-                "This response can only be deleted by its invoker or a moderator."
+                "This response can only be deleted by the user who invoked it."
             )

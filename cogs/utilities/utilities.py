@@ -299,8 +299,8 @@ class Utilities(commands.Cog):
         await i.response.defer()
 
         translation = await translator.translate(text, dest=to, src=source)
-        detected_lang_name = lang_dict[translation.src.lower()].title()
-        output_lang_name = lang_dict[translation.dest.lower()].title()
+        detected_lang_name = lang_dict.get(translation.src.lower(), "Unknown").title()
+        output_lang_name = lang_dict.get(translation.dest.lower(), "Unknown").title()
 
         embed = (
             Embed(colour=self.bot.colour)
@@ -534,5 +534,6 @@ class Utilities(commands.Cog):
             f"# {formatted_time_12h} ({formatted_time_24h})\n{timezone} ({offset_str})"
         )
         if dst:
-            embed.description += f"\n-# Daylight Saving Time: +{dst}"
+            embed.description += f"\n-# Daylight Savings Time: +{dst}"
+
         await i.response.send_message(embed=embed)

@@ -287,6 +287,13 @@ class Starboard(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        await self.handle_reaction_change(payload)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        await self.handle_reaction_change(payload)
+
+    async def handle_reaction_change(self, payload: discord.RawReactionActionEvent):
         """Handle reaction changes for starboard functionality"""
         if not payload.guild_id:
             return

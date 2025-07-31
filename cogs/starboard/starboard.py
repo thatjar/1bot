@@ -339,6 +339,9 @@ class Starboard(commands.Cog):
 
         starboard_channel = guild.get_channel(configuration["channel_id"])
         if not starboard_channel:
+            await self.bot.pool.execute(
+                "DELETE FROM starboard WHERE guild_id = $1", payload.guild_id
+            )
             return
 
         if not starred_message:

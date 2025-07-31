@@ -321,6 +321,8 @@ class Utilities(commands.Cog):
     # translate (ctxmenu)
     @app_commands.checks.cooldown(2, 30, key=lambda i: i.channel)
     async def translate_ctx(self, i: discord.Interaction, message: discord.Message):
+        if not message.clean_content:
+            raise RuntimeError("Message is empty, cannot translate.")
         await self.translate.callback(self, i, message.clean_content)
 
     # define

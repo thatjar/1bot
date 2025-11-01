@@ -147,7 +147,7 @@ class Starboard(commands.Cog):
 
         if not configuration:
             raise RuntimeError(
-                "No starboard configuration found. Use `/starboard setup` to configure it."
+                "No starboard configuration found. Use `/starboard_set` to configure it."
             )
 
         channel = i.guild.get_channel(configuration["channel_id"])

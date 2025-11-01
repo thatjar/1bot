@@ -195,6 +195,7 @@ class Utilities(commands.Cog):
         to="Currency code to convert to (e.g. EUR, USD)",
     )
     @app_commands.rename(source="from")
+    @app_commands.checks.cooldown(2, 10, key=lambda i: i.channel)
     async def currency(
         self,
         i: discord.Interaction,

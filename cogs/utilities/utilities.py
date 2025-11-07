@@ -533,9 +533,7 @@ class Utilities(commands.Cog):
         dst = current_time.dst()
 
         embed = discord.Embed(colour=self.bot.colour)
-        embed.description = (
-            f"# {formatted_time_12h} ({formatted_time_24h})\n{timezone} ({offset_str})"
-        )
+        embed.description = f"# {formatted_time_12h} ({formatted_time_24h})\n{timezone} (GMT{offset_str})"
         if dst:
             embed.description += f"\n-# Daylight Savings Time: +{dst}"
 

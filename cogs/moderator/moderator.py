@@ -215,7 +215,7 @@ class Moderator(commands.Cog):
     async def purgeuser(
         self,
         i: discord.Interaction,
-        user: discord.Member,
+        user: discord.User,
         count: app_commands.Range[int, 1, 100],
     ):
         await i.response.defer(ephemeral=True)
@@ -527,6 +527,16 @@ class Moderator(commands.Cog):
             embed=embed,
             ephemeral=silent,
         )
+
+    @timeout.error
+    async def timeout_error(
+        self, i: discord.Interaction, error: app_commands.AppCommandError
+    ):
+        if isinstance(error, app_commands.TransformerError):
+            await i.response.send_message(
+                "❌ Cannot time out a non-member.", ephemeral=True
+            )
+            error.add_note("handled")
 
     # ban
     @app_commands.command(

@@ -62,7 +62,6 @@ class Errors(commands.Cog):
     async def tree_on_error(self, i: discord.Interaction, error: Exception) -> None:
         if "handled" in getattr(error, "__notes__", []):
             return
-
         if await self.handle(i, error):
             return
 
@@ -85,7 +84,7 @@ class Errors(commands.Cog):
             await self.report_unknown_exception(i, error)
 
     async def handle(self, i: discord.Interaction, error: Exception) -> bool:
-        """Send a corresponding error message for an exception, and return whether it was handled."""
+        """Send a corresponding error message for an exception if known, and return whether it was handled."""
 
         if isinstance(
             error, app_commands.CommandNotFound
@@ -94,14 +93,16 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.NotFound):
             return True
         elif "You are being rate limited" in str(error):
-            return logging.warning(f"Rate limited: Command {i.command.name}")
+            logging.warning(f"Rate limited: Command {i.command.name}")
+            return True
 
         elif isinstance(error, app_commands.CommandSignatureMismatch):
             await self.send_error(
                 i,
-                "Command signature mismatch. Please report this to the developers.",
+                "Command signature mismatch. Please wait until the command is updated.",
                 view=Support(),
             )
+            return False
         elif isinstance(error, app_commands.BotMissingPermissions):
             msg = (
                 "I don't have enough permissions to run this command!\n"
@@ -118,8 +119,6 @@ class Errors(commands.Cog):
         elif isinstance(error, app_commands.CommandOnCooldown):
             msg = f"This command is on cooldown, try again in {error.retry_after:.1f} seconds."
             await self.send_error(i, msg)
-        elif isinstance(error, app_commands.TransformerError):
-            await self.send_error(i, error)
         elif isinstance(error, discord.Forbidden) or "Forbidden" in str(error):
             msg = "**No Access**. Check if my roles are high enough in the list, and if I have permissions in the channel I need to access (if any)."
             with suppress(discord.Forbidden):

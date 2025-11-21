@@ -13,4 +13,4 @@ async def setup(bot: OneBot) -> None:
     if hasattr(bot, "pool"):
         await bot.add_cog(Starboard(bot))
     else:
-        logging.info("No database; not loading Starboard")
+        logging.warning("No database, not loading Starboard")

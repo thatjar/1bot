@@ -44,15 +44,23 @@ class Moderator(commands.Cog):
             image = discord.ui.TextInput(
                 label="Main Image", placeholder="Image URL", required=False
             )
-            show_author = discord.ui.TextInput(
-                label="Show you as the author?",
-                placeholder="y/n (default: no)",
-                min_length=1,
-                max_length=1,
-                required=False,
+
+            show_author = discord.ui.Label(
+                text="Show you as author",
+                description="Whether to show your name and avatar as the author of the embed (default: no).",
+                component=discord.ui.Select(
+                    options=[
+                        discord.SelectOption(label="Yes"),
+                        discord.SelectOption(label="No"),
+                    ],
+                    placeholder="No",
+                    required=False,
+                ),
             )
 
             async def on_submit(self, i: discord.Interaction):
+                assert isinstance(self.show_author.component, discord.ui.Select)
+
                 embed = discord.Embed(
                     title=self.embed_title.value,
                     description=self.contents.value,
@@ -61,12 +69,25 @@ class Moderator(commands.Cog):
                     embed.set_thumbnail(url=self.thumbnail.value)
                 if self.image.value:
                     embed.set_image(url=self.image.value)
-                if self.show_author.value.lower() == "y":
+                if self.show_author.component.values == ["Yes"]:
                     embed.set_author(
                         name="@" + i.user.name, icon_url=i.user.display_avatar.url
                     )
-                await i.channel.send(embed=embed)
-                await i.response.send_message("✅ Sent the embed.", ephemeral=True)
+                try:
+                    await i.channel.send(embed=embed)
+                except discord.HTTPException as e:
+                    if "Invalid Form Body" in str(e):
+                        await i.response.send_message(
+                            "❌ One or more of the provided URLs are invalid.",
+                            ephemeral=True,
+                        )
+                    else:
+                        await i.response.send_message(
+                            "❌ Failed to send the embed.", ephemeral=True
+                        )
+                else:
+                    await i.response.defer(ephemeral=True)
+                    await i.followup.send("✅ Sent the embed.", ephemeral=True)
 
         await i.response.send_modal(EmbedSetup())
 

@@ -100,6 +100,8 @@ class Starboard(commands.Cog):
     @app_commands.command(description="Disable the starboard for this server")
     @app_commands.default_permissions(manage_guild=True)
     async def starboard_disable(self, i: discord.Interaction):
+        await i.response.defer(ephemeral=True)
+
         # check if starboard is configured
         configuration = await self.bot.pool.fetchrow(
             "SELECT channel_id FROM starboard WHERE guild_id = $1", i.guild.id
@@ -108,18 +110,17 @@ class Starboard(commands.Cog):
             raise RuntimeError("No starboard configuration found to disable.")
 
         view = Confirm(i.user, timeout=180)
-        await i.response.send_message(
-            "Are you sure you want to disable the starboard? This will delete the configuration and the starboard functionality for this server.",
+        msg: discord.WebhookMessage = await i.followup.send(
+            "Are you sure you want to disable the starboard? This will delete the starboard configuration and data for this server.",
             view=view,
-            ephemeral=True,
         )
         await view.wait()
         if view.accepted is None:
-            return await i.edit_original_response(
+            return await msg.edit(
                 content="⌛ Timed out waiting for a response.", view=None
             )
         if not view.accepted:
-            return await i.edit_original_response(content="Cancelled.", view=None)
+            return await msg.edit(content="Cancelled.", view=None)
 
         await self.bot.pool.execute(
             "DELETE FROM starboard WHERE guild_id = $1", i.guild.id
@@ -129,7 +130,7 @@ class Starboard(commands.Cog):
             i.guild.id,
         )
 
-        await i.edit_original_response(
+        await msg.edit(
             content="✅ Starboard and starred message data for this server have been removed."
         )
 

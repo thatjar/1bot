@@ -1,5 +1,5 @@
 discord.py @ git+https://github.com/Rapptz/discord.py@master
-audioop-lts
+audioop-lts; python_version >= "3.13"
 jishaku @ git+https://github.com/scarletcafe/jishaku@master
 
 asyncpg

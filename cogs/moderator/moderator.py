@@ -595,6 +595,8 @@ class Moderator(commands.Cog):
                     "You cannot ban a user with a higher or equal role than you."
                 )
 
+        await i.response.defer(ephemeral=silent)
+
         # reason string that appears in audit log
         log_reason = reason or f"{i.user.name}: No reason specified"
 
@@ -631,4 +633,4 @@ class Moderator(commands.Cog):
                 name="Messages Deleted", value=f"{delete_days} days", inline=False
             )
 
-        await i.response.send_message(embed=embed, ephemeral=silent)
+        await i.followup.send(embed=embed)

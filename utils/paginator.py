@@ -115,10 +115,10 @@ class PageSelectModal(discord.ui.Modal, title="Jump to Page"):
                 await self.paginator.update_page()
             else:
                 await i.response.send_message(
-                    f"Page must be between 1 and {self.paginator.total_pages}",
+                    f"❌ Page must be between 1 and {self.paginator.total_pages}",
                     ephemeral=True,
                 )
         except ValueError:
             await i.response.send_message(
-                "Please enter a valid number.", ephemeral=True
+                "❌ Please enter a valid number.", ephemeral=True
             )

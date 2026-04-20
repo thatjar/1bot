@@ -57,13 +57,18 @@ class Utilities(commands.Cog):
                 title=f"Weather in {entry['current']['observationpoint']}",
             )
 
+            temp_c = float(entry["current"]["temperature"])
+            temp_f = (temp_c * 1.8) + 32
             embed.add_field(
                 name="Temperature",
-                value=f'{entry["current"]["temperature"]}°{entry["location"]["degreetype"]}',
+                value=f"{temp_c:.1f}°C / {temp_f:.1f}°F",
             )
+
+            feelslike_c = float(entry["current"]["feelslike"])
+            feelslike_f = (feelslike_c * 1.8) + 32
             embed.add_field(
                 name="Feels like",
-                value=f"{entry['current']['feelslike']}°{entry['location']['degreetype']}",
+                value=f"{feelslike_c:.1f}°C / {feelslike_f:.1f}°F",
             )
             embed.add_field(
                 name="Wind",

@@ -46,7 +46,11 @@ class Utilities(commands.Cog):
                 json = await r.json()
             except aiohttp.ContentTypeError:
                 raise RuntimeError("Invalid location. Try with a more specific query.")
-        if not json or not json.get("message"):  # handle empty response
+        if (
+            not json  # empty response
+            or not json.get("message")  # empty json contents
+            or json.get("message", {}).get("error")  # json returned error message
+        ):
             raise RuntimeError("Invalid location. Try with a more specific query.")
 
         pages = []

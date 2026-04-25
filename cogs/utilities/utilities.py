@@ -49,7 +49,8 @@ class Utilities(commands.Cog):
         if (
             not json  # empty response
             or not json.get("message")  # empty json contents
-            or json.get("message", {}).get("error")  # json returned error message
+            or type(json.get("message")) is dict
+            and json.get("message", {}).get("error")  # json returned error message
         ):
             raise RuntimeError("Invalid location. Try with a more specific query.")
 

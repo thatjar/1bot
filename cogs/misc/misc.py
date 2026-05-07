@@ -39,13 +39,13 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title=f"{self.bot.user.name} Stats and Information",
             colour=self.bot.colour,
-            description=f"**Servers**: {len(self.bot.guilds)}\n"
-            f"**User installs**: {user_installs}\n"
-            f"**Websocket latency**: {(self.bot.latency * 1000):.0f} ms\n"
-            f"**Command count**: {command_count}\n",
+            description=f"**Servers:** {len(self.bot.guilds)}\n"
+            f"**User installs:** {user_installs}\n"
+            f"**Websocket latency:** {(self.bot.latency * 1000):.0f} ms\n"
+            f"**Command count:** {command_count}\n",
         )
         if i.guild:
-            embed.description += f"**Shard ID**: {i.guild.shard_id}"
+            embed.description += f"**Shard ID:** {i.guild.shard_id}"
 
         embed.add_field(
             name="Software versions",
@@ -179,8 +179,8 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title=user.name,
             colour=colour,
-            description=f"**ID**: {user.id}\n"
-            f"**Display name**: {user.global_name or user.name}\n",
+            description=f"**ID:** {user.id}\n"
+            f"**Display name:** {user.global_name or user.name}\n",
         )
         embed.add_field(
             name="Account created:",
@@ -189,7 +189,7 @@ class Miscellaneous(commands.Cog):
 
         if isinstance(user, discord.Member):
             if user.nick:
-                embed.description += f"**Nickname**: {user.nick}\n"
+                embed.description += f"**Nickname:** {user.nick}\n"
 
             if user.joined_at is not None:
                 embed.add_field(
@@ -201,7 +201,18 @@ class Miscellaneous(commands.Cog):
 
             if i.is_guild_integration():
                 # -1 to exclude the @everyone role
-                embed.description += f"**Role count**: {len(user.roles)-1}\n"
+                embed.description += f"**Role count:** {len(user.roles)-1}\n"
+
+        if i.guild:
+            async for entry in i.guild.bans():
+                if entry.user.id == user.id:
+                    embed.add_field(
+                        name="Banned from this server",
+                        value=f"**Reason:** {entry.reason or 'No reason provided'}"[
+                            :1024
+                        ],
+                    )
+                    break
 
         embed.set_thumbnail(
             url=user.avatar.url if user.avatar else user.display_avatar.url
@@ -236,13 +247,13 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(
             title=guild.name,
             colour=self.bot.colour,
-            description=f"**Member count**: {guild.approximate_member_count}\n"
-            f"**Created at**: <t:{guild.created_at.timestamp():.0f}:F>\n"
-            f"**Boost level**: {guild.premium_tier}\n"
-            f"**Boosts**: {guild.premium_subscription_count}\n"
-            f"**Roles**: {len(guild.roles)}\n"
-            f"**Emojis**: {len(guild.emojis)}\n"
-            f"**Verification**: {VL_STRINGS[guild.verification_level]}\n",
+            description=f"**Member count:** {guild.approximate_member_count}\n"
+            f"**Created at:** <t:{guild.created_at.timestamp():.0f}:F>\n"
+            f"**Boost level:** {guild.premium_tier}\n"
+            f"**Boosts:** {guild.premium_subscription_count}\n"
+            f"**Roles:** {len(guild.roles)}\n"
+            f"**Emojis:** {len(guild.emojis)}\n"
+            f"**Verification:** {VL_STRINGS[guild.verification_level]}\n",
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)

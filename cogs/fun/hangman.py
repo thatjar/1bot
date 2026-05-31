@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from typing import Set
 
 import discord
@@ -148,7 +147,9 @@ class CustomWordView(discord.ui.View):
             item.disabled = True
         if self.message:
             await self.message.edit(
-                content="⌛ Timed out waiting for input.", view=self, embed=None
+                content=f"⌛ {self.user.mention} was creating a Hangman game for {self.player.mention}, but took too long to enter a word.",
+                view=self,
+                embed=None,
             )
 
 
@@ -303,79 +304,3 @@ class HangmanView(discord.ui.View):
             content=f"⌛ The Hangman game has timed out.\nThe word was: ||{self.game.word}||",
             view=None,
         )
-
-
-WORD_LISTS = {
-    "easy": [
-        "cat",
-        "dog",
-        "sun",
-        "hat",
-        "bee",
-        "fox",
-        "cow",
-        "pen",
-        "cup",
-        "fish",
-        "book",
-        "tree",
-        "door",
-        "star",
-        "bird",
-        "duck",
-        "cake",
-        "ball",
-        "game",
-        "home",
-    ],
-    "medium": [
-        "apple",
-        "dance",
-        "happy",
-        "juice",
-        "music",
-        "ocean",
-        "party",
-        "queen",
-        "tiger",
-        "zebra",
-        "garden",
-        "planet",
-        "winter",
-        "summer",
-        "dragon",
-        "flower",
-        "rabbit",
-        "turtle",
-        "sunset",
-        "bridge",
-    ],
-    "hard": [
-        "blossom",
-        "charity",
-        "dolphin",
-        "elephant",
-        "fantasy",
-        "gravity",
-        "harmony",
-        "jealous",
-        "kangaroo",
-        "library",
-        "mystery",
-        "notebook",
-        "octopus",
-        "penguin",
-        "quantum",
-        "romance",
-        "symphony",
-        "universe",
-        "volcano",
-        "whisper",
-    ],
-}
-
-
-def get_random_word(difficulty: str = "medium") -> str:
-    """Get a random word from the list with the given difficulty."""
-    word_list = WORD_LISTS.get(difficulty, WORD_LISTS["medium"])
-    return random.choice(word_list)

@@ -1,3 +1,5 @@
+# Requires message content intent
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -26,19 +28,16 @@ class Starboard(commands.Cog):
             )
 
         if hasattr(self.bot, "pool"):
-            await self.bot.pool.execute(
-                """
+            await self.bot.pool.execute("""
                 CREATE TABLE IF NOT EXISTS starboard (
                     guild_id BIGINT PRIMARY KEY,
                     channel_id BIGINT NOT NULL,
                     star_count INT DEFAULT 5
                 )
-                """
-            )
+                """)
 
             # table for starred messages to prevent duplicates
-            await self.bot.pool.execute(
-                """
+            await self.bot.pool.execute("""
                     CREATE TABLE IF NOT EXISTS starred_messages (
                         message_id BIGINT PRIMARY KEY,
                         guild_id BIGINT NOT NULL,
@@ -48,8 +47,7 @@ class Starboard(commands.Cog):
                         starboard_message_url TEXT,
                         star_count INT DEFAULT 0
                     )
-                    """
-            )
+                    """)
 
     # set starboard
     @app_commands.command(

@@ -15,7 +15,7 @@ from utils.utils import Embed
 from utils.views import Confirm, DeleteButton
 
 from . import battleship
-from .hangman import CustomWordView, HangmanGame, HangmanView, get_random_word
+from .hangman import CustomWordView
 from .rps import RockPaperScissors
 from .ttt import TicTacToe
 
@@ -180,49 +180,37 @@ class Fun(commands.Cog):
         ).resource
 
     # hangman
-    @games.command(name="hangman", description="Play a game of Hangman")
+    @games.command(
+        name="hangman",
+        description="Create a game of Hangman for another user to guess your word",
+    )
     @app_commands.describe(
-        difficulty="The difficulty of the random word to guess for yourself (default: medium)",
-        player="User to give a custom word to. (default: play by yourself with a random word)",
+        player="User to give the game to",
     )
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
     async def hangman(
         self,
         i: discord.Interaction,
-        difficulty: Literal["easy", "medium", "hard"] = "medium",
-        player: discord.User | None = None,
+        player: discord.User,
     ):
-        if player:
-            if i.guild:
-                if (
-                    not self.bot.get_guild(i.guild.id)
-                    and not i.permissions.use_external_apps
-                ):
-                    raise RuntimeError("External apps are disabled in this channel.")
-            if player.id == i.user.id:
-                raise RuntimeError("You can't play with yourself!")
-            if player.bot:
-                raise RuntimeError("You can't play with a bot!")
+        if i.guild:
+            if (
+                not self.bot.get_guild(i.guild.id)
+                and not i.permissions.use_external_apps
+            ):
+                raise RuntimeError("External apps are disabled in this channel.")
+        if player.id == i.user.id:
+            raise RuntimeError("You can't play with yourself!")
+        if player.bot:
+            raise RuntimeError("You can't give the game to a bot!")
 
-            word_input_btn = CustomWordView(i.user, player)
-            word_input_btn.message = (
-                await i.response.send_message(
-                    f"{i.user.mention} is creating a Hangman game for {player.mention} with a custom word...",
-                    view=word_input_btn,
-                )
-            ).resource
-        else:
-            word = get_random_word(difficulty)
-
-            game = HangmanGame(word)
-            view = HangmanView(game, i.user)
-            view.message = (
-                await i.response.send_message(
-                    f"{i.user.mention} is playing Hangman",
-                    embed=view.get_game_embed(),
-                    view=view,
-                )
-            ).resource
+        word_input_btn = CustomWordView(i.user, player)
+        word_input_btn.message = (
+            await i.response.send_message(
+                f"{i.user.mention} is creating a Hangman game for {player.mention} with a custom word...",
+                view=word_input_btn,
+            )
+        ).resource
 
     # quote
     @app_commands.checks.cooldown(2, 20, key=lambda i: i.channel)
@@ -236,17 +224,22 @@ class Fun(commands.Cog):
 
         user = message.author
 
-        async with self.bot.session.get(
-            "https://api.popcat.xyz/v2/quote",
-            params={
-                "image": user.display_avatar.url,
-                "text": discord.utils.remove_markdown(message.clean_content).strip(),
-                "name": user.display_name,
-            },
-        ) as r:
-            if not r.ok:
-                raise RuntimeError()
-            image = await r.read()
+        try:
+            async with self.bot.session.get(
+                "https://api.popcat.xyz/v2/quote",
+                params={
+                    "image": user.display_avatar.url,
+                    "text": discord.utils.remove_markdown(
+                        message.clean_content
+                    ).strip(),
+                    "name": user.display_name,
+                },
+            ) as r:
+                if not r.ok:
+                    raise RuntimeError()
+                image = await r.read()
+        except Exception:
+            raise RuntimeError()
 
         attachment = discord.File(BytesIO(image), filename="quote.png")
 

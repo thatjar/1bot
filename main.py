@@ -12,6 +12,7 @@ from config import config
 class OneBot(commands.AutoShardedBot):
     """1Bot's AutoShardedBot subclass"""
 
+    logger: logging.Logger
     session: ClientSession
     pool: asyncpg.Pool
     # Global embed colour
@@ -34,9 +35,10 @@ class OneBot(commands.AutoShardedBot):
                 guild=True, dm_channel=True, private_channel=True
             ),
         )
+        self.logger = logging.getLogger("1bot")
 
     async def setup_hook(self) -> None:
-        logging.info("Starting up...")
+        self.logger.info("Starting up...")
 
         if config.get("postgres_dsn"):
             self.pool = await asyncpg.create_pool(config["postgres_dsn"], timeout=30)
@@ -50,13 +52,13 @@ class OneBot(commands.AutoShardedBot):
 
     async def on_connect(self) -> None:
         self.user: discord.ClientUser
-        logging.info(f"Connected: {self.user} ({self.user.id})...")
+        self.logger.info(f"Connected: {self.user} ({self.user.id})...")
 
     async def on_ready(self) -> None:
-        logging.info("Ready: Client is now fully initialised.")
+        self.logger.info("Ready: Client is now fully initialised.")
 
     async def close(self) -> None:
-        logging.info("Shutting down.")
+        self.logger.info("Shutting down.")
 
         if hasattr(self, "session"):
             await self.session.close()
@@ -76,5 +78,7 @@ if __name__ == "__main__":
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     for logger in loggers:
         logger.setLevel(level)
+
+    bot.logger.setLevel(logging.DEBUG)
 
     bot.run(config["token"], root_logger=True)

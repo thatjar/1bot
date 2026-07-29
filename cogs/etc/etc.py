@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import asyncio
 import importlib
-import logging
 import subprocess
 from typing import TYPE_CHECKING
 
@@ -36,11 +36,11 @@ class Etc(commands.Cog):
                 json={"server_count": len(self.bot.guilds)},
             ) as r:
                 if r.status != 200:
-                    logging.error(
+                    self.bot.logger.error(
                         f"Failed to post guild count to top.gg (status {r.status}):\n{await r.text()}"
                     )
         except Exception as e:
-            logging.error(f"Failed to post guild count to top.gg:\n{e}")
+            self.bot.logger.error(f"Failed to post guild count to top.gg:\n{e}")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -94,17 +94,20 @@ class Etc(commands.Cog):
 
         try:
             # git restore all files to avoid merge conflicts
-            subprocess.run(
-                ["git", "restore", "."],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+            await asyncio.create_subprocess_exec(
+                "git",
+                "restore",
+                ".",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
             )
-            subprocess.run(
-                ["git", "pull", "origin", "main"],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+            await asyncio.create_subprocess_exec(
+                "git",
+                "pull",
+                "origin",
+                "main",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
             )
         except subprocess.CalledProcessError as e:
             await ctx.reply(f"❌ {e}")

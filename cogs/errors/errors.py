@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from contextlib import suppress
 from traceback import format_exception
 from typing import TYPE_CHECKING
@@ -51,9 +50,7 @@ class Errors(commands.Cog):
     # prefixed command error handler
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        if isinstance(error, commands.CommandNotFound):
-            return
-        elif isinstance(error, commands.NotOwner):
+        if isinstance(error, (commands.CommandNotFound, commands.NotOwner)):
             return
         else:
             await ctx.reply(f"❌ {error}")
@@ -86,14 +83,14 @@ class Errors(commands.Cog):
     async def handle(self, i: discord.Interaction, error: Exception) -> bool:
         """Send a corresponding error message for an exception if known, and return whether it was handled."""
 
-        if isinstance(
-            error, app_commands.CommandNotFound
-        ) or "Unknown interaction" in str(error):
-            return True
-        elif isinstance(error, discord.NotFound):
+        if (
+            isinstance(error, app_commands.CommandNotFound)
+            or "Unknown interaction" in str(error)
+            or isinstance(error, discord.NotFound)
+        ):
             return True
         elif "You are being rate limited" in str(error):
-            logging.warning(f"Rate limited: Command {i.command.name}")
+            self.bot.logger.warning(f"Rate limited: Command {i.command.name}")
             return True
 
         elif isinstance(error, app_commands.CommandSignatureMismatch):
@@ -124,12 +121,10 @@ class Errors(commands.Cog):
             with suppress(discord.Forbidden):
                 await self.send_error(i, msg)
         elif isinstance(error, discord.HTTPException):
-            if error.status == 429:
-                if error.response.content.get("global"):
-                    logging.warning(
-                        "RATELIMIT\n"
-                        f"Retry after:{error.response.content['retry_after']}"
-                    )
+            if error.status == 429 and error.response.content.get("global"):
+                self.bot.logger.warning(
+                    "RATELIMIT\n" f"Retry after:{error.response.content['retry_after']}"
+                )
         else:
             return False
 
@@ -182,7 +177,7 @@ class Errors(commands.Cog):
             await self.error_channel.send(embed=report_embed)
 
         else:
-            logging.error(
+            self.bot.logger.error(
                 f"In command '{i.command.name}': {''.join(format_exception(error))}"
             )
 

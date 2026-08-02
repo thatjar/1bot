@@ -589,11 +589,10 @@ class Moderator(commands.Cog):
             raise RuntimeError("I cannot ban myself.")
         if delete_days * 86400 + delete_hours * 3600 > 604800:
             raise RuntimeError("Total duration must be between 0 and 7 days.")
-        if isinstance(user, discord.Member):
-            if user.top_role >= i.user.top_role:
-                raise RuntimeError(
-                    "You cannot ban a user with a higher or equal role than you."
-                )
+        if isinstance(user, discord.Member) and user.top_role >= i.user.top_role:
+            raise RuntimeError(
+                "You cannot ban a user with a higher or equal role than you."
+            )
 
         await i.response.defer(ephemeral=silent)
 

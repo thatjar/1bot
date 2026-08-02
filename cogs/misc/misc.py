@@ -245,19 +245,25 @@ class Miscellaneous(commands.Cog):
         }
 
         embed = discord.Embed(
-            title=guild.name,
-            colour=self.bot.colour,
-            description=f"**Member count:** {guild.approximate_member_count}\n"
-            f"**Created at:** <t:{guild.created_at.timestamp():.0f}:F>\n"
-            f"**Boost level:** {guild.premium_tier}\n"
-            f"**Boosts:** {guild.premium_subscription_count}\n"
-            f"**Roles:** {len(guild.roles)}\n"
-            f"**Emojis:** {len(guild.emojis)}\n"
-            f"**Verification:** {VL_STRINGS[guild.verification_level]}\n",
+            title=guild.name, colour=self.bot.colour, description="Server information"
+        )
+        embed.add_field(name="Owner", value=f"<@{guild.owner_id}>")
+        embed.add_field(name="Member count", value=f"{guild.approximate_member_count}")
+        embed.add_field(
+            name="Created at", value=f"<t:{guild.created_at.timestamp():.0f}:F>"
+        )
+        embed.add_field(name="Boost level", value=f"{guild.premium_tier}")
+        embed.add_field(name="Boosts", value=f"{guild.premium_subscription_count}")
+        embed.add_field(name="Roles", value=f"{len(guild.roles)}")
+        embed.add_field(name="Emojis", value=f"{len(guild.emojis)}")
+        embed.add_field(
+            name="Verification",
+            value=f"{VL_STRINGS[guild.verification_level]}",
+            inline=False,
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
-        embed.set_footer(text=f"Server ID: {guild.id} | Shard ID: {guild.shard_id}")
+        embed.set_footer(text=f"Server ID: {guild.id}  |  Shard ID: {guild.shard_id}")
         await i.response.send_message(embed=embed)
 
     # delete response

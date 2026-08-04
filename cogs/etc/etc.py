@@ -94,13 +94,14 @@ class Etc(commands.Cog):
 
         try:
             # git restore all files to avoid merge conflicts
-            await asyncio.create_subprocess_exec(
+            pull = await asyncio.create_subprocess_exec(
                 "git",
                 "restore",
                 ".",
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
             )
+            await pull.wait()
             await asyncio.create_subprocess_exec(
                 "git",
                 "pull",

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Set
-
 import discord
 
 from main import OneBot
@@ -18,7 +16,7 @@ class HangmanGame:
         """
 
         self.word = word.lower()
-        self.guessed_letters: Set[str] = set()
+        self.guessed_letters: set[str] = set()
         self.max_attempts = max_attempts
         self.attempts_left = max_attempts
         self.game_over = False

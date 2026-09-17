@@ -94,15 +94,15 @@ class Etc(commands.Cog):
 
         try:
             # git restore all files to avoid merge conflicts
-            pull = await asyncio.create_subprocess_exec(
+            restore = await asyncio.create_subprocess_exec(
                 "git",
                 "restore",
                 ".",
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
             )
-            await pull.wait()
-            await asyncio.create_subprocess_exec(
+            await restore.wait()
+            pull = await asyncio.create_subprocess_exec(
                 "git",
                 "pull",
                 "origin",
@@ -110,6 +110,7 @@ class Etc(commands.Cog):
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
             )
+            await pull.wait()
         except subprocess.CalledProcessError as e:
             await ctx.reply(f"❌ {e}")
             return

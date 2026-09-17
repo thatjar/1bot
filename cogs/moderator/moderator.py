@@ -533,9 +533,11 @@ class Moderator(commands.Cog):
             reason=log_reason,
         )
 
+        until = (datetime.now(UTC) + timedelta(minutes=total_minutes)).timestamp()
+
         embed = Embed(
             title="User Timed Out",
-            description=f"🕒 {user.mention} has been timed out for {days} days, {hours} hours and {minutes} minutes.",
+            description=f"🕒 {user.mention} has been timed out until <t:{until:.0f}:F>",
             color=self.bot.colour,
         )
         if reason:
